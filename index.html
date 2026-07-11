@@ -690,16 +690,11 @@ function resetarSistema() {
 <div class="nav-item" onclick="showSection('agendamentos')">
 <span class="icon">📅</span> Agendamentos <span class="nav-badge" id="badge-agend" style="display:none">0</span>
 </div>
-<div class="nav-item" onclick="showSection('comissoes')">
-<span class="icon">💈</span> Comissões
-      </div>
-<div class="nav-item" onclick="showSection('relatorios')">
 <span class="icon">📈</span> Relatórios
-      </div>
+      </nav></aside></div>
 <div class="nav-item" onclick="showSection('dashboard')">
 <span class="icon">📊</span> Dashboard
       </div>
-</nav>
 <div class="sidebar-footer">
 <div style="margin-bottom:8px">
 <button onclick="abrirBusca()" style="width:100%;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.8);font-size:12px;cursor:pointer;text-align:left">
@@ -717,7 +712,6 @@ function resetarSistema() {
 <a href="#" onclick="doLogout()" style="color:rgba(255,255,255,.6);text-decoration:none;font-size:12px">🚪 Sair</a>
 </div>
 </div>
-</aside>
 <!-- Main -->
 <main class="main">
 <!-- ── DASHBOARD ── -->
@@ -1079,6 +1073,20 @@ function resetarSistema() {
 </select>
 </div>
 </div>
+<!-- Painel de Configuração de Comissões -->
+<div class="card" style="margin-bottom:20px">
+<div class="card-header" style="background:linear-gradient(135deg,#1a3a5c,#0ea5e9);border-radius:14px 14px 0 0">
+<h3 style="color:#fff">⚙️ Configuração de Comissões por Vendedor</h3>
+</div>
+<div class="card-body">
+<div id="comissao-config-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px"></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button class="btn btn-primary" onclick="salvarConfigComissoes()" style="background:#16a34a">💾 Salvar Configurações</button>
+<button class="btn btn-outline" onclick="renderComissaoConfig()">↺ Resetar</button>
+</div>
+<div id="comissao-config-msg" style="margin-top:8px;font-size:13px;color:#16a34a;display:none">✅ Configurações salvas com sucesso!</div>
+</div>
+</div>
 <div class="cards-grid" id="comissao-cards"></div>
 <div class="card">
 <div class="card-header"><h3>Relatório de Comissões por Vendedor</h3></div>
@@ -1095,6 +1103,98 @@ function resetarSistema() {
 </div>
 </div>
 </section>
+<!-- ── DESPESAS ── -->
+<section class="section" id="sec-despesas">
+<div class="topbar">
+<h1>💸 Despesas</h1>
+<div class="topbar-actions">
+<button class="btn btn-primary" onclick="openModal('modal-despesa')">➕ Nova Despesa</button>
+</div>
+</div>
+<!-- Cards resumo -->
+<div class="cards-grid" id="despesas-cards"></div>
+<!-- Filtro período -->
+<div class="card" style="margin-bottom:16px">
+<div class="card-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+<label style="font-size:13px;font-weight:600">Período:</label>
+<select id="despesas-periodo" onchange="renderDespesas()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="mes">Este Mês</option>
+<option value="semana">Últimos 7 dias</option>
+<option value="hoje">Hoje</option>
+<option value="trimestre">Trimestre</option>
+<option value="ano">Este Ano</option>
+<option value="tudo">Tudo</option>
+</select>
+</div>
+</div>
+<!-- Tabela de despesas -->
+<div class="card">
+<div class="card-header"><h3>📋 Registro de Despesas</h3></div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Recorrente</th><th>Ações</th></tr></thead>
+<tbody id="tb-despesas"></tbody></table>
+</div>
+</div>
+</section>
+<!-- Modal Nova Despesa -->
+<div class="modal-overlay" id="modal-despesa" style="display:none">
+<div class="modal" style="max-width:480px">
+<div class="modal-header">
+<h3 id="modal-despesa-title">💸 Nova Despesa</h3>
+<button class="modal-close" onclick="closeModal('modal-despesa')">✕</button>
+</div>
+<div class="modal-body">
+<input id="despesa-idx" type="hidden"/>
+<div class="form-grid">
+<div class="form-group">
+<label>Data *</label>
+<input id="despesa-data" type="date"/>
+</div>
+<div class="form-group">
+<label>Categoria *</label>
+<select id="despesa-cat">
+<option>Aluguel</option>
+<option>Energia Elétrica</option>
+<option>Internet</option>
+<option>Telefone</option>
+<option>Reposição de Estoque</option>
+<option>Salários</option>
+<option>Impostos</option>
+<option>Marketing</option>
+<option>Manutenção</option>
+<option>Material de Escritório</option>
+<option>Transporte</option>
+<option>Outros</option>
+</select>
+</div>
+<div class="form-group" style="grid-column:1/-1">
+<label>Descrição *</label>
+<input id="despesa-desc" placeholder="Ex: Conta de luz de julho" type="text"/>
+</div>
+<div class="form-group">
+<label>Valor (R$) *</label>
+<input id="despesa-valor" min="0" placeholder="0,00" step="0.01" type="number"/>
+</div>
+<div class="form-group">
+<label>Recorrente?</label>
+<select id="despesa-recorrente">
+<option value="nao">Não</option>
+<option value="mensal">Mensal</option>
+<option value="anual">Anual</option>
+</select>
+</div>
+<div class="form-group" style="grid-column:1/-1">
+<label>Observações</label>
+<textarea id="despesa-obs" placeholder="Observações..." rows="2"></textarea>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-primary" onclick="saveDespesa()">💾 Salvar</button>
+<button class="btn btn-outline" onclick="closeModal('modal-despesa')">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
 <!-- ── COMPOSIÇÃO DE PREÇO ── -->
 <section class="section" id="sec-composicao">
 <div class="topbar">
@@ -1250,7 +1350,6 @@ function resetarSistema() {
 </div>
 </section>
 </main>
-</div>
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- MODAIS -->
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -3004,6 +3103,8 @@ function doLogin() {
   checkOSAtrasadas();
   seedAgendamentos();
   seedComposicoes();
+  if (!load('despesas').length && localStorage.getItem('otica_despesas')===null) save('despesas',[]);
+  renderComissaoConfig();
   setTimeout(verificarLembreteBackup, 3000);
 }
 
@@ -3027,9 +3128,9 @@ function showSection(id) {
   if (!secEl) { console.error('Seção não encontrada: sec-'+id); return; }
   secEl.classList.add('active');
   const items = document.querySelectorAll('.nav-item');
-  const map = {clientes:0,receitas:1,vendas:2,os:3,produtos:4,agendamentos:5,comissoes:6,relatorios:7,dashboard:8};
+  const map = {clientes:0,receitas:1,vendas:2,os:3,produtos:4,agendamentos:5,comissoes:6,despesas:7,relatorios:8,dashboard:9};
   if (map[id] !== undefined) items[map[id]].classList.add('active');
-  const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes};
+  const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes,despesas:renderDespesas};
   if (renders[id]) { try { renders[id](); } catch(e) { console.error('Erro ao renderizar '+id+':', e); showToast('Erro ao carregar: '+e.message,'error'); } }
   } catch(e) { console.error('Erro showSection:', e); showToast('Erro de navegação: '+e.message,'error'); }
 }
@@ -4041,6 +4142,7 @@ function viewOS(id) {
         <button class="btn btn-success" onclick="imprimirOS('${o.id}')" data-tip="Imprimir OS">🖨️ Imprimir OS</button>
         
         <button class="btn btn-success" onclick="copiarMsgWhatsApp('${o.id}')" data-tip="Mensagem WhatsApp" style="background:#16a34a">📱 WhatsApp</button>
+        ${o.tipoOS !== 'montagem' ? `<button class="btn btn-success" onclick="converterOSemVenda('${o.id}')" data-tip="Converter OS em Venda" style="background:#0ea5e9">💰 Converter em Venda</button>` : ''}
         <button class="btn btn-warning" onclick="atualizarStatusOS('${o.id}')">🔄 Status</button>
         <button class="btn btn-outline" onclick="closeModal('modal-view-os')">Fechar</button>
       </div>
@@ -4677,6 +4779,179 @@ function delAgendamento(id) {
 }
 
 // ── COMISSÕES ────────────────────────────────────────────────────
+// ── CONFIGURAÇÃO DE COMISSÕES ──────────────────────────────────────────
+function renderComissaoConfig() {
+  var grid = document.getElementById('comissao-config-grid');
+  if (!grid) return;
+  var cfg = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+  if (!cfg || Object.keys(cfg).length === 0) cfg = {admin:0, vendedor:5};
+  // Coletar vendedores únicos das vendas + usuários padrão
+  var vendedoresVendas = [...new Set(load('vendas').map(v=>v.vendedor).filter(Boolean))];
+  var todos = [...new Set(['Administrador','Vendedor',...vendedoresVendas])];
+  grid.innerHTML = todos.map(function(nome) {
+    var chave = nome.toLowerCase() === 'administrador' ? 'admin' : nome.toLowerCase();
+    var pct = cfg[chave] !== undefined ? cfg[chave] : (cfg['default']||0);
+    return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px">
+      <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:8px">👤 ${nome}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" min="0" max="100" step="0.5" value="${pct}"
+          id="cfg-comissao-${chave}"
+          style="width:70px;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-size:14px;font-weight:700;text-align:center"/>
+        <span style="font-size:14px;color:#64748b">%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function salvarConfigComissoes() {
+  var cfg = window._comissaoVendedor || {};
+  var vendedoresVendas = [...new Set(load('vendas').map(v=>v.vendedor).filter(Boolean))];
+  var todos = [...new Set(['Administrador','Vendedor',...vendedoresVendas])];
+  todos.forEach(function(nome) {
+    var chave = nome.toLowerCase() === 'administrador' ? 'admin' : nome.toLowerCase();
+    var el = document.getElementById('cfg-comissao-'+chave);
+    if (el) cfg[chave] = parseFloat(el.value)||0;
+  });
+  window._comissaoVendedor = cfg;
+  localStorage.setItem('otica_config_comissao', JSON.stringify(cfg));
+  var msg = document.getElementById('comissao-config-msg');
+  if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none', 3000); }
+  renderComissoes();
+}
+
+// ── DESPESAS ──────────────────────────────────────────────────────────────
+function renderDespesas() {
+  if (!document.getElementById('tb-despesas')) return;
+  var periodo = document.getElementById('despesas-periodo')?.value || 'mes';
+  var hoje = new Date();
+  var dataInicio = new Date();
+  switch(periodo) {
+    case 'hoje': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()); break;
+    case 'semana': dataInicio = new Date(hoje.getTime()-7*86400000); break;
+    case 'mes': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),1); break;
+    case 'trimestre': dataInicio = new Date(hoje.getFullYear(),Math.floor(hoje.getMonth()/3)*3,1); break;
+    case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); break;
+    case 'tudo': dataInicio = new Date('2000-01-01'); break;
+  }
+  var dataInicioStr = dataInicio.toISOString().slice(0,10);
+  var todas = load('despesas');
+  var despesas = periodo==='tudo' ? todas : todas.filter(d=>(d.data||'')>=dataInicioStr);
+  var totalDespesas = despesas.reduce((s,d)=>s+(d.valor||0),0);
+  var cats = {};
+  despesas.forEach(d=>{ cats[d.cat]=(cats[d.cat]||0)+(d.valor||0); });
+  var topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('despesas-cards').innerHTML = `
+    <div class="stat-card red"><div class="label">Total Despesas</div><div class="value">${fmtMoney(totalDespesas)}</div><div class="sub">${despesas.length} lançamentos</div></div>
+    <div class="stat-card"><div class="label">Maior Categoria</div><div class="value" style="font-size:16px">${topCat?topCat[0]:'—'}</div><div class="sub">${topCat?fmtMoney(topCat[1]):''}</div></div>
+    <div class="stat-card orange"><div class="label">Média por Lançamento</div><div class="value">${fmtMoney(despesas.length?totalDespesas/despesas.length:0)}</div><div class="sub">por despesa</div></div>
+  `;
+  document.getElementById('tb-despesas').innerHTML = despesas.length ? [...despesas].reverse().map(d=>`
+    <tr>
+      <td>${fmtDate(d.data)}</td>
+      <td><span class="badge badge-info">${d.cat}</span></td>
+      <td>${d.desc}</td>
+      <td class="fw-bold" style="color:#dc2626">${fmtMoney(d.valor)}</td>
+      <td>${d.recorrente==='mensal'?'🔄 Mensal':d.recorrente==='anual'?'📅 Anual':'—'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick="editDespesa(${d.id})" data-tip="Editar">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="delDespesa(${d.id})" data-tip="Excluir">🗑️</button>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-muted)">Nenhuma despesa registrada</td></tr>';
+}
+
+function openNovaDespesa() {
+  document.getElementById('despesa-idx').value = '';
+  document.getElementById('modal-despesa-title').textContent = '💸 Nova Despesa';
+  document.getElementById('despesa-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('despesa-desc').value = '';
+  document.getElementById('despesa-valor').value = '';
+  document.getElementById('despesa-obs').value = '';
+  document.getElementById('despesa-recorrente').value = 'nao';
+  openModal('modal-despesa');
+}
+
+function editDespesa(id) {
+  var d = load('despesas').find(x=>x.id===id);
+  if (!d) return;
+  document.getElementById('despesa-idx').value = id;
+  document.getElementById('modal-despesa-title').textContent = '✏️ Editar Despesa';
+  document.getElementById('despesa-data').value = d.data||'';
+  document.getElementById('despesa-cat').value = d.cat||'Outros';
+  document.getElementById('despesa-desc').value = d.desc||'';
+  document.getElementById('despesa-valor').value = d.valor||'';
+  document.getElementById('despesa-obs').value = d.obs||'';
+  document.getElementById('despesa-recorrente').value = d.recorrente||'nao';
+  openModal('modal-despesa');
+}
+
+function saveDespesa() {
+  var desc = document.getElementById('despesa-desc').value.trim();
+  var valor = parseFloat(document.getElementById('despesa-valor').value)||0;
+  if (!desc) { showToast('Preencha a descrição!','error'); return; }
+  if (!valor) { showToast('Preencha o valor!','error'); return; }
+  var arr = load('despesas');
+  var idx = document.getElementById('despesa-idx').value;
+  var obj = {
+    id: idx ? parseInt(idx) : nextId(arr),
+    data: document.getElementById('despesa-data').value,
+    cat: document.getElementById('despesa-cat').value,
+    desc, valor,
+    recorrente: document.getElementById('despesa-recorrente').value,
+    obs: document.getElementById('despesa-obs').value,
+  };
+  if (idx) { var i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
+  save('despesas', arr);
+  closeModal('modal-despesa');
+  renderDespesas();
+  showToast(idx ? 'Despesa atualizada!' : 'Despesa registrada!');
+}
+
+function delDespesa(id) {
+  if (!confirm('Excluir esta despesa?')) return;
+  save('despesas', load('despesas').filter(x=>x.id!==id));
+  renderDespesas();
+  showToast('Despesa excluída!','warning');
+}
+
+// ── CONVERTER OS DE CONSERTO EM VENDA ─────────────────────────────────────
+function converterOSemVenda(id) {
+  var o = load('os').find(x=>x.id===id);
+  if (!o) return;
+  if (o.tipoOS === 'montagem') { showToast('OS de montagem já está vinculada a uma venda!','warning'); return; }
+  if (!o.valor || o.valor <= 0) { showToast('Defina o valor da OS antes de converter!','warning'); return; }
+  if (!confirm('Converter OS '+id+' em Venda?\nCliente: '+(Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]))[o.clienteId]||'—')+'\nValor: '+fmtMoney(o.valor))) return;
+  var arr = load('vendas');
+  var venda = {
+    id: nextCode(arr,'V'),
+    grupoVenda: 'GV-'+Date.now(),
+    data: new Date().toISOString().slice(0,10),
+    clienteId: o.clienteId,
+    produto: 'SERVICO',
+    descricaoCompleta: '🔧 '+o.tipo+(o.descricao?' — '+o.descricao:''),
+    qtd: 1,
+    preco: o.valor,
+    desc: 0,
+    descGlobal: 0,
+    totalReal: o.valor,
+    tipo: 'servico',
+    pag: 'Dinheiro',
+    parcelas: 1,
+    status: 'Pago',
+    vendedor: loadUser()?.nome||'',
+    osRef: id,
+  };
+  arr.push(venda);
+  save('vendas', arr);
+  // Atualizar status da OS
+  var osArr = load('os');
+  var oi = osArr.findIndex(x=>x.id===id);
+  if (oi>=0) { osArr[oi].status='Aguardando Retirada'; osArr[oi].vendaRef=venda.id; save('os',osArr); }
+  closeModal('modal-view-os');
+  showToast('✅ Venda '+venda.id+' criada! OS atualizada para "Aguardando Retirada".');
+  renderOS();
+}
+
 function renderComissoes() {
   if(!document.getElementById('tb-comissoes')) return;
   const pct = parseFloat(document.getElementById('comissao-pct-sel').value)||10;
