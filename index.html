@@ -6443,7 +6443,12 @@ function atualizarPainelInterno(custoExtra, vendaExtra) {
   var totalFinal = Math.max(0, subtotal - descGlobal);
 
   // ── Comissão do vendedor (Opção A: % fixa por vendedor) ──────────────────
-  var vendedorNome = (document.getElementById('venda-vendedor')?.value||'').trim().toLowerCase();
+  // Buscar vendedor pelo usuário logado (mais confiável que o campo de texto)
+  var userAtual = loadUser();
+  var vendedorNome = (userAtual ? (userAtual.nome||'') : (document.getElementById('venda-vendedor')?.value||'')).trim().toLowerCase();
+  // Mapear nome de exibição para chave de comissão
+  if (vendedorNome === 'administrador') vendedorNome = 'admin';
+  if (vendedorNome === 'vendedor') vendedorNome = 'vendedor';
   var usuarios = load('clientes'); // busca % nos dados do usuário logado
   // Busca comissão cadastrada no objeto USERS ou em configuração
   var pctComissao = 0;
@@ -6678,6 +6683,22 @@ function initVendaModal() {
   const dg1 = document.getElementById('venda-desc-global-reais');
   const dg2 = document.getElementById('venda-desc-global-pct');
   if(dg1) dg1.value=''; if(dg2) dg2.value='';
+
+  // Preencher vendedor automaticamente com usuário logado
+  var userLogado = loadUser();
+  var vendedorEl = document.getElementById('venda-vendedor');
+  if (vendedorEl && userLogado) {
+    vendedorEl.value = userLogado.nome || '';
+  }
+
+  // Garantir valores padrão em pagamento e status
+  var pagEl = document.getElementById('venda-pag');
+  if (pagEl && !pagEl.value) pagEl.value = 'PIX';
+  var statusEl = document.getElementById('venda-status');
+  if (statusEl && !statusEl.value) statusEl.value = 'Pago';
+  var parcelasEl = document.getElementById('venda-parcelas');
+  if (parcelasEl && !parcelasEl.value) parcelasEl.value = '1';
+
   atualizarTotaisVenda();
 
   // Controle de visibilidade do painel interno por nível
