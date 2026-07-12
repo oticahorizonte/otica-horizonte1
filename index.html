@@ -1219,7 +1219,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th>Custo</th><th>Venda</th><th>Margem</th><th>Status</th><th>Ações</th></tr></thead>
+<table id="tb-produtos-table"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th class="col-custo-prod">Custo</th><th>Venda</th><th class="col-margem-prod">Margem</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
@@ -2069,34 +2069,36 @@ function instalarApp() {
 <div class="modal-overlay" id="modal-venda" style="display:none">
 <div class="modal" style="max-width:1100px;width:97vw;padding:0;overflow:hidden;border-radius:14px">
 <!-- BARRA SUPERIOR -->
-<div style="background:linear-gradient(135deg,#1a3a5c,#0ea5e9);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-radius:14px 14px 0 0">
-<h3 style="color:#fff;font-size:16px;margin:0">💰 Nova Venda</h3>
-<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 10px">
-<span style="color:rgba(255,255,255,.7);font-size:11px">👤</span>
-<select id="venda-cliente" style="background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;cursor:pointer;min-width:120px"></select>
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-radius:14px 14px 0 0;border-bottom:2px solid #c9a84c">
+<h3 style="color:#e8c96a;font-size:16px;margin:0;font-weight:800">💰 Nova Venda</h3>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+<span style="color:#c9a84c;font-size:11px">👤</span>
+<select id="venda-cliente" style="background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;cursor:pointer;min-width:130px;-webkit-appearance:auto">
+<option value="">— Selecione o cliente —</option>
+</select>
 </div>
-<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 10px">
-<span style="color:rgba(255,255,255,.7);font-size:11px">📅</span>
-<input id="venda-data" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer" type="date"/>
+<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+<span style="color:#c9a84c;font-size:11px">📅</span>
+<input id="venda-data" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;color-scheme:dark" type="date"/>
 </div>
-<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 10px">
-<span style="color:rgba(255,255,255,.7);font-size:11px">💳</span>
-<select id="venda-pag" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer">
+<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+<span style="color:#c9a84c;font-size:11px">💳</span>
+<select id="venda-pag" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px">
 <option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option>
 </select>
-<select id="venda-parcelas" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer">
+<select id="venda-parcelas" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px;margin-left:4px">
 <option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option><option value="6">6x</option><option value="12">12x</option>
 </select>
 </div>
-<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 10px">
-<span style="color:rgba(255,255,255,.7);font-size:11px">🏷️</span>
-<input id="venda-vendedor" placeholder="Vendedor" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;width:90px" type="text"/>
+<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+<span style="color:#c9a84c;font-size:11px">🏷️</span>
+<input id="venda-vendedor" placeholder="Vendedor" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;width:100px" type="text"/>
 </div>
-<select id="venda-status" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:11px;border-radius:8px;padding:5px 8px;outline:none;cursor:pointer">
+<select id="venda-status" style="background:#0d2b4e;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:11px;border-radius:8px;padding:5px 8px;outline:none;cursor:pointer">
 <option>Pago</option><option>Pendente</option><option>Cancelado</option>
 </select>
-<button class="modal-close" onclick="closeModal('modal-venda')" style="color:white;background:rgba(255,255,255,.2);border:none;border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+<button class="modal-close" onclick="closeModal('modal-venda')" style="color:white;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
 </div>
 </div>
 <!-- CORPO: 2 COLUNAS -->
@@ -2104,14 +2106,18 @@ function instalarApp() {
 <!-- COLUNA ESQUERDA -->
 <div style="background:#f8fafc;border-right:1px solid #e2e8f0;overflow-y:auto;padding:14px">
 <!-- Óculos Completo -->
-<div style="background:#eff6ff;border-radius:12px;padding:12px;margin-bottom:10px;border-left:4px solid #3b82f6">
-<div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:8px">🔶 Óculos de Grau Completo</div>
+<div style="background:#f0f4ff;border-radius:12px;padding:12px;margin-bottom:10px;border-left:4px solid #0d2b4e">
+<div style="font-size:11px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px">🔶 Óculos de Grau Completo</div>
+<!-- Busca Armação -->
 <div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">Armação do Estoque</label>
-<select id="venda-arm-select" onchange="onSelectVendaEstoque('arm')" style="font-size:12px"><option value="">— Selecione —</option></select>
+<label style="font-size:10px">🔍 Armação do Estoque</label>
+<input autocomplete="off" id="venda-arm-busca" oninput="filtrarEstoqueBusca('arm')" placeholder="Digite para buscar armação..." style="font-size:12px" type="text"/>
+<div id="venda-arm-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:160px;overflow-y:auto;width:320px"></div>
+<input id="venda-arm-select" onchange="onSelectVendaEstoque('arm')" type="hidden"/>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-<div class="form-group">
+<!-- Custos Armação — só Admin vê -->
+<div id="venda-arm-custo-box" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+<div class="form-group" id="venda-arm-custo-wrap">
 <label style="font-size:10px">Custo Arm. (R$)</label>
 <input id="venda-arm-custo" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px" type="number"/>
 </div>
@@ -2120,12 +2126,16 @@ function instalarApp() {
 <input id="venda-arm-venda" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px;color:#16a34a" type="number"/>
 </div>
 </div>
+<!-- Busca Lente -->
 <div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">Lente do Estoque</label>
-<select id="venda-len-select" onchange="onSelectVendaEstoque('len')" style="font-size:12px"><option value="">— Selecione —</option></select>
+<label style="font-size:10px">🔍 Lente do Estoque</label>
+<input autocomplete="off" id="venda-len-busca" oninput="filtrarEstoqueBusca('len')" placeholder="Digite para buscar lente..." style="font-size:12px" type="text"/>
+<div id="venda-len-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:160px;overflow-y:auto;width:320px"></div>
+<input id="venda-len-select" onchange="onSelectVendaEstoque('len')" type="hidden"/>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-<div class="form-group">
+<!-- Custos Lente — só Admin vê -->
+<div id="venda-len-custo-box" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+<div class="form-group" id="venda-len-custo-wrap">
 <label style="font-size:10px">Custo Lente (R$)</label>
 <input id="venda-len-custo" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px" type="number"/>
 </div>
@@ -2142,16 +2152,18 @@ function instalarApp() {
 <label style="font-size:10px">Descrição</label>
 <input id="venda-oculos-desc" placeholder="Óculos de Grau Completo" style="font-size:12px" type="text"/>
 </div>
-<button class="btn btn-primary" onclick="adicionarOculosCompleto()" style="width:100%;justify-content:center;font-size:12px;background:#1d4ed8">
+<button class="btn btn-primary" onclick="adicionarOculosCompleto()" style="width:100%;justify-content:center;font-size:12px;background:var(--gradient-primary)">
         🔶 Adicionar Óculos Completo
       </button>
 </div>
 <!-- Produto Avulso -->
-<div style="background:#fff;border-radius:12px;padding:12px;border:1px solid #e2e8f0;border-left:4px solid #1a3a5c">
-<div style="font-size:11px;font-weight:700;color:#1a3a5c;text-transform:uppercase;margin-bottom:8px">➕ Produto Avulso</div>
+<div style="background:#fff;border-radius:12px;padding:12px;border:1px solid #dde3ee;border-left:4px solid #c9a84c">
+<div style="font-size:11px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px">➕ Produto Avulso</div>
 <div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">Produto</label>
-<select id="venda-produto" onchange="onProdutoVenda()" style="font-size:12px"><option value="">— Selecione —</option></select>
+<label style="font-size:10px">🔍 Buscar Produto</label>
+<input autocomplete="off" id="venda-produto-busca" oninput="filtrarEstoqueBusca('prod')" placeholder="Digite para buscar produto..." style="font-size:12px" type="text"/>
+<div id="venda-prod-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:160px;overflow-y:auto;width:320px"></div>
+<select id="venda-produto" onchange="onProdutoVenda()" style="display:none"><option value="">— Selecione —</option></select>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
 <div class="form-group">
@@ -4043,10 +4055,12 @@ function calcMargem() {
 }
 
 function renderProdutos() {
-  // Atualizar histórico se estiver visível
   var card = document.getElementById('card-historico-estoque');
   if (card && card.style.display !== 'none') renderHistoricoEstoque();
   if(!document.getElementById('tb-produtos')) return;
+  var isAdmin = (function(){ var u=loadUser(); return u&&(u.nivel==='Admin'||u.nome==='Administrador'); })();
+  // Ocultar colunas de custo e margem para vendedor
+  document.querySelectorAll('.col-custo-prod,.col-margem-prod').forEach(function(el){ el.style.display=isAdmin?'':'none'; });
   const q = (document.getElementById('search-produtos')||{}).value||'';
   const data = load('produtos').filter(p =>
     !q || p.cod.toLowerCase().includes(q.toLowerCase()) ||
@@ -4062,16 +4076,17 @@ function renderProdutos() {
       <td>${p.marca}</td>
       <td class="${p.qtd<=p.min?'text-danger fw-bold':'fw-bold'}">${p.qtd}</td>
       <td>${p.min}</td>
-      <td>${fmtMoney(p.custo)}</td><td>${fmtMoney(p.venda)}</td>
-      <td>${fmtPct(margem)}</td>
+      ${isAdmin?`<td>${fmtMoney(p.custo)}</td>`:''}
+      <td>${fmtMoney(p.venda)}</td>
+      ${isAdmin?`<td>${fmtPct(margem)}</td>`:''}
       <td>${statusBadge(status)}</td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-outline" onclick="editProduto('${p.cod}')" data-tip="Editar produto">✏️</button>
         <button class="btn btn-sm btn-success" onclick="entradaEstoque('${p.cod}')" data-tip="Entrada de estoque">📥</button>
-        <button class="btn btn-sm btn-danger" onclick="delProduto('${p.cod}')" data-tip="Excluir produto">🗑️</button>
+        ${isAdmin?`<button class="btn btn-sm btn-danger" onclick="delProduto('${p.cod}')" data-tip="Excluir produto">🗑️</button>`:''}
       </div></td>
     </tr>`;
-  }).join('') : '<tr><td colspan="11" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>';
+  }).join('') : `<tr><td colspan="${isAdmin?11:9}" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>`;
 }
 
 function editProduto(cod) {
@@ -7528,6 +7543,95 @@ function delVendaGrupo(chave) {
 
 
 // ── CÁLCULO INTERNO DA VENDA ─────────────────────────────────────
+// ── Busca de estoque com campo de pesquisa ─────────────────────────────────
+function filtrarEstoqueBusca(tipo) {
+  var isAdmin = (function(){ var u=loadUser(); return u&&(u.nivel==='Admin'||u.nome==='Administrador'); })();
+  var inputId = tipo==='arm' ? 'venda-arm-busca' : tipo==='len' ? 'venda-len-busca' : 'venda-produto-busca';
+  var listaId = tipo==='arm' ? 'venda-arm-lista' : tipo==='len' ? 'venda-len-lista' : 'venda-prod-lista';
+  var hiddenId = tipo==='arm' ? 'venda-arm-select' : tipo==='len' ? 'venda-len-select' : 'venda-produto';
+  var input = document.getElementById(inputId);
+  var lista = document.getElementById(listaId);
+  if (!input || !lista) return;
+  var q = input.value.toLowerCase().trim();
+  var produtos = load('produtos');
+  var filtrados;
+  if (tipo==='arm') filtrados = produtos.filter(p=>p.cat==='Armação'&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
+  else if (tipo==='len') filtrados = produtos.filter(p=>(p.cat==='Lente'||p.cat==='Contato')&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
+  else filtrados = produtos.filter(p=>!q||(p.desc+p.cod+p.cat).toLowerCase().includes(q));
+
+  if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
+  lista.style.display = 'block';
+  lista.innerHTML = filtrados.slice(0,10).map(function(p) {
+    var estoqueInfo = p.qtd <= p.min ? `<span style="color:#dc2626;font-size:9px">⚠️ ${p.qtd} un.</span>` : `<span style="color:#16a34a;font-size:9px">${p.qtd} un.</span>`;
+    var custoInfo = isAdmin ? `<span style="color:#5a6a8a;font-size:9px"> | Custo: R$${p.custo}</span>` : '';
+    return `<div onclick="selecionarEstoqueBusca('${tipo}','${p.cod}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #eef1f8;font-size:12px" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='white'">
+      <div style="font-weight:600;color:#0d2b4e">${p.desc}</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+        <span style="color:#5a6a8a;font-size:10px">${p.cod}</span>
+        <span style="color:#16a34a;font-size:11px;font-weight:700">R$ ${p.venda}</span>
+        ${estoqueInfo}${custoInfo}
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:12px;text-align:center;color:#5a6a8a;font-size:12px">Nenhum produto encontrado</div>';
+
+  // Fechar ao clicar fora
+  setTimeout(function() {
+    document.addEventListener('click', function fechar(e) {
+      if (!lista.contains(e.target) && e.target !== input) {
+        lista.style.display='none';
+        document.removeEventListener('click', fechar);
+      }
+    });
+  }, 100);
+}
+
+function selecionarEstoqueBusca(tipo, cod) {
+  var p = load('produtos').find(x=>x.cod===cod);
+  if (!p) return;
+  var inputId = tipo==='arm' ? 'venda-arm-busca' : tipo==='len' ? 'venda-len-busca' : 'venda-produto-busca';
+  var listaId = tipo==='arm' ? 'venda-arm-lista' : tipo==='len' ? 'venda-len-lista' : 'venda-prod-lista';
+  var hiddenId = tipo==='arm' ? 'venda-arm-select' : tipo==='len' ? 'venda-len-select' : 'venda-produto';
+  var input = document.getElementById(inputId);
+  var lista = document.getElementById(listaId);
+  var hidden = document.getElementById(hiddenId);
+  if (input) input.value = p.desc + ' — R$ ' + p.venda;
+  if (lista) lista.style.display='none';
+  if (hidden) { hidden.value = cod; }
+
+  if (tipo==='arm') {
+    var custoEl = document.getElementById('venda-arm-custo');
+    var vendaEl = document.getElementById('venda-arm-venda');
+    if (custoEl) custoEl.value = p.custo;
+    if (vendaEl) vendaEl.value = p.venda;
+    calcVendaInterna();
+  } else if (tipo==='len') {
+    var custoEl2 = document.getElementById('venda-len-custo');
+    var vendaEl2 = document.getElementById('venda-len-venda');
+    if (custoEl2) custoEl2.value = p.custo;
+    if (vendaEl2) vendaEl2.value = p.venda;
+    calcVendaInterna();
+  } else {
+    var precoEl = document.getElementById('venda-preco');
+    if (precoEl) precoEl.value = p.venda;
+    calcVenda();
+  }
+}
+
+// Ocultar campos de custo para vendedor
+function ocultarCustosVendedor() {
+  var isAdmin = (function(){ var u=loadUser(); return u&&(u.nivel==='Admin'||u.nome==='Administrador'); })();
+  var custoBoxes = ['venda-arm-custo-wrap', 'venda-len-custo-wrap'];
+  custoBoxes.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = isAdmin ? 'flex' : 'none';
+  });
+  // Ajustar grid quando custo oculto
+  var armBox = document.getElementById('venda-arm-custo-box');
+  var lenBox = document.getElementById('venda-len-custo-box');
+  if (armBox) armBox.style.gridTemplateColumns = isAdmin ? '1fr 1fr' : '1fr';
+  if (lenBox) lenBox.style.gridTemplateColumns = isAdmin ? '1fr 1fr' : '1fr';
+}
+
 function onSelectVendaEstoque(tipo) {
   var sel = document.getElementById('venda-'+tipo+'-select');
   if (!sel) return;
@@ -7844,6 +7948,7 @@ function initVendaModal() {
 
   // Controle de visibilidade do painel interno por nível
   initPainelInternoVisibilidade();
+  ocultarCustosVendedor();
 
   // Restaurar rascunho se existir (e não vier de orçamento)
   if (rascunho && rascunho.carrinho && rascunho.carrinho.length > 0 && !window._orcamentoFechando) {
@@ -8270,21 +8375,7 @@ function processarBackup(input) {
 }
 
 function verificarLembreteBackup() {
-  var ultimo = localStorage.getItem('otica_ultimo_backup');
-  if (!ultimo) {
-    setTimeout(function() {
-      var msg = 'BACKUP RECOMENDADO' + '\n\n' + 'Voce ainda nao fez nenhum backup dos seus dados!' + '\n\n' + 'Deseja fazer agora? (Leva apenas 2 segundos)';
-      if (confirm(msg)) { exportarBackup(); }
-    }, 3000);
-    return;
-  }
-  var diasSemBackup = Math.floor((new Date() - new Date(ultimo)) / (1000*60*60*24));
-  if (diasSemBackup >= 1) {
-    setTimeout(function() {
-      var msg2 = 'LEMBRETE DE BACKUP' + '\n\n' + 'Ultimo backup: ha ' + diasSemBackup + ' dia(s).' + '\n\n' + 'Deseja fazer backup agora? (Leva apenas 2 segundos)';
-      if (confirm(msg2)) { exportarBackup(); }
-    }, 3000);
-  }
+  // Notificações de backup desativadas — dados salvos automaticamente no Firebase
 }
 
 
