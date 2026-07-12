@@ -693,6 +693,42 @@ function resetarSistema() {
     console.warn('Firebase init error:', e);
   }
 </script>
+<link href="manifest.json" rel="manifest"/>
+<link href="icon-192.png" rel="apple-touch-icon"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="Ótica Horizonte" name="apple-mobile-web-app-title"/>
+<meta content="#1e3a5f" name="theme-color"/>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('✅ Service Worker registrado:', reg.scope);
+    }).catch(function(e) { console.warn('SW error:', e); });
+  });
+}
+// Botão de instalação PWA
+var _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _deferredPrompt = e;
+  var btn = document.getElementById('btn-instalar-app');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', function() {
+  var btn = document.getElementById('btn-instalar-app');
+  if (btn) btn.style.display = 'none';
+  _deferredPrompt = null;
+});
+function instalarApp() {
+  if (_deferredPrompt) {
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function(r) {
+      _deferredPrompt = null;
+    });
+  }
+}
+</script>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -780,6 +816,13 @@ function resetarSistema() {
 <span class="icon">👥</span> Usuários
       </div>
 </nav>
+<div id="btn-instalar-app" onclick="instalarApp()" style="display:none;margin:8px 16px 0;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:10px;padding:10px 14px;align-items:center;gap:10px;cursor:pointer;box-shadow:0 4px 12px rgba(249,115,22,.4)">
+<span style="font-size:20px">📱</span>
+<div>
+<div style="color:white;font-size:12px;font-weight:700">Instalar App</div>
+<div style="color:rgba(255,255,255,.7);font-size:10px">Adicionar à tela inicial</div>
+</div>
+</div>
 <div class="sidebar-footer">
 <div style="margin-bottom:8px">
 <button onclick="abrirBusca()" style="width:100%;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.8);font-size:12px;cursor:pointer;text-align:left">
@@ -787,10 +830,9 @@ function resetarSistema() {
 </button>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-<button data-tip="Exportar todos os dados em JSON" onclick="exportarBackup()" style="width:100%;padding:7px 4px;background:rgba(22,163,74,.3);border:1px solid rgba(22,163,74,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">💾 Backup</button>
-<button data-tip="Restaurar dados de um backup" onclick="importarBackup()" style="width:100%;padding:7px 4px;background:rgba(14,165,233,.3);border:1px solid rgba(14,165,233,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">📂 Restaurar</button>
-<button data-tip="Enviar todos os dados para a nuvem" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">☁️ Enviar Nuvem</button>
+<button data-tip="Enviar todos os dados para a nuvem" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">☁️ Enviar Nuvem</button>
 <button data-tip="Baixar dados da nuvem" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⬇️ Baixar Nuvem</button>
+<button data-tip="Configurações do sistema" onclick="openModal('modal-config')" style="width:100%;padding:7px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⚙️ Configurações</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
 <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px">© 2026 Ótica Horizonte</div>
@@ -2515,6 +2557,48 @@ function resetarSistema() {
 <!-- Rodapé -->
 <div style="text-align:center;margin-top:12px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;font-style:italic">
 Ótica Horizonte — CNPJ 64.448.745/0001-09 | Emitido em <span id="rec-rodape-data"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Configurações -->
+<div class="modal-overlay" id="modal-config" style="display:none">
+<div class="modal" style="max-width:480px">
+<div class="modal-header">
+<h3>⚙️ Configurações do Sistema</h3>
+<button class="modal-close" onclick="closeModal('modal-config')">✕</button>
+</div>
+<div class="modal-body">
+<!-- Backup Local -->
+<div class="card" style="margin-bottom:16px">
+<div class="card-header"><h3>💾 Backup Local</h3></div>
+<div class="card-body">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Exporte todos os dados em formato JSON como segurança extra além da nuvem.</p>
+<div style="display:flex;gap:10px">
+<button class="btn btn-success" onclick="exportarBackup();closeModal('modal-config')">💾 Exportar Backup</button>
+<button class="btn btn-outline" onclick="importarBackup();closeModal('modal-config')">📂 Restaurar Backup</button>
+</div>
+<input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
+</div>
+</div>
+<!-- Sincronização Firebase -->
+<div class="card" style="margin-bottom:16px">
+<div class="card-header"><h3>🔥 Sincronização Firebase</h3></div>
+<div class="card-body">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Sincronize manualmente os dados com a nuvem.</p>
+<div style="display:flex;gap:10px">
+<button class="btn btn-primary" onclick="syncLocalToCloud();closeModal('modal-config')" style="background:#f97316">☁️ Enviar para Nuvem</button>
+<button class="btn btn-primary" onclick="syncFirebaseToLocal();closeModal('modal-config')" style="background:#6366f1">⬇️ Baixar da Nuvem</button>
+</div>
+</div>
+</div>
+<!-- Resetar Sistema -->
+<div class="card">
+<div class="card-header"><h3>🔄 Resetar Sistema</h3></div>
+<div class="card-body">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">⚠️ Limpa todos os dados locais e recarrega o sistema. Use com cuidado!</p>
+<button class="btn btn-danger" onclick="resetarSistema()">🔄 Resetar Sistema</button>
 </div>
 </div>
 </div>
