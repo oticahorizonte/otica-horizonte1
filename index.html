@@ -4555,96 +4555,165 @@ function renderOS() {
 
 function viewOS(id) {
   const o = load('os').find(x=>x.id===id);
-  const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   if (!o) return;
-  document.getElementById('view-os-body').innerHTML = `
-    <div style="display:grid;gap:12px">
-      ${o.tipoOS==='montagem'?`<div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:#1d4ed8">
-        🔬 <strong>OS de Montagem</strong> — Esta OS é apenas para acompanhamento de laboratório. A receita foi registrada na Venda <strong>${o.vendaRef||''}</strong>.
-      </div>`:''}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
-        <div><strong>Nº OS:</strong> ${o.id}</div>
-        <div><strong>Status:</strong> ${statusBadge(o.status)}</div>
-        <div><strong>Abertura:</strong> ${fmtDate(o.abertura)}</div>
-        <div><strong>Previsão:</strong> ${fmtDate(o.previsao)}</div>
-        <div><strong>Entrega:</strong> ${fmtDate(o.entrega)}</div>
-        <div><strong>Técnico:</strong> ${o.tecnico||'-'}</div>
-      </div>
-      <div class="divider"></div>
-      <div><strong>Cliente:</strong> ${clMap[o.clienteId]||'-'}</div>
-      <div><strong>Tipo:</strong> ${o.tipo}</div>
-      <div><strong>Armação:</strong> ${o.armacao||'-'}</div>
-      <div class="divider"></div>
-      <!-- LONGE -->
-      <div style="background:#eff6ff;border-radius:8px;padding:12px;margin-bottom:8px;border-left:3px solid #3b82f6">
-        <div style="font-size:10px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:8px">👁️ LONGE</div>
-        <div class="receita-grid">
-          <div class="receita-box">
-            <h4>OD</h4>
-            <div class="receita-row"><span>Esférico</span><span>${fmtGrau(o.longeOdEsf!==undefined?o.longeOdEsf:(o.odEsf||0))}</span></div>
-            <div class="receita-row"><span>Cilindro</span><span>${fmtGrau(o.longeOdCil!==undefined?o.longeOdCil:(o.odCil||0))}</span></div>
-            <div class="receita-row"><span>Eixo</span><span>${o.longeOdEixo||0}°</span></div>
-          </div>
-          <div class="receita-box">
-            <h4>OE</h4>
-            <div class="receita-row"><span>Esférico</span><span>${fmtGrau(o.longeOeEsf!==undefined?o.longeOeEsf:(o.oeEsf||0))}</span></div>
-            <div class="receita-row"><span>Cilindro</span><span>${fmtGrau(o.longeOeCil!==undefined?o.longeOeCil:(o.oeCil||0))}</span></div>
-            <div class="receita-row"><span>Eixo</span><span>${o.longeOeEixo||0}°</span></div>
-          </div>
+  const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
+  const isMontagem = o.tipoOS === 'montagem';
+  const corTopo = isMontagem ? 'linear-gradient(135deg,#0d2b4e,#1a4a7a)' : 'linear-gradient(135deg,#92400e,#d97706)';
+  const icone = isMontagem ? '🔬' : '🔧';
+  const tipoLabel = isMontagem ? 'OS DE MONTAGEM' : 'OS DE CONSERTO';
+
+  // Status badge colorido
+  const statusColors = {
+    'Aberta':'background:#dbeafe;color:#1e3a5f',
+    'Em Produção':'background:#fef3c7;color:#92400e',
+    'Aguardando Retirada':'background:#dcfce7;color:#166534',
+    'Entregue':'background:#d1fae5;color:#065f46',
+    'Cancelada':'background:#fee2e2;color:#991b1b'
+  };
+  const stBadge = `<span style="${statusColors[o.status]||'background:#f1f5f9;color:#475569'};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">${o.status}</span>`;
+
+  let html = `<div style="font-family:'Segoe UI',sans-serif">
+    <!-- Cabeçalho colorido por tipo -->
+    <div style="background:${corTopo};border-radius:12px;padding:16px 20px;margin-bottom:16px;color:white">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;opacity:.7;margin-bottom:4px">${icone} ${tipoLabel}</div>
+          <div style="font-size:22px;font-weight:800">${o.id}</div>
+          <div style="font-size:13px;opacity:.8;margin-top:2px">${o.tipo}</div>
+        </div>
+        <div style="text-align:right">
+          ${stBadge}
+          <div style="font-size:11px;opacity:.6;margin-top:6px">Abertura: ${fmtDate(o.abertura)}</div>
         </div>
       </div>
-      <!-- PERTO -->
-      <div style="background:#f0fdf4;border-radius:8px;padding:12px;border-left:3px solid #10b981">
-        <div style="font-size:10px;font-weight:700;color:#065f46;text-transform:uppercase;margin-bottom:8px">👁️ PERTO</div>
-        <div class="receita-grid">
-          <div class="receita-box">
-            <h4>OD</h4>
-            <div class="receita-row"><span>Esférico</span><span>${fmtGrau(o.pertoOdEsf||0)}</span></div>
-            <div class="receita-row"><span>Cilindro</span><span>${fmtGrau(o.pertoOdCil||0)}</span></div>
-            <div class="receita-row"><span>Eixo</span><span>${o.pertoOdEixo||0}°</span></div>
-          </div>
-          <div class="receita-box">
-            <h4>OE</h4>
-            <div class="receita-row"><span>Esférico</span><span>${fmtGrau(o.pertoOeEsf||0)}</span></div>
-            <div class="receita-row"><span>Cilindro</span><span>${fmtGrau(o.pertoOeCil||0)}</span></div>
-            <div class="receita-row"><span>Eixo</span><span>${o.pertoOeEixo||0}°</span></div>
-          </div>
+    </div>
+
+    <!-- Dados principais -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:#f8faff;border-radius:10px;padding:12px;border-left:3px solid #c9a84c">
+        <div style="font-size:9px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px;letter-spacing:.5px">👤 Cliente</div>
+        <div style="font-size:15px;font-weight:700;color:#0d2b4e">${clMap[o.clienteId]||'—'}</div>
+      </div>
+      <div style="background:#f8faff;border-radius:10px;padding:12px;border-left:3px solid #c9a84c">
+        <div style="font-size:9px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px;letter-spacing:.5px">📋 Datas</div>
+        <div style="font-size:12px;display:grid;gap:3px">
+          <div><span style="color:#5a6a8a">Previsão:</span> <strong>${fmtDate(o.previsao)||'—'}</strong></div>
+          ${o.entrega?`<div><span style="color:#5a6a8a">Entrega:</span> <strong style="color:#16a34a">${fmtDate(o.entrega)}</strong></div>`:''}
+          <div><span style="color:#5a6a8a">Técnico:</span> <strong>${o.tecnico||'—'}</strong></div>
+          ${o.armacao&&o.armacao!=='—'?`<div><span style="color:#5a6a8a">Armação:</span> <strong>${o.armacao}</strong></div>`:''}
         </div>
-      </div>
-      <div class="divider"></div>
-      <!-- Tipo de Lente e Tratamentos -->
-      ${(o.tipoLente||o.tratamentos)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        ${o.tipoLente?`<div style="background:#eff6ff;border-radius:8px;padding:10px;border-left:3px solid #3b82f6">
-          <div style="font-size:10px;font-weight:700;color:#1d4ed8;margin-bottom:3px">🔍 TIPO DE LENTE</div>
-          <div style="font-size:13px;font-weight:600">${o.tipoLente}</div>
-        </div>`:''}
-        ${o.tratamentos?`<div style="background:#f0fdf4;border-radius:8px;padding:10px;border-left:3px solid #10b981">
-          <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:3px">✨ TRATAMENTOS</div>
-          <div style="font-size:13px;font-weight:600">${o.tratamentos}</div>
-        </div>`:''}
-      </div>`:''}
-      <div style="font-size:18px;font-weight:800;color:var(--success)">
-        ${o.tipoOS==='montagem'?
-          '<span style="font-size:13px;color:#64748b">💰 Receita registrada na Venda '+( o.vendaRef||'')+' — Esta OS é apenas de acompanhamento</span>' :
-          o.cobranca==='garantia'?'<span style="color:#16a34a">🛡️ Garantia — Sem cobrança</span>' :
-          o.cobranca==='cortesia'?'<span style="color:#0ea5e9">🎁 Cortesia — Sem cobrança</span>' :
-          'Total: '+fmtMoney(o.valor)}
-      </div>
-      ${o.descricao && o.tipoOS !== 'montagem' ? `<div style="background:#fef9c3;border-left:3px solid #fde047;border-radius:8px;padding:10px;margin-bottom:4px"><div style="font-size:10px;font-weight:700;color:#854d0e;text-transform:uppercase;margin-bottom:4px">📝 Descrição do Serviço</div><div style="font-size:13px;color:#1e293b">${o.descricao}</div></div>` : ''}
-      ${o.obs ? `<div><strong>Obs:</strong> ${o.obs}</div>` : ''}
-      <div class="form-actions">
-        ${(o.tipoLente||o.tratamentos)?`<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-          ${o.tipoLente?`<span style="background:#dbeafe;color:#1d4ed8;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600">🔍 ${o.tipoLente}</span>`:''}
-          ${o.tratamentos?o.tratamentos.split(', ').map(t=>`<span style="background:#dcfce7;color:#16a34a;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600">✨ ${t}</span>`).join(''):''}
-        </div>`:''}
-        <button class="btn btn-success" onclick="imprimirOS('${o.id}')" data-tip="Imprimir OS">🖨️ Imprimir OS</button>
-        
-        <button class="btn btn-success" onclick="copiarMsgWhatsApp('${o.id}')" data-tip="Mensagem WhatsApp" style="background:#16a34a">📱 WhatsApp</button>
-        ${o.tipoOS !== 'montagem' ? `<button class="btn btn-success" onclick="converterOSemVenda('${o.id}')" data-tip="Converter OS em Venda" style="background:#0ea5e9">💰 Converter em Venda</button>` : ''}
-        <button class="btn btn-warning" onclick="atualizarStatusOS('${o.id}')">🔄 Status</button>
-        <button class="btn btn-outline" onclick="closeModal('modal-view-os')">Fechar</button>
       </div>
     </div>`;
+
+  if (isMontagem) {
+    // ── OS DE MONTAGEM — Receita Óptica ──
+    html += `
+    <div style="background:#0d2b4e;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">👁️ Receita Óptica</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;color:white">
+        <thead>
+          <tr>
+            <th style="padding:6px 8px;text-align:left;color:#c9a84c;font-size:10px;border-bottom:1px solid rgba(201,168,76,.3)"></th>
+            <th style="padding:6px 8px;text-align:center;color:#c9a84c;font-size:10px;border-bottom:1px solid rgba(201,168,76,.3)">OD (Direito)</th>
+            <th style="padding:6px 8px;text-align:center;color:#c9a84c;font-size:10px;border-bottom:1px solid rgba(201,168,76,.3)">OE (Esquerdo)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3" style="padding:6px 8px;font-size:9px;font-weight:700;color:rgba(201,168,76,.7);text-transform:uppercase;letter-spacing:.5px">LONGE</td></tr>
+          <tr style="background:rgba(255,255,255,.05)">
+            <td style="padding:5px 8px;color:rgba(255,255,255,.6)">Esférico</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.longeOdEsf!==undefined?o.longeOdEsf:(o.odEsf||0))}</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.longeOeEsf!==undefined?o.longeOeEsf:(o.oeEsf||0))}</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;color:rgba(255,255,255,.6)">Cilindro</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.longeOdCil!==undefined?o.longeOdCil:(o.odCil||0))}</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.longeOeCil!==undefined?o.longeOeCil:(o.oeCil||0))}</td>
+          </tr>
+          <tr style="background:rgba(255,255,255,.05)">
+            <td style="padding:5px 8px;color:rgba(255,255,255,.6)">Eixo</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${o.longeOdEixo||0}°</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${o.longeOeEixo||0}°</td>
+          </tr>
+          ${(o.pertoOdEsf||o.pertoOeEsf)?`
+          <tr><td colspan="3" style="padding:6px 8px;font-size:9px;font-weight:700;color:rgba(201,168,76,.7);text-transform:uppercase;letter-spacing:.5px">PERTO</td></tr>
+          <tr style="background:rgba(255,255,255,.05)">
+            <td style="padding:5px 8px;color:rgba(255,255,255,.6)">Esférico</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.pertoOdEsf||0)}</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.pertoOeEsf||0)}</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;color:rgba(255,255,255,.6)">Cilindro</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.pertoOdCil||0)}</td>
+            <td style="padding:5px 8px;text-align:center;font-weight:700">${fmtGrau(o.pertoOeCil||0)}</td>
+          </tr>`:''}
+          ${o.adicao?`<tr style="background:rgba(201,168,76,.1);border-top:1px solid rgba(201,168,76,.3)">
+            <td style="padding:6px 8px;color:#c9a84c;font-weight:700">Adição</td>
+            <td colspan="2" style="padding:6px 8px;text-align:center;color:#c9a84c;font-weight:800">${fmtGrau(o.adicao)}</td>
+          </tr>`:''}
+          ${o.dnp?`<tr>
+            <td style="padding:5px 8px;color:rgba(255,255,255,.6)">DNP</td>
+            <td colspan="2" style="padding:5px 8px;text-align:center;font-weight:700">${o.dnp} mm</td>
+          </tr>`:''}
+        </tbody>
+      </table>
+    </div>
+    ${(o.tipoLente||o.tratamentos)?`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      ${o.tipoLente?`<div style="background:#eff6ff;border-radius:10px;padding:12px;border-left:3px solid #0d2b4e">
+        <div style="font-size:9px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:4px">🔍 Tipo de Lente</div>
+        <div style="font-size:13px;font-weight:700;color:#0d2b4e">${o.tipoLente}</div>
+      </div>`:''}
+      ${o.tratamentos?`<div style="background:#f0fdf4;border-radius:10px;padding:12px;border-left:3px solid #16a34a">
+        <div style="font-size:9px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:4px">✨ Tratamentos</div>
+        <div style="font-size:12px;font-weight:600;color:#166534">${o.tratamentos}</div>
+      </div>`:''}
+    </div>`:''}
+    ${o.vendaRef?`<div style="background:#fef9ec;border-radius:10px;padding:10px 14px;margin-bottom:12px;border-left:3px solid #c9a84c;font-size:12px">
+      💰 <strong>Venda vinculada:</strong> ${o.vendaRef} — OS de acompanhamento de laboratório
+    </div>`:''}`;
+  } else {
+    // ── OS DE CONSERTO ──
+    html += `
+    ${o.descricao?`<div style="background:#fef9ec;border-radius:12px;padding:14px;margin-bottom:12px;border-left:4px solid #d97706">
+      <div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📝 Descrição do Serviço</div>
+      <div style="font-size:14px;color:#1a2744;font-weight:500">${o.descricao}</div>
+    </div>`:''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:#f8faff;border-radius:10px;padding:12px;border-left:3px solid #d97706;text-align:center">
+        <div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">💰 Valor</div>
+        <div style="font-size:22px;font-weight:800;color:${o.cobranca==='garantia'?'#16a34a':o.cobranca==='cortesia'?'#0ea5e9':'#0d2b4e'}">
+          ${o.cobranca==='garantia'?'🛡️ Garantia':o.cobranca==='cortesia'?'🎁 Cortesia':fmtMoney(o.valor||0)}
+        </div>
+      </div>
+      <div style="background:#f8faff;border-radius:10px;padding:12px;border-left:3px solid #d97706">
+        <div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:6px">📋 Serviço</div>
+        <div style="font-size:12px;font-weight:600;color:#0d2b4e">${o.tipo}</div>
+        ${o.armacao&&o.armacao!=='—'?`<div style="font-size:11px;color:#5a6a8a;margin-top:3px">Armação: ${o.armacao}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // Observações
+  if (o.obs) {
+    html += `<div style="background:#f8faff;border-radius:10px;padding:12px;margin-bottom:12px;border-left:3px solid #8a9ab8">
+      <div style="font-size:9px;font-weight:700;color:#5a6a8a;text-transform:uppercase;margin-bottom:4px">📌 Observações</div>
+      <div style="font-size:13px;color:#1a2744">${o.obs}</div>
+    </div>`;
+  }
+
+  // Botões de ação
+  html += `<div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #eef1f8">
+    <button class="btn btn-primary" onclick="imprimirOS('${o.id}')" style="background:var(--gradient-primary)">🖨️ Imprimir OS</button>
+    <button class="btn btn-success" onclick="copiarMsgWhatsApp('${o.id}')" style="background:#16a34a">📱 WhatsApp</button>
+    ${o.tipoOS!=='montagem'?`<button class="btn btn-primary" onclick="converterOSemVenda('${o.id}')" style="background:#0ea5e9">💰 Converter em Venda</button>`:''}
+    <button class="btn btn-warning" onclick="atualizarStatusOS('${o.id}')">🔄 Status</button>
+    <button class="btn btn-outline" onclick="editOS('${o.id}');closeModal('modal-view-os')">✏️ Editar</button>
+    <button class="btn btn-outline" onclick="closeModal('modal-view-os')">Fechar</button>
+  </div>
+  </div>`;
+
+  document.getElementById('view-os-body').innerHTML = html;
   openModal('modal-view-os');
 }
 
@@ -4987,79 +5056,171 @@ function renderRelatorios() {
 }
 
 function imprimirOS(id) {
-  const o = load('os').find(x => x.id === id);
+  const o = load('os').find(x=>x.id===id);
   if (!o) return;
-  const clMap = Object.fromEntries(load('clientes').map(c => [c.id, c.nome]));
+  const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
+  const isMontagem = o.tipoOS === 'montagem';
   const now = new Date().toLocaleString('pt-BR');
-  // fmtGrau agora é global
+  const logoSrc = document.querySelector('.sidebar-logo-img')?.src || '';
 
-  // Preencher campos do modal
-  document.getElementById('pos-num-os').textContent = o.id;
-  document.getElementById('pos-data-emissao').textContent = 'Emitido em: ' + now;
-  document.getElementById('pos-cliente').textContent = clMap[o.clienteId] || '-';
-  document.getElementById('pos-cliente2').textContent = clMap[o.clienteId] || '-';
-  document.getElementById('pos-abertura').textContent = fmtDate(o.abertura);
-  document.getElementById('pos-previsao').textContent = fmtDate(o.previsao);
-  document.getElementById('pos-previsao2').textContent = fmtDate(o.previsao);
-  document.getElementById('pos-tecnico').textContent = o.tecnico || '-';
-  document.getElementById('pos-tecnico2').textContent = o.tecnico || '-';
-  document.getElementById('pos-status').textContent = o.status;
-  document.getElementById('pos-tipo').textContent = o.tipo;
-  document.getElementById('pos-armacao').textContent = o.armacao || '-';
-  // Tipo de lente e tratamentos
-  (function(){
-    var el1=document.getElementById('pos-tipo-lente');
-    var el2=document.getElementById('pos-tratamentos');
-    var b1=document.getElementById('pos-tipo-lente-box');
-    var b2=document.getElementById('pos-tratamentos-box');
-    if(el1) el1.textContent=o.tipoLente||'';
-    if(el2) el2.textContent=o.tratamentos||'';
-    if(b1) b1.style.display=o.tipoLente?'block':'none';
-    if(b2) b2.style.display=o.tratamentos?'block':'none';
-  })();
-  var setPos=function(id,val){var el=document.getElementById(id);if(el)el.textContent=val;};
-  setPos('pos-longe-od-esf',fmtGrau(o.longeOdEsf||o.odEsf||0));
-  setPos('pos-longe-od-cil',fmtGrau(o.longeOdCil||o.odCil||0));
-  setPos('pos-longe-od-eixo',(o.longeOdEixo||0)+'°');
-  setPos('pos-longe-oe-esf',fmtGrau(o.longeOeEsf||o.oeEsf||0));
-  setPos('pos-longe-oe-cil',fmtGrau(o.longeOeCil||o.oeCil||0));
-  setPos('pos-longe-oe-eixo',(o.longeOeEixo||0)+'°');
-  setPos('pos-perto-od-esf',fmtGrau(o.pertoOdEsf||0));
-  setPos('pos-perto-od-cil',fmtGrau(o.pertoOdCil||0));
-  setPos('pos-perto-od-eixo',(o.pertoOdEixo||0)+'°');
-  setPos('pos-perto-oe-esf',fmtGrau(o.pertoOeEsf||0));
-  setPos('pos-perto-oe-cil',fmtGrau(o.pertoOeCil||0));
-  setPos('pos-perto-oe-eixo',(o.pertoOeEixo||0)+'°');
-  setPos('pos-adicao-print',o.adicao?fmtGrau(o.adicao):'—');
-  setPos('pos-od-esf',fmtGrau(o.longeOdEsf||o.odEsf||0));
-  setPos('pos-od-cil',fmtGrau(o.longeOdCil||o.odCil||0));
-  setPos('pos-oe-esf',fmtGrau(o.longeOeEsf||o.oeEsf||0));
-  setPos('pos-oe-cil',fmtGrau(o.longeOeCil||o.oeCil||0));
-  document.getElementById('pos-valor').textContent = fmtMoney(o.valor);
-  document.getElementById('pos-data-rodape').textContent = now;
+  // Cores por tipo
+  const corPrimaria = isMontagem ? '#0d2b4e' : '#92400e';
+  const corSecundaria = isMontagem ? '#1a4a7a' : '#d97706';
+  const corDestaque = '#c9a84c';
+  const tipoLabel = isMontagem ? '🔬 ORDEM DE SERVIÇO — MONTAGEM' : '🔧 ORDEM DE SERVIÇO — CONSERTO';
 
-  // Descrição do Serviço (só conserto, nunca montagem)
-  const descBox = document.getElementById('pos-descricao-box');
-  const descEl = document.getElementById('pos-descricao');
-  if (descBox && descEl) {
-    if (o.descricao && o.descricao.trim() && o.tipoOS !== 'montagem') {
-      descEl.textContent = o.descricao;
-      descBox.style.display = 'block';
-    } else {
-      descBox.style.display = 'none';
-    }
+  var htmlPrint = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>OS ${o.id} - Ótica Horizonte</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; color: #1a2744; background: white; padding: 20px; }
+  .header { background: linear-gradient(135deg, ${corPrimaria}, ${corSecundaria}); color: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo { width: 56px; height: 56px; border-radius: 50%; background: white; padding: 4px; object-fit: contain; }
+  .otica-nome { font-size: 18px; font-weight: 800; }
+  .otica-info { font-size: 9px; opacity: .7; margin-top: 2px; }
+  .os-num { font-size: 24px; font-weight: 800; text-align: right; }
+  .os-tipo { font-size: 10px; opacity: .7; text-align: right; margin-top: 2px; }
+  .faixa-dourada { height: 3px; background: linear-gradient(90deg, ${corDestaque}, #e8c96a, ${corDestaque}); border-radius: 2px; margin-bottom: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .box { background: #f8faff; border-radius: 8px; padding: 10px 12px; border-left: 3px solid ${corDestaque}; }
+  .box-label { font-size: 8px; font-weight: 700; color: ${corPrimaria}; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .box-value { font-size: 13px; font-weight: 700; color: #0d2b4e; }
+  .box-sub { font-size: 11px; color: #5a6a8a; margin-top: 2px; }
+  .receita-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
+  .receita-table th { background: ${corPrimaria}; color: ${corDestaque}; padding: 7px 10px; text-align: center; font-size: 10px; letter-spacing: .5px; }
+  .receita-table th:first-child { text-align: left; }
+  .receita-table td { padding: 6px 10px; border-bottom: 1px solid #eef1f8; }
+  .receita-table td:not(:first-child) { text-align: center; font-weight: 700; }
+  .receita-table .section-row td { background: #f0f4ff; color: ${corPrimaria}; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 4px 10px; }
+  .receita-table .adicao-row td { background: #fef9ec; color: #92400e; font-weight: 700; }
+  .descricao-box { background: #fef9ec; border-left: 4px solid ${corSecundaria}; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .descricao-label { font-size: 8px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .descricao-text { font-size: 13px; color: #1a2744; }
+  .valor-box { background: ${corPrimaria}; color: white; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .valor-label { font-size: 10px; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+  .valor-num { font-size: 22px; font-weight: 800; color: ${corDestaque}; }
+  .lente-box { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .lente-item { background: #eff6ff; border-radius: 8px; padding: 10px; border-left: 3px solid ${corPrimaria}; }
+  .lente-label { font-size: 8px; font-weight: 700; color: ${corPrimaria}; text-transform: uppercase; margin-bottom: 3px; }
+  .lente-value { font-size: 12px; font-weight: 700; color: #0d2b4e; }
+  .assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; padding-top: 14px; border-top: 1px solid #eef1f8; }
+  .assinatura { text-align: center; }
+  .assinatura-linha { border-top: 1.5px solid #0d2b4e; padding-top: 6px; margin-top: 36px; font-size: 11px; color: #5a6a8a; }
+  .rodape { text-align: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid #eef1f8; font-size: 9px; color: #8a9ab8; font-style: italic; }
+  .obs-box { background: #f8faff; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; border-left: 3px solid #8a9ab8; }
+  .status-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  @media print { body { padding: 0; } .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- Cabeçalho -->
+<div class="header">
+  <div class="header-left">
+    ${logoSrc?`<img src="${logoSrc}" class="logo" alt="Logo"/>`:''}
+    <div>
+      <div class="otica-nome">Ótica Horizonte</div>
+      <div class="otica-info">CNPJ: 64.448.745/0001-09</div>
+      <div class="otica-info">Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10</div>
+      <div class="otica-info">Tel: (92) 99289-0085 / (92) 99445-1770</div>
+    </div>
+  </div>
+  <div>
+    <div class="os-num">${o.id}</div>
+    <div class="os-tipo">${tipoLabel}</div>
+    <div class="os-tipo" style="margin-top:4px">Emitido: ${now}</div>
+  </div>
+</div>
+<div class="faixa-dourada"></div>
+
+<!-- Dados principais -->
+<div class="grid2">
+  <div class="box">
+    <div class="box-label">👤 Cliente</div>
+    <div class="box-value">${clMap[o.clienteId]||'—'}</div>
+  </div>
+  <div class="box">
+    <div class="box-label">📋 Informações</div>
+    <div class="box-sub">Abertura: <strong>${fmtDate(o.abertura)}</strong></div>
+    <div class="box-sub">Previsão: <strong>${fmtDate(o.previsao)}</strong></div>
+    ${o.entrega?`<div class="box-sub">Entrega: <strong style="color:#16a34a">${fmtDate(o.entrega)}</strong></div>`:''}
+    <div class="box-sub">Técnico: <strong>${o.tecnico||'—'}</strong></div>
+    <div class="box-sub">Status: <strong>${o.status}</strong></div>
+  </div>
+</div>`;
+
+  if (isMontagem) {
+    // Layout Montagem — Receita Óptica
+    htmlPrint += `
+<table class="receita-table">
+  <thead>
+    <tr>
+      <th style="text-align:left">👁️ Receita Óptica</th>
+      <th>OD (Direito)</th>
+      <th>OE (Esquerdo)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="section-row"><td colspan="3">LONGE</td></tr>
+    <tr><td>Esférico</td><td>${fmtGrau(o.longeOdEsf!==undefined?o.longeOdEsf:(o.odEsf||0))}</td><td>${fmtGrau(o.longeOeEsf!==undefined?o.longeOeEsf:(o.oeEsf||0))}</td></tr>
+    <tr><td>Cilindro</td><td>${fmtGrau(o.longeOdCil!==undefined?o.longeOdCil:(o.odCil||0))}</td><td>${fmtGrau(o.longeOeCil!==undefined?o.longeOeCil:(o.oeCil||0))}</td></tr>
+    <tr><td>Eixo</td><td>${o.longeOdEixo||0}°</td><td>${o.longeOeEixo||0}°</td></tr>
+    ${(o.pertoOdEsf||o.pertoOeEsf)?`
+    <tr class="section-row"><td colspan="3">PERTO</td></tr>
+    <tr><td>Esférico</td><td>${fmtGrau(o.pertoOdEsf||0)}</td><td>${fmtGrau(o.pertoOeEsf||0)}</td></tr>
+    <tr><td>Cilindro</td><td>${fmtGrau(o.pertoOdCil||0)}</td><td>${fmtGrau(o.pertoOeCil||0)}</td></tr>
+    <tr><td>Eixo</td><td>${o.pertoOdEixo||0}°</td><td>${o.pertoOeEixo||0}°</td></tr>`:''}
+    ${o.adicao?`<tr class="adicao-row"><td>Adição (ADD)</td><td colspan="2" style="text-align:center">${fmtGrau(o.adicao)}</td></tr>`:''}
+    ${o.dnp?`<tr><td>DNP</td><td colspan="2" style="text-align:center">${o.dnp} mm</td></tr>`:''}
+  </tbody>
+</table>
+${(o.tipoLente||o.tratamentos)?`<div class="lente-box">
+  ${o.tipoLente?`<div class="lente-item"><div class="lente-label">🔍 Tipo de Lente</div><div class="lente-value">${o.tipoLente}</div></div>`:''}
+  ${o.tratamentos?`<div class="lente-item" style="background:#f0fdf4;border-color:#16a34a"><div class="lente-label" style="color:#166534">✨ Tratamentos</div><div class="lente-value" style="color:#166534">${o.tratamentos}</div></div>`:''}
+</div>`:''}
+${o.armacao&&o.armacao!=='—'?`<div class="box" style="margin-bottom:12px"><div class="box-label">🕶️ Armação</div><div class="box-value">${o.armacao}</div></div>`:''}
+${o.vendaRef?`<div style="background:#fef9ec;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;border-left:3px solid #c9a84c">💰 Venda vinculada: <strong>${o.vendaRef}</strong></div>`:''}`;
+  } else {
+    // Layout Conserto
+    htmlPrint += `
+${o.descricao?`<div class="descricao-box"><div class="descricao-label">📝 Descrição do Serviço</div><div class="descricao-text">${o.descricao}</div></div>`:''}
+<div class="valor-box">
+  <div><div class="valor-label">Tipo de Serviço</div><div style="font-size:13px;font-weight:600;margin-top:2px">${o.tipo}</div></div>
+  <div style="text-align:right"><div class="valor-label">Valor Total</div><div class="valor-num">${o.cobranca==='garantia'?'🛡️ Garantia':o.cobranca==='cortesia'?'🎁 Cortesia':fmtMoney(o.valor||0)}</div></div>
+</div>`;
   }
 
   // Observações
-  const obsBox = document.getElementById('pos-obs-box');
-  if (o.obs && o.obs.trim()) {
-    document.getElementById('pos-obs').textContent = o.obs;
-    obsBox.style.display = 'block';
-  } else {
-    obsBox.style.display = 'none';
+  if (o.obs) {
+    htmlPrint += `<div class="obs-box"><div class="box-label">📌 Observações</div><div style="font-size:12px;margin-top:4px">${o.obs}</div></div>`;
   }
 
-  openModal('modal-print-os');
+  // Assinaturas
+  htmlPrint += `
+<div class="assinaturas">
+  <div class="assinatura"><div class="assinatura-linha">Assinatura do Cliente<br><small style="color:#8a9ab8">${clMap[o.clienteId]||''}</small></div></div>
+  <div class="assinatura"><div class="assinatura-linha">Ótica Horizonte<br><small style="color:#8a9ab8">Responsável pelo Serviço</small></div></div>
+</div>
+<div class="rodape">Ótica Horizonte — CNPJ 64.448.745/0001-09 | ${tipoLabel} | Emitido em ${now}</div>
+
+<div class="no-print" style="text-align:center;margin-top:20px;padding:16px">
+  <button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700;margin-right:10px">🖨️ Imprimir / Salvar PDF</button>
+  <button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer">✕ Fechar</button>
+</div>
+</body></html>`;
+
+  var win = window.open('', '_blank', 'width=820,height=950');
+  if (win) {
+    win.document.write(htmlPrint);
+    win.document.close();
+    setTimeout(function(){ win.focus(); }, 300);
+  } else {
+    showToast('Permita popups para imprimir!', 'warning');
+  }
 }
 
 function doPrintOS() {
