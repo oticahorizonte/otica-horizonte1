@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 
 <html lang="pt-BR">
-
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
+<title>Ótica Horizonte — Sistema de Gestão</title>
+<style>
   /* ══════════════════════════════════════════════
-     RESET &amp; VARIÁVEIS
+     RESET & VARIÁVEIS
   ══════════════════════════════════════════════ */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   
@@ -373,7 +377,7 @@
   .search-bar input:focus { border-color: var(--accent); }
 
   /* ══════════════════════════════════════════════
-     ALERTAS &amp; TOAST
+     ALERTAS & TOAST
   ══════════════════════════════════════════════ */
   .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
   .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
@@ -502,7 +506,7 @@
   body.dark .busca-global-input { background:#1e293b; color:#e2e8f0; border-color:#334155; }
 
   /* ══════════════════════════════════════════════
-     HAMBURGER &amp; OVERLAY MOBILE
+     HAMBURGER & OVERLAY MOBILE
   ══════════════════════════════════════════════ */
   .hamburger {
     display: none; position: fixed; top: 10px; left: 10px; z-index: 200;
@@ -573,8 +577,8 @@
     table { font-size: 12px; min-width: 400px; }
     th, td { padding: 7px 8px !important; }
     .btn-sm { padding: 3px 7px; font-size: 10px; }
-    #sec-dashboard &gt; div:last-child { grid-template-columns: 1fr !important; }
-    #sec-relatorios &gt; div:nth-child(2) { grid-template-columns: 1fr !important; }
+    #sec-dashboard > div:last-child { grid-template-columns: 1fr !important; }
+    #sec-relatorios > div:nth-child(2) { grid-template-columns: 1fr !important; }
   }
 
   /* ══════════════════════════════════════════════
@@ -588,7 +592,7 @@
     .form-actions { flex-direction: column; }
     .form-actions .btn { width: 100%; justify-content: center; }
   }
-
+</style>
 <script>
 // Logo Ótica Horizonte — carregada uma única vez
 (function() {
@@ -629,6 +633,67 @@ function resetarSistema() {
   } catch(e) {}
 })();
 </script>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDK2rBr4xO1v2O7p4Cclz8rU-XRdZu4PRw",
+    authDomain: "otica-horizonte.firebaseapp.com",
+    projectId: "otica-horizonte",
+    storageBucket: "otica-horizonte.firebasestorage.app",
+    messagingSenderId: "192666792141",
+    appId: "1:192666792141:web:395c4896169c0d50757984"
+  };
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window._fb = {
+      async saveCollection(colName, data) {
+        try {
+          await setDoc(doc(db, '_collections', colName), { data: JSON.stringify(data), ts: Date.now() });
+          return true;
+        } catch(e) { console.warn('Firebase save error:', e); return false; }
+      },
+      async loadCollection(colName) {
+        try {
+          const snap = await getDoc(doc(db, '_collections', colName));
+          if (snap.exists()) return JSON.parse(snap.data().data || '[]');
+          return null;
+        } catch(e) { console.warn('Firebase load error:', e); return null; }
+      },
+      async syncToCloud(keys) {
+        var ok = 0;
+        for (var k of Object.keys(keys)) {
+          if (k === 'user' || k === 'rascunho_venda') continue;
+          var data = JSON.parse(localStorage.getItem(keys[k]) || '[]');
+          var saved = await window._fb.saveCollection(k, data);
+          if (saved) ok++;
+        }
+        return ok;
+      },
+      async syncFromCloud(keys) {
+        var ok = 0;
+        for (var k of Object.keys(keys)) {
+          if (k === 'user' || k === 'rascunho_venda') continue;
+          var data = await window._fb.loadCollection(k);
+          if (data !== null) { localStorage.setItem(keys[k], JSON.stringify(data)); ok++; }
+        }
+        return ok;
+      }
+    };
+
+    window._firebaseReady = true;
+    console.log('✅ Firebase conectado!');
+    window.dispatchEvent(new Event('firebaseReady'));
+  } catch(e) {
+    console.warn('Firebase init error:', e);
+  }
+</script>
+</head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- LOGIN -->
@@ -724,8 +789,8 @@ function resetarSistema() {
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
 <button data-tip="Exportar todos os dados em JSON" onclick="exportarBackup()" style="width:100%;padding:7px 4px;background:rgba(22,163,74,.3);border:1px solid rgba(22,163,74,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">💾 Backup</button>
 <button data-tip="Restaurar dados de um backup" onclick="importarBackup()" style="width:100%;padding:7px 4px;background:rgba(14,165,233,.3);border:1px solid rgba(14,165,233,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">📂 Restaurar</button>
-<button data-tip="Enviar dados para a nuvem (Firebase)" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">☁️ Enviar Nuvem</button>
-<button data-tip="Baixar dados da nuvem (Firebase)" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⬇️ Baixar Nuvem</button>
+<button data-tip="Enviar todos os dados para a nuvem" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">☁️ Enviar Nuvem</button>
+<button data-tip="Baixar dados da nuvem" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⬇️ Baixar Nuvem</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
 <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px">© 2026 Ótica Horizonte</div>
@@ -3025,75 +3090,50 @@ window.addEventListener('beforeprint', updatePrintDate);
 // ── Storage helpers ──────────────────────────────────────────────
 const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas' };
 
-// ── Firebase Sync ──────────────────────────────────────────────────────────
+// ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
-
-// Sobrescrever save para sincronizar automaticamente com Firebase
-const _saveOriginal = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
-const save = function(k, v) {
-  _saveOriginal(k, v);
-  // Sync automático com Firebase após 2 segundos de inatividade
-  if (window._firebaseReady && window._fb && k !== 'user' && k !== 'rascunho_venda') {
-    clearTimeout(_fbSyncTimer);
-    _fbSyncTimer = setTimeout(function() {
-      window._fb.saveCollection(k, v).then(function(ok) {
-        if (ok) console.log('☁️ Sincronizado:', k);
-      });
-    }, 2000);
-  }
-};
-
-async function syncFirebaseToLocal() {
-  if (!window._firebaseReady || !window._fb) {
-    showToast('Firebase não conectado ainda. Aguarde...', 'warning');
-    return;
-  }
-  showToast('☁️ Sincronizando dados da nuvem...', 'success');
-  var ok = await window._fb.syncFromCloud(KEYS);
-  if (ok > 0) {
-    showToast('✅ ' + ok + ' coleções sincronizadas da nuvem!', 'success');
-    // Recarregar seção atual
-    var secAtiva = document.querySelector('.section.active');
-    if (secAtiva) {
-      var id = secAtiva.id.replace('sec-', '');
-      if (window['render' + id.charAt(0).toUpperCase() + id.slice(1)]) {
-        window['render' + id.charAt(0).toUpperCase() + id.slice(1)]();
-      }
-    }
-  } else {
-    showToast('⚠️ Nenhum dado encontrado na nuvem ainda.', 'warning');
-  }
+function _fbAutoSync(k, v) {
+  if (!window._firebaseReady || !window._fb || k === 'user' || k === 'rascunho_venda') return;
+  clearTimeout(_fbSyncTimer);
+  _fbSyncTimer = setTimeout(function() {
+    window._fb.saveCollection(k, v).then(function(ok) {
+      if (ok) console.log('☁️ Sync:', k);
+    });
+  }, 2000);
 }
 
 async function syncLocalToCloud() {
-  if (!window._firebaseReady || !window._fb) {
-    showToast('Firebase não conectado ainda. Aguarde...', 'warning');
-    return;
-  }
-  showToast('☁️ Enviando dados para a nuvem...', 'success');
+  if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
+  showToast('☁️ Enviando dados para a nuvem...','success');
   var ok = await window._fb.syncToCloud(KEYS);
-  showToast('✅ ' + ok + ' coleções enviadas para a nuvem!', 'success');
+  showToast('✅ ' + ok + ' módulos enviados para a nuvem!','success');
 }
 
-// Carregar dados da nuvem ao iniciar (se Firebase estiver pronto)
+async function syncFirebaseToLocal() {
+  if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
+  showToast('☁️ Baixando dados da nuvem...','success');
+  var ok = await window._fb.syncFromCloud(KEYS);
+  if (ok > 0) {
+    showToast('✅ ' + ok + ' módulos sincronizados da nuvem!','success');
+    var secAtiva = document.querySelector('.section.active');
+    if (secAtiva) { var id = secAtiva.id.replace('sec-',''); if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); }
+  } else { showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning'); }
+}
+
+// Ao Firebase ficar pronto, sincronizar automaticamente
 window.addEventListener('firebaseReady', function() {
-  var user = JSON.parse(localStorage.getItem(KEYS.user) || 'null');
+  var user = JSON.parse(localStorage.getItem(KEYS.user)||'null');
   if (user && user.nome) {
-    // Usuário já logado — sincronizar dados da nuvem silenciosamente
     setTimeout(async function() {
       if (window._fb) {
         var ok = await window._fb.syncFromCloud(KEYS);
-        if (ok > 0) {
-          console.log('☁️ Dados sincronizados da nuvem:', ok, 'coleções');
-          showToast('☁️ Dados atualizados da nuvem!', 'success');
-          // Recarregar dashboard
-          if (typeof renderDashboard === 'function') renderDashboard();
-        }
+        if (ok > 0) { console.log('☁️ Auto-sync:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
       }
-    }, 1000);
+    }, 1500);
   }
 });
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
+const save = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const loadUser = () => JSON.parse(localStorage.getItem(KEYS.user) || 'null');
 const saveUser = v => localStorage.setItem(KEYS.user, JSON.stringify(v));
 
