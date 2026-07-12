@@ -2074,7 +2074,7 @@ function instalarApp() {
 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
 <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
 <span style="color:#c9a84c;font-size:11px">👤</span>
-<select id="venda-cliente" style="background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;cursor:pointer;min-width:130px;-webkit-appearance:auto">
+<select id="venda-cliente" style="background:#0d2b4e;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;cursor:pointer;min-width:150px;border-radius:4px;padding:2px 4px">
 <option value="">— Selecione o cliente —</option>
 </select>
 </div>
@@ -7776,26 +7776,31 @@ function calcOculosCompleto() {
 }
 
 function adicionarOculosCompleto() {
-  const selArm = document.getElementById('venda-arm-select');
-  const selLen = document.getElementById('venda-len-select');
-  const exame  = parseFloat(document.getElementById('venda-exame').value)||0;
-  const descInput = document.getElementById('venda-oculos-desc');
+  // Usar campos hidden (novos campos de busca)
+  var armCod = (document.getElementById('venda-arm-select')||{}).value||'';
+  var lenCod = (document.getElementById('venda-len-select')||{}).value||'';
+  var exame  = parseFloat(document.getElementById('venda-exame').value)||0;
+  var descInput = document.getElementById('venda-oculos-desc');
 
-  const armOpt = selArm ? selArm.options[selArm.selectedIndex] : null;
-  const lenOpt = selLen ? selLen.options[selLen.selectedIndex] : null;
+  if (!armCod) { showToast('Selecione a armação!','warning'); return; }
+  if (!lenCod) { showToast('Selecione a lente!','warning'); return; }
 
-  if (!armOpt || !armOpt.value) { showToast('Selecione a armação!','warning'); return; }
-  if (!lenOpt || !lenOpt.value) { showToast('Selecione a lente!','warning'); return; }
+  var produtos = load('produtos');
+  var armP = produtos.find(function(p){ return p.cod===armCod; });
+  var lenP = produtos.find(function(p){ return p.cod===lenCod; });
 
-  const armVenda = parseFloat(armOpt.dataset.venda)||0;
-  const armCusto = parseFloat(armOpt.dataset.custo)||0;
-  const lenVenda = parseFloat(lenOpt.dataset.venda)||0;
-  const lenCusto = parseFloat(lenOpt.dataset.custo)||0;
-  const totalVenda = armVenda + lenVenda + exame;
-  const totalCusto = armCusto + lenCusto + exame;
-  const desc = descInput ? descInput.value || 'Óculos de Grau Completo' : 'Óculos de Grau Completo';
+  if (!armP) { showToast('Armação não encontrada!','error'); return; }
+  if (!lenP) { showToast('Lente não encontrada!','error'); return; }
 
-  // Adicionar como item agrupado no carrinho
+  // Usar valores dos inputs (podem ter sido editados manualmente)
+  var armVenda = parseFloat(document.getElementById('venda-arm-venda')?.value)||armP.venda||0;
+  var armCusto = parseFloat(document.getElementById('venda-arm-custo')?.value)||armP.custo||0;
+  var lenVenda = parseFloat(document.getElementById('venda-len-venda')?.value)||lenP.venda||0;
+  var lenCusto = parseFloat(document.getElementById('venda-len-custo')?.value)||lenP.custo||0;
+  var totalVenda = armVenda + lenVenda + exame;
+  var totalCusto = armCusto + lenCusto + exame;
+  var desc = descInput ? descInput.value || 'Óculos de Grau Completo' : 'Óculos de Grau Completo';
+
   _carrinho.push({
     cod: 'OCULOS-COMPLETO',
     nome: desc,
@@ -7804,8 +7809,8 @@ function adicionarOculosCompleto() {
     desc: 0,
     tipo: 'oculos-completo',
     detalhes: [
-      { cod: armOpt.value, nome: armOpt.textContent.split('|')[0].trim(), qtd: 1 },
-      { cod: lenOpt.value, nome: lenOpt.textContent.split('|')[0].trim(), qtd: 1 },
+      { cod: armCod, nome: armP.desc, qtd: 1 },
+      { cod: lenCod, nome: lenP.desc, qtd: 1 },
     ],
     exame: exame,
     custo: totalCusto,
@@ -7813,11 +7818,25 @@ function adicionarOculosCompleto() {
 
   renderCarrinho();
   // Limpar campos
-  if(selArm) selArm.value='';
-  if(selLen) selLen.value='';
+  var armBusca = document.getElementById('venda-arm-busca');
+  var lenBusca = document.getElementById('venda-len-busca');
+  if(armBusca) armBusca.value='';
+  if(lenBusca) lenBusca.value='';
+  var armHidden = document.getElementById('venda-arm-select');
+  var lenHidden = document.getElementById('venda-len-select');
+  if(armHidden) armHidden.value='';
+  if(lenHidden) lenHidden.value='';
+  var armVendaEl = document.getElementById('venda-arm-venda');
+  var lenVendaEl = document.getElementById('venda-len-venda');
+  var armCustoEl = document.getElementById('venda-arm-custo');
+  var lenCustoEl = document.getElementById('venda-len-custo');
+  if(armVendaEl) armVendaEl.value='';
+  if(lenVendaEl) lenVendaEl.value='';
+  if(armCustoEl) armCustoEl.value='';
+  if(lenCustoEl) lenCustoEl.value='';
   document.getElementById('venda-exame').value='';
   if(descInput) descInput.value='';
-  calcOculosCompleto();
+  calcVendaInterna();
   showToast('✅ Óculos de Grau Completo adicionado!');
 }
 
