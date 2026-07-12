@@ -865,6 +865,7 @@ function resetarSistema() {
 </div>
 </div>
 <div id="dash-fin-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+<div id="dash-dre"></div>
 </div>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -3381,32 +3382,73 @@ function renderPainelFinanceiroAdmin() {
     return s + calcTotal(v)*(pct/100);
   },0);
 
-  var lucro = receita - custo - comissaoTotal;
-  var margem = receita > 0 ? lucro/receita*100 : 0;
+  // Despesas do período
+  var filtro = document.getElementById('dash-fin-filtro')?.value || 'mes';
+  var hoje2 = new Date();
+  var dataInicioDespesas = new Date();
+  if (filtro==='hoje') dataInicioDespesas = new Date(hoje2.getFullYear(),hoje2.getMonth(),hoje2.getDate());
+  else if (filtro==='semana') dataInicioDespesas = new Date(hoje2.getTime()-7*86400000);
+  else if (filtro==='mes') dataInicioDespesas = new Date(hoje2.getFullYear(),hoje2.getMonth(),1);
+  else if (filtro==='custom') {
+    var de2 = (document.getElementById('dash-fin-de')||{}).value||'';
+    dataInicioDespesas = de2 ? new Date(de2) : new Date(hoje2.getFullYear(),hoje2.getMonth(),1);
+  }
+  var dataInicioDesp = dataInicioDespesas.toISOString().slice(0,10);
+  var todasDespesas = load('despesas');
+  var despesasPeriodo = filtro==='tudo' ? todasDespesas : todasDespesas.filter(function(d){ return (d.data||'')>=dataInicioDesp; });
+  var totalDespesas = despesasPeriodo.reduce(function(s,d){ return s+(d.valor||0); },0);
+
+  var lucroOperacional = receita - custo - comissaoTotal;
+  var lucroLiquido = lucroOperacional - totalDespesas;
+  var margem = receita > 0 ? lucroLiquido/receita*100 : 0;
 
   var fin = document.getElementById('dash-fin-cards');
   if (fin) fin.innerHTML = `
-    <div style="background:#1a3a5c;border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px">💰 Receita</div>
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💰 Receita</div>
       <div style="font-size:20px;font-weight:800;color:#34d399">${fmtMoney(receita)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5)">${vendas.length} vendas</div>
     </div>
-    <div style="background:#1a3a5c;border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px">💸 Custo</div>
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">📦 Custo Produtos</div>
       <div style="font-size:20px;font-weight:800;color:#fbbf24">${fmtMoney(custo)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5)">produtos</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5)">mercadoria</div>
     </div>
-    <div style="background:#1a3a5c;border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px">🏷️ Comissões</div>
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🏷️ Comissões</div>
       <div style="font-size:20px;font-weight:800;color:#fb923c">${fmtMoney(comissaoTotal)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5)">vendedores</div>
     </div>
-    <div style="background:#1a3a5c;border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px">📈 Lucro Real</div>
-      <div style="font-size:20px;font-weight:800;color:${lucro>=0?'#34d399':'#f87171'}">${fmtMoney(lucro)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5)">Margem: ${margem.toFixed(1)}%</div>
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💸 Despesas</div>
+      <div style="font-size:20px;font-weight:800;color:#f87171">${fmtMoney(totalDespesas)}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5)">${despesasPeriodo.length} lançamentos</div>
+    </div>
+    <div style="background:linear-gradient(135deg,${lucroLiquido>=0?'#166534,#16a34a':'#991b1b,#dc2626'});border-radius:12px;padding:14px;text-align:center;grid-column:span 2">
+      <div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">📊 Lucro Líquido Real</div>
+      <div style="font-size:26px;font-weight:800;color:white">${fmtMoney(lucroLiquido)}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7)">Margem: ${margem.toFixed(1)}% | Receita - Custo - Comissões - Despesas</div>
     </div>
   `;
+
+  // DRE Simplificado
+  var dreEl = document.getElementById('dash-dre');
+  if (dreEl) {
+    dreEl.innerHTML = `
+      <div style="background:#0f2744;border-radius:12px;padding:16px;margin-top:12px">
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:8px">📋 DRE Simplificado — ${filtro==='mes'?'Este Mês':filtro==='hoje'?'Hoje':filtro==='semana'?'Últimos 7 dias':'Período'}</div>
+        <div style="display:grid;gap:6px;font-size:12px">
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.8)"><span>Receita Bruta</span><span style="color:#34d399;font-weight:700">${fmtMoney(receita)}</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Custo dos Produtos</span><span style="color:#fbbf24">(${fmtMoney(custo)})</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.8);border-top:1px solid rgba(255,255,255,.15);padding-top:6px"><span>Lucro Bruto</span><span style="color:#34d399;font-weight:700">${fmtMoney(receita-custo)}</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Comissões</span><span style="color:#fb923c">(${fmtMoney(comissaoTotal)})</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Despesas Operacionais</span><span style="color:#f87171">(${fmtMoney(totalDespesas)})</span></div>
+          <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,.3);padding-top:8px;margin-top:4px"><span style="color:#fff;font-weight:700;font-size:14px">= Lucro Líquido</span><span style="color:${lucroLiquido>=0?'#34d399':'#f87171'};font-weight:800;font-size:16px">${fmtMoney(lucroLiquido)}</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.5);font-size:11px"><span>Margem Líquida</span><span>${margem.toFixed(1)}%</span></div>
+        </div>
+      </div>
+    `;
+  }
 }
 
 function checkEstoqueAlert() {
@@ -4741,22 +4783,47 @@ function checkOSAtrasadas() {
   const el = document.getElementById('estoque-alert');
   if (!el) return;
   const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const hojeStr = new Date().toISOString().slice(0,10);
+  const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
+
   const atrasadas = load('os').filter(o => {
     if (o.status === 'Entregue' || o.status === 'Cancelada') return false;
     if (!o.previsao) return false;
     const prev = new Date(o.previsao + 'T00:00:00');
     return prev < hoje;
   });
-  let alertas = '';
+
   const baixo = load('produtos').filter(p => p.qtd <= p.min);
+
+  // Agendamentos do dia
+  const agendHoje = load('agendamentos').filter(function(a){
+    return a.data === hojeStr && a.status !== 'Cancelado' && a.status !== 'Realizado';
+  });
+
+  let alertas = '';
+  if (agendHoje.length > 0) {
+    alertas += `<div class="alert alert-success" style="cursor:pointer" onclick="showSection('agendamentos')">
+      📅 <strong>${agendHoje.length} agendamento(s) para hoje:</strong>
+      ${agendHoje.map(a=>`<span style="background:rgba(255,255,255,.3);padding:2px 8px;border-radius:10px;margin-left:4px">${a.hora} — ${clMap[a.clienteId]||'-'} (${a.tipo})</span>`).join('')}
+      <span style="float:right;font-size:11px;opacity:.7">Clique para ver →</span>
+    </div>`;
+  }
   if (baixo.length > 0) {
     alertas += `<div class="alert alert-warning">⚠️ <strong>${baixo.length} produto(s) com estoque baixo:</strong> ${baixo.map(p=>p.desc).join(', ')}</div>`;
   }
   if (atrasadas.length > 0) {
-    const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
     alertas += `<div class="alert alert-danger">🔴 <strong>${atrasadas.length} OS atrasada(s):</strong> ${atrasadas.map(o=>`${o.id} — ${clMap[o.clienteId]||'-'} (prev. ${fmtDate(o.previsao)})`).join(' | ')}</div>`;
   }
   el.innerHTML = alertas;
+
+  // Notificação popup ao abrir o sistema (só uma vez por dia)
+  var ultimaNotif = localStorage.getItem('otica_notif_agend');
+  if (agendHoje.length > 0 && ultimaNotif !== hojeStr) {
+    localStorage.setItem('otica_notif_agend', hojeStr);
+    setTimeout(function() {
+      showToast('📅 ' + agendHoje.length + ' agendamento(s) para hoje! Clique em Agendamentos para ver.', 'success');
+    }, 1500);
+  }
 }
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────────
