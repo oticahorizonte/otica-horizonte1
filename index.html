@@ -1152,6 +1152,70 @@ function instalarApp() {
 </div>
 </div>
 </aside>
+<!-- ── USUÁRIOS ── -->
+<section class="section" id="sec-usuarios">
+<div class="topbar">
+<h1>👥 Usuários do Sistema</h1>
+<div class="topbar-actions">
+<button class="btn btn-primary" onclick="openNovoUsuario()">➕ Novo Usuário</button>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><h3>👤 Usuários Cadastrados</h3></div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Nome</th><th>Login</th><th>Nível</th><th>Comissão</th><th>Status</th><th>Ações</th></tr></thead>
+<tbody id="tb-usuarios"></tbody></table>
+</div>
+</div>
+</section>
+<!-- Modal Usuário -->
+<div class="modal-overlay" id="modal-usuario" style="display:none">
+<div class="modal" style="max-width:480px">
+<div class="modal-header">
+<h3 id="modal-usuario-title">👤 Novo Usuário</h3>
+<button class="modal-close" onclick="closeModal('modal-usuario')">✕</button>
+</div>
+<div class="modal-body">
+<input id="usuario-idx" type="hidden"/>
+<div class="form-grid">
+<div class="form-group">
+<label>Nome Completo *</label>
+<input id="usuario-nome" placeholder="Ex: João Silva" type="text"/>
+</div>
+<div class="form-group">
+<label>Login *</label>
+<input id="usuario-login" placeholder="Ex: joao" type="text"/>
+</div>
+<div class="form-group">
+<label>Senha *</label>
+<input id="usuario-senha" placeholder="Mínimo 6 caracteres" type="password"/>
+</div>
+<div class="form-group">
+<label>Nível</label>
+<select id="usuario-nivel">
+<option value="Vendedor">Vendedor</option>
+<option value="Admin">Admin</option>
+</select>
+</div>
+<div class="form-group">
+<label>Comissão (%)</label>
+<input id="usuario-comissao" max="100" min="0" placeholder="Ex: 5" step="0.5" type="number"/>
+</div>
+<div class="form-group">
+<label>Status</label>
+<select id="usuario-status">
+<option value="Ativo">Ativo</option>
+<option value="Inativo">Inativo</option>
+</select>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-primary" onclick="saveUsuario()">💾 Salvar</button>
+<button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
 <!-- Main -->
 <main class="main">
 <!-- ── DASHBOARD ── -->
@@ -1790,71 +1854,6 @@ function instalarApp() {
 <button class="btn btn-outline" onclick="limparComposicao()">🗑️ Limpar Formulário</button>
 </div>
 </section>
-<!-- ── USUÁRIOS ── -->
-<section class="section" id="sec-usuarios">
-<div class="topbar">
-<h1>👥 Usuários do Sistema</h1>
-<div class="topbar-actions">
-<button class="btn btn-primary" onclick="openNovoUsuario()">➕ Novo Usuário</button>
-</div>
-</div>
-<div class="card">
-<div class="card-header"><h3>👤 Usuários Cadastrados</h3></div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Nome</th><th>Login</th><th>Nível</th><th>Comissão</th><th>Status</th><th>Ações</th></tr></thead>
-<tbody id="tb-usuarios"></tbody></table>
-</div>
-</div>
-</section>
-<!-- Modal Usuário -->
-<div class="modal-overlay" id="modal-usuario" style="display:none">
-<div class="modal" style="max-width:480px">
-<div class="modal-header">
-<h3 id="modal-usuario-title">👤 Novo Usuário</h3>
-<button class="modal-close" onclick="closeModal('modal-usuario')">✕</button>
-</div>
-<div class="modal-body">
-<input id="usuario-idx" type="hidden"/>
-<div class="form-grid">
-<div class="form-group">
-<label>Nome Completo *</label>
-<input id="usuario-nome" placeholder="Ex: João Silva" type="text"/>
-</div>
-<div class="form-group">
-<label>Login *</label>
-<input id="usuario-login" placeholder="Ex: joao" type="text"/>
-</div>
-<div class="form-group">
-<label>Senha *</label>
-<input id="usuario-senha" placeholder="Mínimo 6 caracteres" type="password"/>
-</div>
-<div class="form-group">
-<label>Nível</label>
-<select id="usuario-nivel">
-<option value="Vendedor">Vendedor</option>
-<option value="Admin">Admin</option>
-</select>
-</div>
-<div class="form-group">
-<label>Comissão (%)</label>
-<input id="usuario-comissao" max="100" min="0" placeholder="Ex: 5" step="0.5" type="number"/>
-</div>
-<div class="form-group">
-<label>Status</label>
-<select id="usuario-status">
-<option value="Ativo">Ativo</option>
-<option value="Inativo">Inativo</option>
-</select>
-</div>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" onclick="saveUsuario()">💾 Salvar</button>
-<button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
-</div>
-</div>
-</div>
-</div>
-
 </main>
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- MODAIS -->
@@ -3642,26 +3641,71 @@ function restaurarRascunhoVenda() {
 // ── Seed data ────────────────────────────────────────────────────
 function seedData() {
   if (load('clientes').length) return;
+  // ── 10 CLIENTES PARA TESTES ──
   save('clientes', [
-    {id:1,nome:'Maria Silva',cpf:'123.456.789-00',tel:'(11) 99999-0001',email:'maria@email.com',nasc:'1985-03-15',end:'Rua das Flores, 100',cidade:'São Paulo',convenio:'',status:'Ativo',cadastro:'2024-01-10',ultimaCompra:'2025-06-20',totalGasto:1250},
-    {id:2,nome:'João Pereira',cpf:'234.567.890-11',tel:'(11) 99999-0002',email:'joao@email.com',nasc:'1990-07-22',end:'Av. Brasil, 200',cidade:'São Paulo',convenio:'',status:'Ativo',cadastro:'2024-02-05',ultimaCompra:'2025-05-15',totalGasto:890},
-    {id:3,nome:'Ana Costa',cpf:'345.678.901-22',tel:'(21) 99999-0003',email:'ana@email.com',nasc:'1978-11-30',end:'Rua do Sol, 300',cidade:'Rio de Janeiro',convenio:'Unimed',status:'Ativo',cadastro:'2024-03-12',ultimaCompra:'2025-04-10',totalGasto:2100},
-    {id:4,nome:'Carlos Souza',cpf:'456.789.012-33',tel:'(31) 99999-0004',email:'carlos@email.com',nasc:'1965-05-08',end:'Rua da Paz, 400',cidade:'Belo Horizonte',convenio:'',status:'Inativo',cadastro:'2024-04-18',ultimaCompra:'2025-03-22',totalGasto:450},
-    {id:5,nome:'Fernanda Lima',cpf:'567.890.123-44',tel:'(11) 99999-0005',email:'fernanda@email.com',nasc:'1995-09-14',end:'Av. Paulista, 500',cidade:'São Paulo',convenio:'Bradesco Saúde',status:'Ativo',cadastro:'2024-05-25',ultimaCompra:'2025-06-30',totalGasto:3200},
+    {id:1,nome:'Ana Beatriz Souza',cpf:'111.222.333-01',tel:'(92) 99111-0001',email:'ana.beatriz@email.com',nasc:'1985-03-15',end:'Rua Henrique Martins, 100',bairro:'Centro',cidade:'Manaus',convenio:'Unimed',status:'Ativo',cadastro:'2026-01-10',ultimaCompra:'',totalGasto:0},
+    {id:2,nome:'Carlos Eduardo Lima',cpf:'222.333.444-02',tel:'(92) 99222-0002',email:'carlos.lima@email.com',nasc:'1978-07-22',end:'Av. Djalma Batista, 200',bairro:'Chapada',cidade:'Manaus',convenio:'',status:'Ativo',cadastro:'2026-01-15',ultimaCompra:'',totalGasto:0},
+    {id:3,nome:'Fernanda Cristina Alves',cpf:'333.444.555-03',tel:'(92) 99333-0003',email:'fernanda.alves@email.com',nasc:'1990-11-30',end:'Rua Recife, 300',bairro:'Adrianópolis',cidade:'Manaus',convenio:'Bradesco Saúde',status:'Ativo',cadastro:'2026-01-20',ultimaCompra:'',totalGasto:0},
+    {id:4,nome:'João Paulo Ferreira',cpf:'444.555.666-04',tel:'(92) 99444-0004',email:'joao.ferreira@email.com',nasc:'1965-05-08',end:'Av. Torquato Tapajós, 400',bairro:'Flores',cidade:'Manaus',convenio:'',status:'Ativo',cadastro:'2026-02-01',ultimaCompra:'',totalGasto:0},
+    {id:5,nome:'Maria das Graças Santos',cpf:'555.666.777-05',tel:'(92) 99555-0005',email:'maria.santos@email.com',nasc:'1972-09-14',end:'Rua Belo Horizonte, 500',bairro:'Parque 10',cidade:'Manaus',convenio:'Amil',status:'Ativo',cadastro:'2026-02-05',ultimaCompra:'',totalGasto:0},
+    {id:6,nome:'Roberto Andrade Neto',cpf:'666.777.888-06',tel:'(92) 99666-0006',email:'roberto.neto@email.com',nasc:'1988-03-20',end:'Rua Fortaleza, 600',bairro:'Aleixo',cidade:'Manaus',convenio:'',status:'Ativo',cadastro:'2026-02-10',ultimaCompra:'',totalGasto:0},
+    {id:7,nome:'Patrícia Mendes Costa',cpf:'777.888.999-07',tel:'(92) 99777-0007',email:'patricia.costa@email.com',nasc:'1995-07-08',end:'Av. André Araújo, 700',bairro:'Aleixo',cidade:'Manaus',convenio:'Unimed',status:'Ativo',cadastro:'2026-02-15',ultimaCompra:'',totalGasto:0},
+    {id:8,nome:'Lucas Gabriel Oliveira',cpf:'888.999.000-08',tel:'(92) 99888-0008',email:'lucas.oliveira@email.com',nasc:'2000-12-25',end:'Rua Maceió, 800',bairro:'Parque 10',cidade:'Manaus',convenio:'',status:'Ativo',cadastro:'2026-03-01',ultimaCompra:'',totalGasto:0},
+    {id:9,nome:'Juliana Pereira Ramos',cpf:'999.000.111-09',tel:'(92) 99999-0009',email:'juliana.ramos@email.com',nasc:'1982-04-18',end:'Av. Constantino Nery, 900',bairro:'São Geraldo',cidade:'Manaus',convenio:'SulAmérica',status:'Ativo',cadastro:'2026-03-05',ultimaCompra:'',totalGasto:0},
+    {id:10,nome:'Marcos Antônio Barbosa',cpf:'000.111.222-10',tel:'(92) 99000-0010',email:'marcos.barbosa@email.com',nasc:'1970-08-30',end:'Rua Salvador, 1000',bairro:'Centro',cidade:'Manaus',convenio:'',status:'Ativo',cadastro:'2026-03-10',ultimaCompra:'',totalGasto:0},
   ]);
+  // ── 10 RECEITAS COMPLETAS ──
   save('receitas', [
-    {id:1,clienteId:1,medico:'Dr. Carlos Mendes',data:'2025-06-01',validade:'2026-06-01',
+    {id:1,clienteId:1,medico:'Dr. Paulo Salave',data:'2026-06-01',validade:'2027-06-01',
      longeOdEsf:-2.25,longeOdCil:-0.50,longeOdEixo:180,longeOeEsf:-2.00,longeOeCil:-0.25,longeOeEixo:175,
-     pertoOdEsf:0,pertoOdCil:0,pertoOdEixo:0,pertoOeEsf:0,pertoOeCil:0,pertoOeEixo:0,
-     odEsf:-2.25,odCil:-0.50,oeEsf:-2.00,oeCil:-0.25,adicao:0,dnp:32,obs:''},
-    {id:2,clienteId:3,medico:'Dra. Ana Paula',data:'2025-05-15',validade:'2026-05-15',
-     longeOdEsf:-3.00,longeOdCil:-0.75,longeOdEixo:90,longeOeEsf:-2.75,longeOeCil:-0.50,longeOeEixo:85,
-     pertoOdEsf:0,pertoOdCil:0,pertoOdEixo:0,pertoOeEsf:0,pertoOeCil:0,pertoOeEixo:0,
-     odEsf:-3.00,odCil:-0.75,oeEsf:-2.75,oeCil:-0.50,adicao:1.5,dnp:33,obs:'Progressiva recomendada'},
-    {id:3,clienteId:5,medico:'Dr. Roberto Lima',data:'2025-06-20',validade:'2026-06-20',
-     longeOdEsf:-4.50,longeOdCil:-1.00,longeOdEixo:170,longeOeEsf:-4.25,longeOeCil:-0.75,longeOeEixo:165,
-     pertoOdEsf:0,pertoOdCil:0,pertoOdEixo:0,pertoOeEsf:0,pertoOeCil:0,pertoOeEixo:0,
-     odEsf:-4.50,odCil:-1.00,oeEsf:-4.25,oeCil:-0.75,adicao:2.0,dnp:31,obs:'Fotossensível indicado'},
+     pertoOdEsf:-2.25,pertoOdCil:-0.50,pertoOdEixo:180,pertoOeEsf:-2.00,pertoOeCil:-0.25,pertoOeEixo:175,
+     odEsf:-2.25,odCil:-0.50,oeEsf:-2.00,oeCil:-0.25,adicao:0,dnp:32,obs:'Visão simples',
+     tipoVisaoSimples:true,tratAntiReflexo:true},
+    {id:2,clienteId:2,medico:'Dra. Ana Paula Figueiredo',data:'2026-06-05',validade:'2027-06-05',
+     longeOdEsf:-3.50,longeOdCil:-0.75,longeOdEixo:90,longeOeEsf:-3.25,longeOeCil:-0.50,longeOeEixo:85,
+     pertoOdEsf:-3.50,pertoOdCil:-0.75,pertoOdEixo:90,pertoOeEsf:-3.25,pertoOeCil:-0.50,pertoOeEixo:85,
+     odEsf:-3.50,odCil:-0.75,oeEsf:-3.25,oeCil:-0.50,adicao:2.0,dnp:33,obs:'Progressiva recomendada',
+     tipoProgressiva:true,tratAntiReflexo:true,tratFotossensivel:true},
+    {id:3,clienteId:3,medico:'Dr. Roberto Lima',data:'2026-06-10',validade:'2027-06-10',
+     longeOdEsf:+1.50,longeOdCil:-0.25,longeOdEixo:180,longeOeEsf:+1.75,longeOeCil:-0.50,longeOeEixo:175,
+     pertoOdEsf:+1.50,pertoOdCil:-0.25,pertoOdEixo:180,pertoOeEsf:+1.75,pertoOeCil:-0.50,pertoOeEixo:175,
+     odEsf:+1.50,odCil:-0.25,oeEsf:+1.75,oeCil:-0.50,adicao:1.5,dnp:31,obs:'Hipermetropia leve',
+     tipoProgressiva:true,tratBlueCut:true},
+    {id:4,clienteId:4,medico:'Dr. Carlos Mendes',data:'2026-06-12',validade:'2027-06-12',
+     longeOdEsf:-5.00,longeOdCil:-1.25,longeOdEixo:170,longeOeEsf:-4.75,longeOeCil:-1.00,longeOeEixo:165,
+     pertoOdEsf:-5.00,pertoOdCil:-1.25,pertoOdEixo:170,pertoOeEsf:-4.75,pertoOeCil:-1.00,pertoOeEixo:165,
+     odEsf:-5.00,odCil:-1.25,oeEsf:-4.75,oeCil:-1.00,adicao:2.5,dnp:34,obs:'Alta miopia — progressiva digital',
+     tipoProgressiva:true,tratAntiReflexo:true,tratUV:true},
+    {id:5,clienteId:5,medico:'Dra. Fernanda Luz',data:'2026-06-15',validade:'2027-06-15',
+     longeOdEsf:-1.00,longeOdCil:-0.25,longeOdEixo:90,longeOeEsf:-1.25,longeOeCil:-0.50,longeOeEixo:85,
+     pertoOdEsf:-1.00,pertoOdCil:-0.25,pertoOdEixo:90,pertoOeEsf:-1.25,pertoOeCil:-0.50,pertoOeEixo:85,
+     odEsf:-1.00,odCil:-0.25,oeEsf:-1.25,oeCil:-0.50,adicao:0,dnp:32,obs:'Miopia leve',
+     tipoVisaoSimples:true,tratFotossensivel:true},
+    {id:6,clienteId:6,medico:'Dr. Paulo Salave',data:'2026-06-18',validade:'2027-06-18',
+     longeOdEsf:-2.75,longeOdCil:-0.75,longeOdEixo:180,longeOeEsf:-2.50,longeOeCil:-0.50,longeOeEixo:175,
+     pertoOdEsf:-2.75,pertoOdCil:-0.75,pertoOdEixo:180,pertoOeEsf:-2.50,pertoOeCil:-0.50,pertoOeEixo:175,
+     odEsf:-2.75,odCil:-0.75,oeEsf:-2.50,oeCil:-0.50,adicao:1.75,dnp:33,obs:'Bifocal indicado',
+     tipoBifocalKriptok:true,tratAntiReflexo:true},
+    {id:7,clienteId:7,medico:'Dra. Ana Paula Figueiredo',data:'2026-06-20',validade:'2027-06-20',
+     longeOdEsf:+2.00,longeOdCil:-0.50,longeOdEixo:90,longeOeEsf:+2.25,longeOeCil:-0.75,longeOeEixo:85,
+     pertoOdEsf:+2.00,pertoOdCil:-0.50,pertoOdEixo:90,pertoOeEsf:+2.25,pertoOeCil:-0.75,pertoOeEixo:85,
+     odEsf:+2.00,odCil:-0.50,oeEsf:+2.25,oeCil:-0.75,adicao:2.0,dnp:31,obs:'Hipermetropia moderada',
+     tipoProgressiva:true,tratAntiReflexo:true,tratBlueCut:true},
+    {id:8,clienteId:8,medico:'Dr. Roberto Lima',data:'2026-06-22',validade:'2027-06-22',
+     longeOdEsf:-0.75,longeOdCil:-0.25,longeOdEixo:180,longeOeEsf:-1.00,longeOeCil:-0.25,longeOeEixo:175,
+     pertoOdEsf:-0.75,pertoOdCil:-0.25,pertoOdEixo:180,pertoOeEsf:-1.00,pertoOeCil:-0.25,pertoOeEixo:175,
+     odEsf:-0.75,odCil:-0.25,oeEsf:-1.00,oeCil:-0.25,adicao:0,dnp:32,obs:'Miopia leve — jovem',
+     tipoVisaoSimples:true,tratBlueCut:true},
+    {id:9,clienteId:9,medico:'Dr. Carlos Mendes',data:'2026-06-25',validade:'2027-06-25',
+     longeOdEsf:-4.00,longeOdCil:-1.00,longeOdEixo:170,longeOeEsf:-3.75,longeOeCil:-0.75,longeOeEixo:165,
+     pertoOdEsf:-4.00,pertoOdCil:-1.00,pertoOdEixo:170,pertoOeEsf:-3.75,pertoOeCil:-0.75,pertoOeEixo:165,
+     odEsf:-4.00,odCil:-1.00,oeEsf:-3.75,oeCil:-0.75,adicao:2.25,dnp:33,obs:'Progressiva premium recomendada',
+     tipoProgressiva:true,tratAntiReflexo:true,tratFotossensivel:true,tratUV:true},
+    {id:10,clienteId:10,medico:'Dra. Fernanda Luz',data:'2026-06-28',validade:'2027-06-28',
+     longeOdEsf:+1.00,longeOdCil:-0.25,longeOdEixo:90,longeOeEsf:+1.25,longeOeCil:-0.50,longeOeEixo:85,
+     pertoOdEsf:+1.00,pertoOdCil:-0.25,pertoOdEixo:90,pertoOeEsf:+1.25,pertoOeCil:-0.50,pertoOeEixo:85,
+     odEsf:+1.00,odCil:-0.25,oeEsf:+1.25,oeCil:-0.50,adicao:1.25,dnp:34,obs:'Hipermetropia leve com presbiopia',
+     tipoBifocalUltex:true,tratAntiReflexo:true},
   ]);
   save('produtos', [
     // ── ARMAÇÕES PARA ÓCULOS DE GRAU ──
@@ -6419,6 +6463,8 @@ function doPrintRecibo() {
 
 // ── SEED AGENDAMENTOS ────────────────────────────────────────────
 function seedAgendamentos() {
+  // Agendamentos zerados para testes reais
+  if (true) return; // Desabilitado
   if (load('agendamentos').length) return;
   const hoje = new Date().toISOString().slice(0,10);
   const amanha = new Date(Date.now()+86400000).toISOString().slice(0,10);
