@@ -3708,6 +3708,22 @@ async function syncFirebaseToLocal() {
 }
 
 // Ao Firebase ficar pronto, sincronizar automaticamente
+// Proteção de saída
+window.addEventListener('beforeunload', function(e) {
+  // Verificar se há rascunho de venda não finalizado
+  var rascunho = localStorage.getItem(KEYS.rascunho_venda);
+  if (rascunho) {
+    try {
+      var r = JSON.parse(rascunho);
+      if (r && r.carrinho && r.carrinho.length > 0) {
+        e.preventDefault();
+        e.returnValue = 'Há uma venda em andamento. Deseja sair mesmo assim?';
+        return e.returnValue;
+      }
+    } catch(err) {}
+  }
+});
+
 window.addEventListener('firebaseReady', function() {
   var user = JSON.parse(localStorage.getItem(KEYS.user)||'null');
   if (user && user.nome) {
@@ -3720,7 +3736,22 @@ window.addEventListener('firebaseReady', function() {
   }
 });
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
-const save = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
+// Save com sync IMEDIATO para dados críticos
+const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
+const save = function(k, v) {
+  _saveBase(k, v);
+  // Sync imediato para dados críticos
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas'];
+  if (window._firebaseReady && window._fb && criticos.indexOf(k) !== -1) {
+    window._fb.saveCollection(k, v).then(function(ok) {
+      if (ok) {
+        localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+        if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator();
+        if(typeof mostrarConfirmacaoSync==='function') mostrarConfirmacaoSync();
+      }
+    });
+  }
+};
 const loadUser = () => JSON.parse(localStorage.getItem(KEYS.user) || 'null');
 const saveUser = v => localStorage.setItem(KEYS.user, JSON.stringify(v));
 
@@ -4386,6 +4417,67 @@ function isVendedor() {
 }
 
 // Aplicar controle de acesso em todos os módulos
+// ── AUTO-SAVE E CONFIRMAÇÃO VISUAL ────────────────────────────────────────
+var _autoSaveTimer = null;
+
+function mostrarConfirmacaoSalvo(msg) {
+  var toast = document.getElementById('toast');
+  if (!toast) return;
+  // Mostrar confirmação verde discreta
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#16a34a;color:white;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .3s ease';
+  div.textContent = msg || '✅ Salvo!';
+  document.body.appendChild(div);
+  setTimeout(function(){ div.style.opacity='0'; div.style.transition='opacity .5s'; setTimeout(function(){ div.remove(); },500); }, 2500);
+}
+
+// Sobrescrever save para mostrar confirmação
+var _saveOriginalWithConfirm = save;
+// Já temos save definido — adicionar confirmação visual ao sync
+window.addEventListener('firebaseReady', function() {
+  // Quando Firebase confirmar sync, mostrar indicador
+  console.log('Firebase pronto para auto-sync');
+});
+
+// 2. Proteção de saída — avisar se há dados não salvos
+var _dadosPendentes = false;
+function marcarPendente() { _dadosPendentes = true; }
+function limparPendente() { _dadosPendentes = false; }
+
+window.addEventListener('beforeunload', function(e) {
+  if (_dadosPendentes) {
+    e.preventDefault();
+    e.returnValue = 'Há dados não salvos. Deseja realmente sair?';
+    return e.returnValue;
+  }
+});
+
+// Marcar como pendente quando usuário digita em formulários
+document.addEventListener('input', function(e) {
+  var tag = e.target.tagName.toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+    var form = e.target.closest('.modal-body, .form-grid');
+    if (form) marcarPendente();
+  }
+});
+
+// Limpar pendente quando salva
+var _saveOriginalBase = save;
+
+function mostrarConfirmacaoSync() {
+  var icon = document.getElementById('sync-icon');
+  var text = document.getElementById('sync-text');
+  if (icon) icon.textContent = '☁️✅';
+  if (text) {
+    text.textContent = 'Salvo na nuvem!';
+    text.style.color = 'rgba(52,211,153,.9)';
+    setTimeout(function() {
+      text.style.color = '';
+      atualizarSyncIndicator();
+    }, 3000);
+  }
+}
+
 function atualizarSyncIndicator() {
   var icon = document.getElementById('sync-icon');
   var text = document.getElementById('sync-text');
@@ -5151,6 +5243,13 @@ function saveVenda() {
 
   save('vendas', arr);
   save('produtos', prods);
+  // Sync IMEDIATO com Firebase após registrar venda
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('vendas', arr).then(function(ok){
+      if(ok){ localStorage.setItem('otica_ultimo_sync', Date.now().toString()); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
+    });
+    window._fb.saveCollection('produtos', prods);
+  }
 
   const ci = clis.findIndex(c=>c.id===clienteId);
   if (ci>=0) {
@@ -5238,9 +5337,17 @@ function saveVenda() {
   closeModal('modal-orcamento-venda');
   closeModal('modal-venda');
   limparRascunhoVenda();
+  if (typeof limparPendente === 'function') limparPendente();
 
   // Atualizar registro de vendas imediatamente
   renderVendas();
+
+  // Sync imediato com Firebase após venda
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('vendas', load('vendas')).then(function(ok){
+      if(ok) { localStorage.setItem('otica_ultimo_sync', Date.now().toString()); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
+    });
+  }
 
   // Ir direto para impressão do recibo
   if (vendasCriadas.length > 0) {
