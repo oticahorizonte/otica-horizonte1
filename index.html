@@ -1153,70 +1153,6 @@ function instalarApp() {
 </div>
 </div>
 </aside>
-<!-- ── USUÁRIOS ── -->
-<section class="section" id="sec-usuarios">
-<div class="topbar">
-<h1>👥 Usuários do Sistema</h1>
-<div class="topbar-actions">
-<button class="btn btn-primary" onclick="openNovoUsuario()">➕ Novo Usuário</button>
-</div>
-</div>
-<div class="card">
-<div class="card-header"><h3>👤 Usuários Cadastrados</h3></div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Nome</th><th>Login</th><th>Nível</th><th>Comissão</th><th>Status</th><th>Ações</th></tr></thead>
-<tbody id="tb-usuarios"></tbody></table>
-</div>
-</div>
-</section>
-<!-- Modal Usuário -->
-<div class="modal-overlay" id="modal-usuario" style="display:none">
-<div class="modal" style="max-width:480px">
-<div class="modal-header">
-<h3 id="modal-usuario-title">👤 Novo Usuário</h3>
-<button class="modal-close" onclick="closeModal('modal-usuario')">✕</button>
-</div>
-<div class="modal-body">
-<input id="usuario-idx" type="hidden"/>
-<div class="form-grid">
-<div class="form-group">
-<label>Nome Completo *</label>
-<input id="usuario-nome" placeholder="Ex: João Silva" type="text"/>
-</div>
-<div class="form-group">
-<label>Login *</label>
-<input id="usuario-login" placeholder="Ex: joao" type="text"/>
-</div>
-<div class="form-group">
-<label>Senha *</label>
-<input id="usuario-senha" placeholder="Mínimo 6 caracteres" type="password"/>
-</div>
-<div class="form-group">
-<label>Nível</label>
-<select id="usuario-nivel">
-<option value="Vendedor">Vendedor</option>
-<option value="Admin">Admin</option>
-</select>
-</div>
-<div class="form-group">
-<label>Comissão (%)</label>
-<input id="usuario-comissao" max="100" min="0" placeholder="Ex: 5" step="0.5" type="number"/>
-</div>
-<div class="form-group">
-<label>Status</label>
-<select id="usuario-status">
-<option value="Ativo">Ativo</option>
-<option value="Inativo">Inativo</option>
-</select>
-</div>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" onclick="saveUsuario()">💾 Salvar</button>
-<button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
-</div>
-</div>
-</div>
-</div>
 <!-- Main -->
 <main class="main">
 <!-- ── DASHBOARD ── -->
@@ -1890,6 +1826,71 @@ function instalarApp() {
 <button class="btn btn-outline" onclick="limparComposicao()">🗑️ Limpar Formulário</button>
 </div>
 </section>
+<!-- ── USUÁRIOS ── -->
+<section class="section" id="sec-usuarios">
+<div class="topbar">
+<h1>👥 Usuários do Sistema</h1>
+<div class="topbar-actions">
+<button class="btn btn-primary" onclick="openNovoUsuario()">➕ Novo Usuário</button>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><h3>👤 Usuários Cadastrados</h3></div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Nome</th><th>Login</th><th>Nível</th><th>Comissão</th><th>Status</th><th>Ações</th></tr></thead>
+<tbody id="tb-usuarios"></tbody></table>
+</div>
+</div>
+</section>
+<!-- Modal Usuário -->
+<div class="modal-overlay" id="modal-usuario" style="display:none">
+<div class="modal" style="max-width:480px">
+<div class="modal-header">
+<h3 id="modal-usuario-title">👤 Novo Usuário</h3>
+<button class="modal-close" onclick="closeModal('modal-usuario')">✕</button>
+</div>
+<div class="modal-body">
+<input id="usuario-idx" type="hidden"/>
+<div class="form-grid">
+<div class="form-group">
+<label>Nome Completo *</label>
+<input id="usuario-nome" placeholder="Ex: João Silva" type="text"/>
+</div>
+<div class="form-group">
+<label>Login *</label>
+<input id="usuario-login" placeholder="Ex: joao" type="text"/>
+</div>
+<div class="form-group">
+<label>Senha *</label>
+<input id="usuario-senha" placeholder="Mínimo 6 caracteres" type="password"/>
+</div>
+<div class="form-group">
+<label>Nível</label>
+<select id="usuario-nivel">
+<option value="Vendedor">Vendedor</option>
+<option value="Admin">Admin</option>
+</select>
+</div>
+<div class="form-group">
+<label>Comissão (%)</label>
+<input id="usuario-comissao" max="100" min="0" placeholder="Ex: 5" step="0.5" type="number"/>
+</div>
+<div class="form-group">
+<label>Status</label>
+<select id="usuario-status">
+<option value="Ativo">Ativo</option>
+<option value="Inativo">Inativo</option>
+</select>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-primary" onclick="saveUsuario()">💾 Salvar</button>
+<button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
+
 </main>
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- MODAIS -->
@@ -3708,22 +3709,6 @@ async function syncFirebaseToLocal() {
 }
 
 // Ao Firebase ficar pronto, sincronizar automaticamente
-// Proteção de saída
-window.addEventListener('beforeunload', function(e) {
-  // Verificar se há rascunho de venda não finalizado
-  var rascunho = localStorage.getItem(KEYS.rascunho_venda);
-  if (rascunho) {
-    try {
-      var r = JSON.parse(rascunho);
-      if (r && r.carrinho && r.carrinho.length > 0) {
-        e.preventDefault();
-        e.returnValue = 'Há uma venda em andamento. Deseja sair mesmo assim?';
-        return e.returnValue;
-      }
-    } catch(err) {}
-  }
-});
-
 window.addEventListener('firebaseReady', function() {
   var user = JSON.parse(localStorage.getItem(KEYS.user)||'null');
   if (user && user.nome) {
@@ -3736,22 +3721,7 @@ window.addEventListener('firebaseReady', function() {
   }
 });
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
-// Save com sync IMEDIATO para dados críticos
-const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
-const save = function(k, v) {
-  _saveBase(k, v);
-  // Sync imediato para dados críticos
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas'];
-  if (window._firebaseReady && window._fb && criticos.indexOf(k) !== -1) {
-    window._fb.saveCollection(k, v).then(function(ok) {
-      if (ok) {
-        localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-        if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator();
-        if(typeof mostrarConfirmacaoSync==='function') mostrarConfirmacaoSync();
-      }
-    });
-  }
-};
+const save = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const loadUser = () => JSON.parse(localStorage.getItem(KEYS.user) || 'null');
 const saveUser = v => localStorage.setItem(KEYS.user, JSON.stringify(v));
 
@@ -4464,20 +4434,6 @@ document.addEventListener('input', function(e) {
 // Limpar pendente quando salva
 var _saveOriginalBase = save;
 
-function mostrarConfirmacaoSync() {
-  var icon = document.getElementById('sync-icon');
-  var text = document.getElementById('sync-text');
-  if (icon) icon.textContent = '☁️✅';
-  if (text) {
-    text.textContent = 'Salvo na nuvem!';
-    text.style.color = 'rgba(52,211,153,.9)';
-    setTimeout(function() {
-      text.style.color = '';
-      atualizarSyncIndicator();
-    }, 3000);
-  }
-}
-
 function atualizarSyncIndicator() {
   var icon = document.getElementById('sync-icon');
   var text = document.getElementById('sync-text');
@@ -5026,7 +4982,15 @@ function renderVendas() {
   const gruposOrdenados = Object.entries(grupos).sort((a,b) => {
     const dataA = a[1][0].data || '';
     const dataB = b[1][0].data || '';
-    return dataB > dataA ? 1 : dataB < dataA ? -1 : 0;
+    if (dataB > dataA) return 1;
+    if (dataB < dataA) return -1;
+    // Mesmo dia: ordenar pelo ID da venda (maior ID = mais recente)
+    const idA = a[1][0].id || '';
+    const idB = b[1][0].id || '';
+    // Extrair número do ID (ex: V-0012 → 12)
+    const numA = parseInt(idA.replace(/\D/g,''))||0;
+    const numB = parseInt(idB.replace(/\D/g,''))||0;
+    return numB - numA;
   });
 
   // Calcular totais para cards
@@ -5243,13 +5207,6 @@ function saveVenda() {
 
   save('vendas', arr);
   save('produtos', prods);
-  // Sync IMEDIATO com Firebase após registrar venda
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('vendas', arr).then(function(ok){
-      if(ok){ localStorage.setItem('otica_ultimo_sync', Date.now().toString()); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
-    });
-    window._fb.saveCollection('produtos', prods);
-  }
 
   const ci = clis.findIndex(c=>c.id===clienteId);
   if (ci>=0) {
