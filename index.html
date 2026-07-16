@@ -2305,11 +2305,14 @@ function instalarApp() {
 <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-radius:14px 14px 0 0;border-bottom:2px solid #c9a84c">
 <h3 style="color:#e8c96a;font-size:18px;margin:0;font-weight:800">💰 Nova Venda</h3>
 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px;position:relative">
 <span style="color:#c9a84c;font-size:11px">👤</span>
-<select id="venda-cliente" style="background:#0d2b4e;border:none;color:#fff;font-size:13px;font-weight:700;outline:none;cursor:pointer;min-width:170px;border-radius:4px;padding:3px 6px">
-<option value="">— Selecione o cliente —</option>
-</select>
+<input id="venda-cliente-busca" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off"
+  oninput="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
+  onfocus="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
+  style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:700;outline:none;min-width:180px;placeholder-color:rgba(255,255,255,.5)"/>
+<div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);max-height:220px;overflow-y:auto;min-width:280px;margin-top:4px"></div>
+<select id="venda-cliente" style="display:none"></select>
 </div>
 <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
 <span style="color:#c9a84c;font-size:11px">📅</span>
@@ -3022,7 +3025,7 @@ function instalarApp() {
 <div id="rec-crediario-box" style="display:none;background:#f0f4ff;border:1px solid #c7d7f0;border-radius:8px;padding:10px 12px;margin-bottom:12px"></div>
 <!-- Garantia -->
 <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10px;color:#166534;text-align:center">
-🛡️ <strong>Garantia de 90 dias</strong> para defeitos de fabricação. Guarde este recibo.
+🛡️ <strong>Garantia de 90 dias</strong> para defeitos na armação. Guarde este recibo.
 </div>
 <!-- Assinatura -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0">
@@ -4301,9 +4304,22 @@ function renderDashboard() {
   var userDashV = loadUser();
   var meuNomeDashV = userDashV ? (userDashV.nome||'').toLowerCase() : '';
   var vendasParaDash = adminDashV ? vendas : vendas.filter(function(v){ return (v.vendedor||'').toLowerCase()===meuNomeDashV; });
-  document.getElementById('dash-vendas').innerHTML = vendasParaDash.slice(-5).reverse().map(v => `
-    <tr><td><strong>${v.id}</strong></td><td>${clMap[v.clienteId]||'-'}</td><td>${prodMap[v.produto]||v.produto}</td>
-    <td class="fw-bold text-success">${fmtMoney(calcTotal(v))}</td><td>${statusBadge(v.status)}</td></tr>
+  // Agrupar por grupoVenda para mostrar vendas únicas
+  var gruposVistosD = new Set();
+  var vendasUnicasD = vendasParaDash.filter(function(v){
+    var chave = v.grupoVenda || v.id;
+    if (gruposVistosD.has(chave)) return false;
+    gruposVistosD.add(chave);
+    return true;
+  });
+  document.getElementById('dash-vendas').innerHTML = vendasUnicasD.slice(-10).reverse().map(v => `
+    <tr style="cursor:pointer" onclick="showSection('vendas')">
+      <td><strong style="color:#0d2b4e">${v.id}</strong></td>
+      <td>${clMap[v.clienteId]||'-'}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.descricaoCompleta||(prodMap[v.produto]||v.produto)||'-'}</td>
+      <td class="fw-bold" style="color:#16a34a">${fmtMoney(calcTotal(v))}</td>
+      <td>${statusBadge(v.status)}</td>
+    </tr>
   `).join('') || '<tr><td colspan="5" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
   // OS em aberto
   // OS em aberto — só admin vê
@@ -4912,7 +4928,7 @@ function carregarFotoProduto(foto) {
 // 26. QR Code no recibo
 function gerarQRCode(texto) {
   // Usar API pública de QR Code
-  return 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data='+encodeURIComponent(texto);
+  return 'https://chart.googleapis.com/chart?chs=80x80&cht=qr&chl='+encodeURIComponent(texto)+'&choe=UTF-8';
 }
 
 // 27. Exportar relatório em PDF
@@ -6615,6 +6631,11 @@ function renderUsuarios() {
   if (!document.getElementById('tb-usuarios')) return;
   if (!isAdmin) { showSection('clientes'); return; }
   var usuarios = getUsuarios();
+  // Ocultar usuário "Administrador" padrão se houver outro Admin cadastrado
+  var outrosAdmins = usuarios.filter(function(u){ return u.nivel==='Admin' && u.login !== 'admin'; });
+  if (outrosAdmins.length > 0) {
+    usuarios = usuarios.filter(function(u){ return u.login !== 'admin'; });
+  }
   document.getElementById('tb-usuarios').innerHTML = usuarios.map(function(u) {
     return '<tr>'
       +'<td><strong>'+u.nome+'</strong></td>'
@@ -8812,7 +8833,14 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
   var hidden = document.getElementById(hiddenId);
   if (input) input.value = clienteNome;
   if (lista) lista.style.display = 'none';
-  if (hidden) { hidden.value = clienteId; hidden.dispatchEvent(new Event('change')); }
+  if (hidden) {
+    hidden.value = clienteId;
+    hidden.dispatchEvent(new Event('change'));
+    // Para o select de venda, também atualizar o painel interno
+    if (hiddenId === 'venda-cliente' && typeof calcVendaInterna === 'function') {
+      calcVendaInterna();
+    }
+  }
 }
 
 // ── Busca de estoque com campo de pesquisa ─────────────────────────────────
@@ -9411,6 +9439,11 @@ function initVendaModal() {
   _carrinhoInterno = []; // custos internos
   renderCarrinho();
   populateClienteSelect('venda-cliente');
+  // Limpar campo de busca de cliente na venda
+  var vcBusca = document.getElementById('venda-cliente-busca');
+  if (vcBusca) vcBusca.value = '';
+  var vcLista = document.getElementById('venda-cliente-lista');
+  if (vcLista) vcLista.style.display = 'none';
 
   // Popular produtos
   const prodSel = document.getElementById('venda-produto');
