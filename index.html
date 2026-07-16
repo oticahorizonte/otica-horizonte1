@@ -296,26 +296,30 @@
     gap: 14px; margin-bottom: 20px;
   }
   .stat-card {
-    background: var(--card); border-radius: 14px;
-    padding: 18px 20px; box-shadow: var(--shadow);
+    background: var(--card); border-radius: 16px;
+    padding: 20px 22px; box-shadow: var(--shadow);
     border-left: 4px solid #c9a84c;
-    transition: all .2s; position: relative; overflow: hidden;
+    transition: all .25s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden;
   }
   .stat-card::before {
-    content: ''; position: absolute; top: 0; right: 0;
-    width: 60px; height: 60px; border-radius: 50%;
-    background: rgba(201,168,76,.08); transform: translate(20px,-20px);
+    content: ''; position: absolute; top: -10px; right: -10px;
+    width: 70px; height: 70px; border-radius: 50%;
+    background: rgba(201,168,76,.08); 
   }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .stat-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
   .stat-card.green { border-left-color: var(--success); }
-  .stat-card.green::before { background: rgba(22,163,74,.06); }
+  .stat-card.green::before { background: rgba(22,163,74,.08); }
   .stat-card.orange { border-left-color: var(--warning); }
-  .stat-card.orange::before { background: rgba(217,119,6,.06); }
+  .stat-card.orange::before { background: rgba(217,119,6,.08); }
   .stat-card.red { border-left-color: var(--danger); }
-  .stat-card.red::before { background: rgba(220,38,38,.06); }
-  .stat-card .label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
-  .stat-card .value { font-size: 24px; font-weight: 800; color: var(--primary); margin: 6px 0 4px; line-height: 1.2; }
-  .stat-card .sub { font-size: 11px; color: var(--text-muted); }
+  .stat-card.red::before { background: rgba(220,38,38,.08); }
+  .stat-card .label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px; }
+  .stat-card .value { font-size: 26px; font-weight: 800; color: var(--primary); margin: 8px 0 4px; line-height: 1.1; }
+  .stat-card .sub { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
   /* ══════════════════════════════════════════════
      TABELAS
@@ -1998,9 +2002,14 @@ function instalarApp() {
 <div class="modal-body">
 <input id="rec-id" type="hidden"/>
 <div class="form-grid">
-<div class="form-group">
+<div class="form-group" style="position:relative">
 <label>Cliente *</label>
-<select id="rec-cliente"></select>
+<input id="rec-cliente-busca" type="text" placeholder="🔍 Digite nome, CPF ou telefone..." autocomplete="off"
+  oninput="filtrarClienteBusca('rec-cliente-busca','rec-cliente-lista','rec-cliente')"
+  onfocus="filtrarClienteBusca('rec-cliente-busca','rec-cliente-lista','rec-cliente')"
+  style="width:100%"/>
+<div id="rec-cliente-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;width:100%"></div>
+<select id="rec-cliente" style="display:none"></select>
 </div>
 <div class="form-group">
 <label>Médico</label>
@@ -2571,9 +2580,14 @@ function instalarApp() {
 <div class="modal-body">
 <input id="os-idx" type="hidden"/>
 <div class="form-grid">
-<div class="form-group">
+<div class="form-group" style="position:relative">
 <label>Cliente *</label>
-<select id="os-cliente"></select>
+<input id="os-cliente-busca" type="text" placeholder="🔍 Digite nome, CPF ou telefone..." autocomplete="off"
+  oninput="filtrarClienteBusca('os-cliente-busca','os-cliente-lista','os-cliente')"
+  onfocus="filtrarClienteBusca('os-cliente-busca','os-cliente-lista','os-cliente')"
+  style="width:100%"/>
+<div id="os-cliente-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;width:100%"></div>
+<select id="os-cliente" style="display:none"></select>
 </div>
 <div class="form-group">
 <label>Tipo de Serviço *</label>
@@ -2860,9 +2874,14 @@ function instalarApp() {
 <div class="modal-body">
 <input id="agend-idx" type="hidden"/>
 <div class="form-grid">
-<div class="form-group">
+<div class="form-group" style="position:relative">
 <label>Cliente *</label>
-<select id="agend-cliente"></select>
+<input id="agend-cliente-busca" type="text" placeholder="🔍 Digite nome, CPF ou telefone..." autocomplete="off"
+  oninput="filtrarClienteBusca('agend-cliente-busca','agend-cliente-lista','agend-cliente')"
+  onfocus="filtrarClienteBusca('agend-cliente-busca','agend-cliente-lista','agend-cliente')"
+  style="width:100%"/>
+<div id="agend-cliente-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;width:100%"></div>
+<select id="agend-cliente" style="display:none"></select>
 </div>
 <div class="form-group">
 <label>Tipo *</label>
@@ -4187,45 +4206,66 @@ function renderMetaVendas() {
   if (!admin) { body.innerHTML = ''; return; }
   var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
   var vendas = load('vendas');
-  var mesAtual = new Date().toISOString().slice(0,7);
-  var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
+  // Usar data local (não UTC)
+  var hoje = new Date();
+  var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+  var vendasMes = vendas.filter(function(v){ return (v.data||'').startsWith(mesAtual); });
   var porVendedor = {};
   vendasMes.forEach(function(v){
     var vend = v.vendedor||'Não informado';
+    if (vend === 'Administrador' || vend === 'admin') return; // Admin não conta
     if (!porVendedor[vend]) porVendedor[vend] = 0;
     porVendedor[vend] += calcTotal(v);
   });
+
+  if (Object.keys(porVendedor).length === 0) {
+    body.innerHTML = '<tr><td colspan="4" style="padding:16px;text-align:center;color:var(--text-muted)">Nenhuma venda de vendedores este mês</td></tr>';
+    return;
+  }
+
   body.innerHTML = Object.entries(porVendedor).map(function(entry){
     var vend = entry[0], total = entry[1];
-    var meta = metas[vend.toLowerCase()] || 0;
+    var chave = vend.toLowerCase();
+    var meta = metas[chave] || 0;
     var pct = meta > 0 ? Math.min(100, total/meta*100) : 0;
     var cor = pct>=100?'#16a34a':pct>=70?'#d97706':'#dc2626';
-    var tr = document.createElement('tr');
-    var tdNome = document.createElement('td'); tdNome.innerHTML = '<strong>'+vend+'</strong>'; tr.appendChild(tdNome);
-    var tdReal = document.createElement('td'); tdReal.textContent = fmtMoney(total); tr.appendChild(tdReal);
-    var tdMeta = document.createElement('td');
-    var inp = document.createElement('input');
-    inp.type='number'; inp.value=meta||''; inp.placeholder='Definir meta';
-    inp.style.cssText='width:120px;padding:4px 8px;border:1px solid #dde3ee;border-radius:6px;font-size:12px';
-    inp.dataset.vend = vend.toLowerCase();
-    inp.addEventListener('change', function(){ salvarMeta(this.dataset.vend, this.value); });
-    tdMeta.appendChild(inp); tr.appendChild(tdMeta);
-    var tdProg = document.createElement('td');
-    if (meta>0) {
-      tdProg.innerHTML = '<div style="background:#f1f5f9;border-radius:20px;height:8px;overflow:hidden"><div style="background:'+cor+';height:100%;width:'+pct+'%;transition:width .3s"></div></div><span style="font-size:11px;color:'+cor+';font-weight:700">'+pct.toFixed(0)+'%</span>';
-    } else {
-      tdProg.innerHTML = '<span style="color:#94a3b8;font-size:11px">Sem meta</span>';
-    }
-    tr.appendChild(tdProg);
-    return tr.outerHTML;
-  }).join('') || '<tr><td colspan="4" style="padding:16px;text-align:center;color:var(--text-muted)">Nenhuma venda este mês</td></tr>';
+    return '<tr>'
+      +'<td><strong>'+vend+'</strong></td>'
+      +'<td style="color:#d97706;font-weight:700">'+fmtMoney(total)+'</td>'
+      +'<td><input type="number" value="'+(meta||'')+'" placeholder="Definir meta (R$)"'
+      +' style="width:140px;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px;font-weight:600"'
+      +' data-vend="'+chave+'"'
+      +' onchange="salvarMeta(this.dataset.vend,this.value)"'
+      +'/></td>'
+      +'<td>'+(meta>0
+        ?'<div style="background:#f1f5f9;border-radius:20px;height:10px;overflow:hidden;margin-bottom:3px"><div style="background:'+cor+';height:100%;width:'+pct+'%;transition:width .5s;border-radius:20px"></div></div>'
+         +'<span style="font-size:12px;color:'+cor+';font-weight:800">'+pct.toFixed(0)+'% — '+fmtMoney(total)+' / '+fmtMoney(meta)+'</span>'
+        :'<span style="color:#94a3b8;font-size:11px">Digite a meta e pressione Enter</span>')
+      +'</td>'
+      +'</tr>';
+  }).join('');
+
+  // Adicionar listeners nos inputs de meta
+  body.querySelectorAll('input[type="number"]').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { salvarMeta(this.dataset.vend, this.value); this.blur(); }
+    });
+    inp.addEventListener('focus', function() { this.style.borderColor = '#c9a84c'; });
+    inp.addEventListener('blur', function() { this.style.borderColor = '#dde3ee'; });
+  });
 }
 
 function salvarMeta(vendedor, valor) {
+  if (!vendedor) return;
   var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
-  metas[vendedor] = parseFloat(valor)||0;
+  var v = parseFloat(valor)||0;
+  if (v > 0) {
+    metas[vendedor] = v;
+  } else {
+    delete metas[vendedor];
+  }
   localStorage.setItem('otica_metas_vendas', JSON.stringify(metas));
-  showToast('Meta salva!','success');
+  showToast('✅ Meta de '+vendedor+' salva: '+fmtMoney(v),'success');
   renderMetaVendas();
 }
 
@@ -4692,6 +4732,11 @@ function populateClienteSelect(selId) {
   const ativos = load('clientes').filter(c => c.status !== 'Inativo');
   sel.innerHTML = '<option value="">— Selecione o cliente —</option>' +
     ativos.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  // Limpar campo de busca associado
+  var buscaEl = document.getElementById(selId+'-busca');
+  if (buscaEl) buscaEl.value = '';
+  var listaEl = document.getElementById(selId+'-lista');
+  if (listaEl) listaEl.style.display = 'none';
 }
 
 function renderReceitas() {
@@ -8731,6 +8776,45 @@ function delVendaGrupo(chave) {
 
 
 // ── CÁLCULO INTERNO DA VENDA ─────────────────────────────────────
+// ── Busca de cliente com campo de pesquisa ────────────────────────────────
+function filtrarClienteBusca(inputId, listaId, hiddenId) {
+  var input = document.getElementById(inputId);
+  var lista = document.getElementById(listaId);
+  if (!input || !lista) return;
+  var q = input.value.toLowerCase().trim();
+  var clientes = load('clientes').filter(function(c){ return c.status !== 'Inativo'; });
+  var filtrados = q ? clientes.filter(function(c){
+    return (c.nome||'').toLowerCase().includes(q)||(c.cpf||'').includes(q)||(c.tel||'').includes(q);
+  }) : clientes.slice(0,8);
+  if (filtrados.length === 0 && !q) { lista.style.display='none'; return; }
+  lista.style.display = 'block';
+  lista.innerHTML = '';
+  filtrados.slice(0,8).forEach(function(c) {
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid #eef1f8;font-size:12px';
+    div.innerHTML = '<div style="font-weight:700;color:#0d2b4e">'+c.nome+'</div><div style="font-size:10px;color:#5a6a8a">'+(c.cpf||'')+(c.tel?' | '+c.tel:'')+'</div>';
+    div.addEventListener('mouseover', function(){ this.style.background='#f0f4ff'; });
+    div.addEventListener('mouseout', function(){ this.style.background='white'; });
+    div.addEventListener('click', function(){ selecionarClienteBusca(inputId,listaId,hiddenId,c.id,c.nome); });
+    lista.appendChild(div);
+  });
+  if (filtrados.length === 0) lista.innerHTML = '<div style="padding:12px;text-align:center;color:#5a6a8a;font-size:12px">Nenhum cliente encontrado</div>';
+  setTimeout(function() {
+    document.addEventListener('click', function fechar(e) {
+      if (!lista.contains(e.target) && e.target !== input) { lista.style.display='none'; document.removeEventListener('click', fechar); }
+    });
+  }, 100);
+}
+
+function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNome) {
+  var input = document.getElementById(inputId);
+  var lista = document.getElementById(listaId);
+  var hidden = document.getElementById(hiddenId);
+  if (input) input.value = clienteNome;
+  if (lista) lista.style.display = 'none';
+  if (hidden) { hidden.value = clienteId; hidden.dispatchEvent(new Event('change')); }
+}
+
 // ── Busca de estoque com campo de pesquisa ─────────────────────────────────
 function filtrarEstoqueBusca(tipo) {
   var isAdmin = (function(){ var u=loadUser(); return u&&(u.nivel==='Admin'||u.nome==='Administrador'); })();
