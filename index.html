@@ -1273,9 +1273,9 @@ function instalarApp() {
 </div>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-<div class="card">
+<div class="card" style="grid-column:1/-1">
 <div class="card-header"><h3>💰 Últimas Vendas</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Status</th></tr></thead><tbody id="dash-vendas"></tbody></table></div>
+<div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Status</th></tr></thead><tbody id="dash-vendas"></tbody></table></div>
 </div>
 <div class="card" id="card-dash-os">
 <div class="card-header"><h3>🔧 OS em Aberto</h3></div>
@@ -1396,7 +1396,7 @@ function instalarApp() {
 </div>
 </div>
 <!-- ── Contas a Receber (vendas pendentes) ── -->
-<div class="card" id="card-contas-receber" style="margin-bottom:20px">
+<div class="card" id="card-contas-receber" style="margin-bottom:20px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#dc2626,#f87171);border-radius:14px 14px 0 0">
 <h3 style="color:white">💳 Vendas Pendentes</h3>
 <span id="contas-receber-total" style="font-size:12px;color:rgba(255,255,255,.8)"></span>
@@ -3045,9 +3045,6 @@ function instalarApp() {
 <!-- Rodapé -->
 <div style="text-align:center;margin-top:12px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;font-style:italic">
 Ótica Horizonte — CNPJ 64.448.745/0001-09 | Emitido em <span id="rec-rodape-data"></span>
-<div style="margin-top:8px;text-align:center">
-<img id="rec-qrcode" src="" alt="QR Code" style="width:60px;height:60px;display:none"/>
-</div>
 </div>
 </div>
 </div>
@@ -4314,14 +4311,15 @@ function renderDashboard() {
     return true;
   });
   document.getElementById('dash-vendas').innerHTML = vendasUnicasD.slice(-10).reverse().map(v => `
-    <tr style="cursor:pointer" onclick="showSection('vendas')">
+    <tr style="cursor:pointer" onclick="showSection('vendas')" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background=''">
       <td><strong style="color:#0d2b4e">${v.id}</strong></td>
-      <td>${clMap[v.clienteId]||'-'}</td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.descricaoCompleta||(prodMap[v.produto]||v.produto)||'-'}</td>
-      <td class="fw-bold" style="color:#16a34a">${fmtMoney(calcTotal(v))}</td>
+      <td style="color:#5a6a8a;font-size:12px">${fmtDate(v.data)}</td>
+      <td><strong style="color:#0d2b4e">${clMap[v.clienteId]||'-'}</strong></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a6a8a">${v.descricaoCompleta||(prodMap[v.produto]||v.produto)||'-'}</td>
+      <td class="fw-bold" style="color:#16a34a;font-size:14px">${fmtMoney(calcTotal(v))}</td>
       <td>${statusBadge(v.status)}</td>
     </tr>
-  `).join('') || '<tr><td colspan="5" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
+  `).join('') || '<tr><td colspan="6" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
   // OS em aberto
   // OS em aberto — só admin vê
   var cardDashOS2 = document.getElementById('card-dash-os');
@@ -4649,6 +4647,10 @@ function aplicarControleAcesso() {
   // Botão histórico estoque — só admin
   var btnHistEst = document.getElementById('btn-historico-estoque');
   if (btnHistEst) btnHistEst.style.display = admin ? '' : 'none';
+
+  // Vendas pendentes — só admin
+  var cardReceber = document.getElementById('card-contas-receber');
+  if (cardReceber) cardReceber.style.display = admin ? '' : 'none';
 
   // Sync indicator
   if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
@@ -7191,20 +7193,6 @@ function imprimirRecibo(id) {
     var statusColors = {'Pago':'background:#dcfce7;color:#16a34a','Pendente':'background:#fef3c7;color:#d97706','Cancelado':'background:#fee2e2;color:#dc2626'};
     badge.style.cssText = statusColors[v.status]||'background:#f1f5f9;color:#64748b';
     badge.textContent = v.status;
-  }
-
-  // QR Code com dados da venda
-  var qrEl = document.getElementById('rec-qrcode');
-  if (qrEl) {
-    var qrData = 'OTICA HORIZONTE'+
-    ' | Venda: '+v.id+
-    ' | Cliente: '+(clMap[v.clienteId]||'-')+
-    ' | Total: '+fmtMoney(totalGrupo)+
-    ' | Data: '+fmtDate(v.data)+
-    ' | Status: '+(v.status||'Pago')+
-    ' | CNPJ: 64.448.745/0001-09';
-    qrEl.src = gerarQRCode(qrData);
-    qrEl.style.display = 'block';
   }
 
   openModal('modal-recibo');
