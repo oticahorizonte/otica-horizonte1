@@ -4206,7 +4206,8 @@ function renderMetaVendas() {
   var body = document.getElementById('meta-vendas-body');
   if (!body) return;
   var admin = isAdmin();
-  if (!admin) { body.innerHTML = ''; return; }
+  var userMeta = loadUser();
+  var meuNomeMeta = userMeta ? (userMeta.nome||'').toLowerCase() : '';
   var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
   var vendas = load('vendas');
   // Usar data local (não UTC)
@@ -4928,7 +4929,8 @@ function carregarFotoProduto(foto) {
 // 26. QR Code no recibo
 function gerarQRCode(texto) {
   // Usar API pública de QR Code
-  return 'https://chart.googleapis.com/chart?chs=80x80&cht=qr&chl='+encodeURIComponent(texto)+'&choe=UTF-8';
+  // QR Code via API pública confiável
+  return 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&format=png&data='+encodeURIComponent(texto);
 }
 
 // 27. Exportar relatório em PDF
@@ -5001,7 +5003,7 @@ function renderProdutos() {
   if (card && card.style.display !== 'none') renderHistoricoEstoque();
   if(!document.getElementById('tb-produtos')) return;
   // Ocultar colunas de custo e margem para vendedor
-  document.querySelectorAll('.col-custo-prod,.col-margem-prod').forEach(function(el){ el.style.display=adminProd?'':'none'; });
+  document.querySelectorAll('.col-custo-prod,.col-margem-prod').forEach(function(el){ el.style.display = adminProd ? '' : 'none'; });
   const q = (document.getElementById('search-produtos')||{}).value||'';
   const data = load('produtos').filter(p =>
     !q || p.cod.toLowerCase().includes(q.toLowerCase()) ||
@@ -5017,9 +5019,9 @@ function renderProdutos() {
       <td>${p.marca}</td>
       <td class="${p.qtd<=p.min?'text-danger fw-bold':'fw-bold'}">${p.qtd}</td>
       <td>${p.min}</td>
-      ${isAdmin?`<td>${fmtMoney(p.custo)}</td>`:''}
+      ${isAdmin()?`<td>${fmtMoney(p.custo)}</td>`:''}
       <td>${fmtMoney(p.venda)}</td>
-      ${isAdmin?`<td>${fmtPct(margem)}</td>`:''}
+      ${isAdmin()?`<td>${fmtPct(margem)}</td>`:''}
       <td>${statusBadge(status)}</td>
       <td><div class="flex gap-2">
         ${isAdmin()?`<button class="btn btn-sm btn-outline" onclick="editProduto('${p.cod}')" data-tip="Editar produto">✏️</button>`:''}
@@ -5027,7 +5029,7 @@ function renderProdutos() {
         ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delProduto('${p.cod}')" data-tip="Excluir produto">🗑️</button>`:''}
       </div></td>
     </tr>`;
-  }).join('') : `<tr><td colspan="${isAdmin?11:9}" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>`;
+  }).join('') : `<tr><td colspan="${isAdmin()?11:9}" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum produto encontrado</td></tr>`;
 }
 
 function editProduto(cod) {
@@ -6631,12 +6633,12 @@ function renderUsuarios() {
   if (!document.getElementById('tb-usuarios')) return;
   if (!isAdmin) { showSection('clientes'); return; }
   var usuarios = getUsuarios();
-  // Ocultar usuário "Administrador" padrão se houver outro Admin cadastrado
+  // Ocultar usuário "Administrador" padrão na EXIBIÇÃO se houver outro Admin cadastrado
   var outrosAdmins = usuarios.filter(function(u){ return u.nivel==='Admin' && u.login !== 'admin'; });
-  if (outrosAdmins.length > 0) {
-    usuarios = usuarios.filter(function(u){ return u.login !== 'admin'; });
-  }
-  document.getElementById('tb-usuarios').innerHTML = usuarios.map(function(u) {
+  var usuariosExibir = outrosAdmins.length > 0 
+    ? usuarios.filter(function(u){ return u.login !== 'admin'; })
+    : usuarios;
+  document.getElementById('tb-usuarios').innerHTML = usuariosExibir.map(function(u) {
     return '<tr>'
       +'<td><strong>'+u.nome+'</strong></td>'
       +'<td><code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:12px">'+u.login+'</code></td>'
