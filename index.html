@@ -739,9 +739,37 @@
     color: #e8edf5 !important;
   }
   body.dark .form-group label { color: #e8c96a !important; }
-  body.dark .stat-card { background: #0d2240 !important; }
+  body.dark .stat-card { background: #0d2240 !important; border-color: #1a3a5c !important; }
   body.dark .stat-card .label { color: #8a9ab8 !important; }
   body.dark .stat-card .value { color: #e8c96a !important; }
+  body.dark .stat-card .sub { color: #5a6a8a !important; }
+  body.dark .topbar { background: #0d2240 !important; border-color: #c9a84c !important; }
+  body.dark .topbar h1 { color: #e8c96a !important; }
+  body.dark .topbar-actions .btn-outline { color: #e8c96a !important; border-color: #c9a84c !important; }
+  body.dark .card { background: #0d2240 !important; border-color: #1a3a5c !important; }
+  body.dark .card-header { background: linear-gradient(135deg,#071828,#0d2240) !important; border-color: #1a3a5c !important; }
+  body.dark .card-header h3 { color: #e8c96a !important; }
+  body.dark .card-header::before { background: var(--gradient-gold) !important; }
+  body.dark th { background: linear-gradient(135deg,#071828,#0d2b4e) !important; color: #e8c96a !important; }
+  body.dark td { border-color: #1a3a5c !important; color: #e8edf5 !important; }
+  body.dark tr:hover td { background: #0f2a45 !important; }
+  body.dark .form-group input, body.dark .form-group select, body.dark .form-group textarea {
+    background: #071828 !important; border-color: #1a3a5c !important; color: #e8edf5 !important;
+  }
+  body.dark .form-group label { color: #e8c96a !important; }
+  body.dark .modal { background: #0d2240 !important; }
+  body.dark .modal-header { background: linear-gradient(135deg,#071828,#0d2b4e) !important; }
+  body.dark .modal-body { background: #0d2240 !important; color: #e8edf5 !important; }
+  body.dark .btn-outline { color: #e8c96a !important; border-color: #c9a84c !important; }
+  body.dark .btn-outline:hover { background: rgba(201,168,76,.2) !important; }
+  body.dark .badge-info { background: #1a3a5c !important; color: #e8c96a !important; }
+  body.dark .badge-gray { background: #1a3a5c !important; color: #8a9ab8 !important; }
+  body.dark .search-bar input { background: #071828 !important; border-color: #1a3a5c !important; color: #e8edf5 !important; }
+  body.dark .alert-warning { background: #2a1f00 !important; color: #e8c96a !important; border-color: #c9a84c !important; }
+  body.dark .alert-danger { background: #2a0000 !important; color: #f87171 !important; }
+  body.dark .alert-success { background: #002a10 !important; color: #34d399 !important; }
+  body.dark .divider { border-color: #1a3a5c !important; }
+  body.dark select option { background: #0d2240 !important; color: #e8edf5 !important; }
 
   /* Seção ativa */
   .section.active { animation: fadeIn .2s ease; }
@@ -1096,7 +1124,7 @@ function instalarApp() {
 <div class="nav-item" onclick="showSection('clientes')">
 <span class="icon">👥</span> Clientes
       </div>
-<div class="nav-item" onclick="showSection('receitas')">
+<div class="nav-item" id="nav-receitas" onclick="showSection('receitas')">
 <span class="icon">📋</span> Receitas Médicas
       </div>
 <div class="nav-item" onclick="showSection('vendas')">
@@ -1245,7 +1273,7 @@ function instalarApp() {
 <div class="card-header"><h3>💰 Últimas Vendas</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Status</th></tr></thead><tbody id="dash-vendas"></tbody></table></div>
 </div>
-<div class="card">
+<div class="card" id="card-dash-os">
 <div class="card-header"><h3>🔧 OS em Aberto</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
 </div>
@@ -1303,7 +1331,7 @@ function instalarApp() {
 <button class="btn btn-primary" id="btn-novo-produto" onclick="openModal('modal-produto')">➕ Novo Produto</button>
 </div>
 </div>
-<div class="card" id="card-historico-estoque" style="margin-bottom:20px;display:none">
+<div class="card" id="card-historico-estoque" style="display:none" style="margin-bottom:20px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:14px 14px 0 0">
 <h3 style="color:white">📋 Histórico de Movimentação do Estoque</h3>
 <div class="search-bar" style="margin:0">
@@ -1351,7 +1379,7 @@ function instalarApp() {
 </div>
 </div>
 <!-- ── Crediário — Contas a Receber ── -->
-<div class="card" id="card-contas-crediario" style="margin-bottom:20px">
+<div class="card" id="card-contas-crediario" style="margin-bottom:20px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
 </div>
@@ -3934,12 +3962,17 @@ function doLogin() {
   const u = document.getElementById('login-user').value.trim().toLowerCase();
   const p = document.getElementById('login-pass').value;
 
-  // Login APENAS pelos usuários cadastrados no módulo Usuários
+  // Login pelos usuários cadastrados no módulo Usuários
   var usuarios = getUsuarios();
   var userObj = usuarios.find(function(x){ return x.login===u && x.senha===p && x.status==='Ativo'; });
 
+  // Fallback de segurança para admin (caso localStorage seja limpo)
+  if (!userObj && u === 'admin' && p === 'admin123') {
+    userObj = {nome:'Administrador', nivel:'Admin', comissao:0, login:'admin', senha:'admin123', status:'Ativo'};
+  }
+
   if (!userObj) {
-    showToast('Usuário ou senha incorretos!','error');
+    showToast('Usuário ou senha incorretos! Verifique o módulo Usuários.','error');
     return;
   }
 
@@ -4450,11 +4483,11 @@ setInterval(atualizarSyncIndicator, 60000);
 
 function aplicarControleAcesso() {
   var admin = isAdmin();
-  // Produtos: vendedor pode ver mas não cadastrar/excluir (custo/margem ocultos)
-  // Despesas e Usuários: só admin
-  var modulosSoAdmin = ['despesas','usuarios'];
+  var user = loadUser();
+  var meuNome = user ? (user.nome||'').toLowerCase() : '';
 
-  // Ocultar módulos exclusivos do admin para vendedor
+  // Módulos exclusivos do admin
+  var modulosSoAdmin = ['despesas','usuarios'];
   modulosSoAdmin.forEach(function(mod) {
     document.querySelectorAll('.nav-item').forEach(function(el) {
       var oc = el.getAttribute('onclick') || '';
@@ -4462,9 +4495,13 @@ function aplicarControleAcesso() {
     });
   });
 
-  // Módulo Usuários — mostrar apenas para admin
+  // Módulo Usuários — só admin
   var navU = document.getElementById('nav-usuarios');
   if (navU) navU.style.display = admin ? 'flex' : 'none';
+
+  // Módulo Receitas — oculto para vendedor
+  var navRec = document.getElementById('nav-receitas');
+  if (navRec) navRec.style.display = admin ? '' : 'none';
 
   // Botão Nova OS — só admin
   var btnNovaOS = document.getElementById('btn-nova-os');
@@ -4473,6 +4510,31 @@ function aplicarControleAcesso() {
   // Botão Novo Produto — só admin
   var btnNovoProd = document.getElementById('btn-novo-produto');
   if (btnNovoProd) btnNovoProd.style.display = admin ? '' : 'none';
+
+  // Botão Novo Cliente — só admin
+  document.querySelectorAll('.btn-primary').forEach(function(btn) {
+    var oc = btn.getAttribute('onclick') || '';
+    if (oc.indexOf('modal-cliente') !== -1) btn.style.display = admin ? '' : 'none';
+  });
+
+  // Painel financeiro dashboard — só admin
+  var painelFin = document.getElementById('dash-painel-financeiro');
+  if (painelFin) painelFin.style.display = admin ? '' : 'none';
+
+  // Crediário em vendas — só admin
+  var cardCred = document.getElementById('card-contas-crediario');
+  if (cardCred) cardCred.style.display = admin ? '' : 'none';
+
+  // Histórico de estoque — só admin
+  var cardHist = document.getElementById('card-historico-estoque');
+  if (cardHist) cardHist.style.display = admin ? '' : 'none';
+
+  // OS em aberto no dashboard — só admin
+  var cardDashOS = document.getElementById('card-dash-os');
+  if (cardDashOS) cardDashOS.style.display = admin ? '' : 'none';
+
+  // Sync indicator
+  if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
 }
 
 function renderClientes() {
@@ -4839,7 +4901,7 @@ function renderProdutos() {
       <td>${statusBadge(status)}</td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-outline" onclick="editProduto('${p.cod}')" data-tip="Editar produto">✏️</button>
-        <button class="btn btn-sm btn-success" onclick="entradaEstoque('${p.cod}')" data-tip="Entrada de estoque">📥</button>
+        ${isAdmin()?`<button class="btn btn-sm btn-success" onclick="entradaEstoque('${p.cod}')" data-tip="Entrada de estoque">📥</button>`:''}
         ${isAdmin?`<button class="btn btn-sm btn-danger" onclick="delProduto('${p.cod}')" data-tip="Excluir produto">🗑️</button>`:''}
       </div></td>
     </tr>`;
@@ -4956,11 +5018,16 @@ function renderVendas() {
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
   const q = (document.getElementById('search-vendas')||{}).value||'';
-  const todasVendas = load('vendas').filter(v =>
-    !q || (v.id||'').toLowerCase().includes(q.toLowerCase()) ||
-    (clMap[v.clienteId]||'').toLowerCase().includes(q.toLowerCase()) ||
-    (v.descricaoCompleta||prodMap[v.produto]||v.produto||'').toLowerCase().includes(q.toLowerCase())
-  );
+  var userVendas = loadUser();
+  var meuNomeVendas = userVendas ? (userVendas.nome||'').toLowerCase() : '';
+  var adminVendasReg = isAdmin();
+  const todasVendas = load('vendas').filter(v => {
+    // Vendedor vê apenas suas próprias vendas
+    if (!adminVendasReg && (v.vendedor||'').toLowerCase() !== meuNomeVendas) return false;
+    return !q || (v.id||'').toLowerCase().includes(q.toLowerCase()) ||
+      (clMap[v.clienteId]||'').toLowerCase().includes(q.toLowerCase()) ||
+      (v.descricaoCompleta||prodMap[v.produto]||v.produto||'').toLowerCase().includes(q.toLowerCase());
+  });
 
   // ── Agrupar vendas ──────────────────────────────────────────
   // Vendas com grupoVenda → usar grupoVenda como chave
@@ -5001,11 +5068,19 @@ function renderVendas() {
   },0);
   const nGrupos = gruposOrdenados.length;
 
-  document.getElementById('vendas-cards').innerHTML = `
-    <div class="stat-card green"><div class="label">Receita Líquida</div><div class="value">${fmtMoney(totalLiq)}</div><div class="sub">${nGrupos} venda(s)</div></div>
-    <div class="stat-card orange"><div class="label">Total Descontos</div><div class="value">${fmtMoney(totalDesc)}</div><div class="sub">concedidos</div></div>
-    <div class="stat-card"><div class="label">Ticket Médio</div><div class="value">${fmtMoney(nGrupos?totalLiq/nGrupos:0)}</div><div class="sub">por venda</div></div>
-  `;
+  // Cards de vendas — ocultar para vendedor
+  var adminVendas = isAdmin();
+  if (adminVendas) {
+    document.getElementById('vendas-cards').innerHTML = `
+      <div class="stat-card green"><div class="label">Receita Líquida</div><div class="value">${fmtMoney(totalLiq)}</div><div class="sub">${nGrupos} venda(s)</div></div>
+      <div class="stat-card orange"><div class="label">Total Descontos</div><div class="value">${fmtMoney(totalDesc)}</div><div class="sub">concedidos</div></div>
+      <div class="stat-card"><div class="label">Ticket Médio</div><div class="value">${fmtMoney(nGrupos?totalLiq/nGrupos:0)}</div><div class="sub">por venda</div></div>
+    `;
+  } else {
+    document.getElementById('vendas-cards').innerHTML = `
+      <div class="stat-card green"><div class="label">Minhas Vendas</div><div class="value">${nGrupos}</div><div class="sub">registradas</div></div>
+    `;
+  }
 
   // ── Renderizar tabela agrupada ───────────────────────────────
   const tbHtml = gruposOrdenados.length ? gruposOrdenados.map(([chave, itens]) => {
@@ -5351,12 +5426,19 @@ function renderOS() {
   // Faturamento exclui OS de montagem (valor já cobrado na venda)
   const dataConserto = data.filter(o=>o.tipoOS!=='montagem');
   const totalFat = dataConserto.reduce((s,o)=>s+(o.valor||0),0);
-  document.getElementById('os-cards').innerHTML = `
-    <div class="stat-card"><div class="label">Total OS</div><div class="value">${data.length}</div><div class="sub">${dataConserto.length} conserto(s)</div></div>
-    <div class="stat-card orange"><div class="label">Em Aberto</div><div class="value">${aberto}</div><div class="sub">aguardando</div></div>
-    <div class="stat-card green"><div class="label">Faturamento OS</div><div class="value">${fmtMoney(totalFat)}</div><div class="sub">consertos</div></div>
-    <div class="stat-card"><div class="label">Ticket Médio OS</div><div class="value">${fmtMoney(dataConserto.length?totalFat/dataConserto.length:0)}</div><div class="sub">por conserto</div></div>
-  `;
+  var adminOS = isAdmin();
+  if (adminOS) {
+    document.getElementById('os-cards').innerHTML = `
+      <div class="stat-card"><div class="label">Total OS</div><div class="value">${data.length}</div><div class="sub">${dataConserto.length} conserto(s)</div></div>
+      <div class="stat-card orange"><div class="label">Em Aberto</div><div class="value">${aberto}</div><div class="sub">aguardando</div></div>
+      <div class="stat-card green"><div class="label">Faturamento OS</div><div class="value">${fmtMoney(totalFat)}</div><div class="sub">consertos</div></div>
+      <div class="stat-card"><div class="label">Ticket Médio OS</div><div class="value">${fmtMoney(dataConserto.length?totalFat/dataConserto.length:0)}</div><div class="sub">por conserto</div></div>
+    `;
+  } else {
+    document.getElementById('os-cards').innerHTML = `
+      <div class="stat-card orange"><div class="label">Em Aberto</div><div class="value">${aberto}</div><div class="sub">aguardando</div></div>
+    `;
+  }
   document.getElementById('tb-os').innerHTML = data.length ? [...data].reverse().map(o => `
     <tr>
       <td><strong>${o.id}</strong></td><td>${fmtDate(o.abertura)}</td>
@@ -5364,7 +5446,7 @@ function renderOS() {
       <td>${o.tipo}</td><td class="fw-bold">${o.tipoOS==='montagem'?'<span style="background:#dbeafe;color:#1e3a5f;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">🔬 Montagem</span>':fmtMoney(o.valor)}</td>
       <td>${statusBadge(o.status)}</td>
       <td><div class="flex gap-2">
-        <button class="btn btn-sm btn-outline" onclick="viewOS('${o.id}')" data-tip="Ver detalhes da OS">👁️</button>
+        ${isAdmin()?`<button class="btn btn-sm btn-outline" onclick="viewOS('${o.id}')" data-tip="Ver detalhes da OS">👁️</button>`:''}
         <button class="btn btn-sm btn-warning" onclick="editOS('${o.id}')" data-tip="Editar OS">✏️</button>
         <button class="btn btn-sm btn-danger" onclick="delOS('${o.id}')" data-tip="Excluir OS">🗑️</button>
       </div></td>
@@ -5542,9 +5624,20 @@ function atualizarStatusOS(id) {
   const arr = load('os');
   const i = arr.findIndex(x=>x.id===id);
   if (i>=0) {
+    var statusAnterior = arr[i].status;
     arr[i].status = statuses[parseInt(novo)-1];
     if (arr[i].status==='Entregue') arr[i].entrega = new Date().toISOString().slice(0,10);
     save('os', arr);
+    // WhatsApp automático quando OS fica pronta
+    if (arr[i].status === 'Aguardando Retirada' && statusAnterior !== 'Aguardando Retirada') {
+      var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
+      var nomeCliente = clMap[arr[i].clienteId] || '—';
+      setTimeout(function() {
+        if (confirm('OS '+id+' pronta! Enviar WhatsApp para '+nomeCliente+'?')) {
+          copiarMsgWhatsApp(id);
+        }
+      }, 300);
+    }
     closeModal('modal-view-os');
     renderOS();
     showToast('Status atualizado!');
@@ -7026,36 +7119,76 @@ function executarBusca() {
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
 
   // Clientes
-  load('clientes').filter(c=>(c.nome||'').toLowerCase().includes(q)||(c.cpf||'').includes(q)).slice(0,3).forEach(c=>{
-    resultados.push({tipo:'👥 Cliente',titulo:c.nome,sub:c.cpf||'',acao:`showSection('clientes');fecharBusca()`});
+  load('clientes').filter(c=>
+    (c.nome||'').toLowerCase().includes(q)||(c.cpf||'').includes(q)||
+    (c.tel||'').includes(q)||(c.email||'').toLowerCase().includes(q)
+  ).slice(0,4).forEach(c=>{
+    resultados.push({tipo:'👤 Cliente',titulo:c.nome,sub:(c.cpf||'')+' | '+(c.tel||''),cor:'#0ea5e9',
+      acao:"showSection('clientes');fecharBusca()"});
   });
   // OS
-  load('os').filter(o=>(o.id||'').toLowerCase().includes(q)||(clMap[o.clienteId]||'').toLowerCase().includes(q)).slice(0,3).forEach(o=>{
-    resultados.push({tipo:'🔧 OS',titulo:o.id+' — '+(clMap[o.clienteId]||''),sub:o.status,acao:`showSection('os');fecharBusca()`});
+  load('os').filter(o=>
+    (o.id||'').toLowerCase().includes(q)||(clMap[o.clienteId]||'').toLowerCase().includes(q)||
+    (o.tipo||'').toLowerCase().includes(q)||(o.status||'').toLowerCase().includes(q)
+  ).slice(0,4).forEach(o=>{
+    resultados.push({tipo:'🔧 OS',titulo:o.id+' — '+(clMap[o.clienteId]||''),sub:o.tipo+' | '+o.status,cor:'#d97706',
+      acao:"showSection('os');fecharBusca()"});
   });
   // Vendas
-  load('vendas').filter(v=>(v.id||'').toLowerCase().includes(q)||(clMap[v.clienteId]||'').toLowerCase().includes(q)).slice(0,3).forEach(v=>{
-    resultados.push({tipo:'💰 Venda',titulo:v.id+' — '+(clMap[v.clienteId]||''),sub:fmtMoney(calcTotal(v)),acao:`showSection('vendas');fecharBusca()`});
+  load('vendas').filter(v=>
+    (v.id||'').toLowerCase().includes(q)||(clMap[v.clienteId]||'').toLowerCase().includes(q)||
+    (v.descricaoCompleta||'').toLowerCase().includes(q)
+  ).slice(0,4).forEach(v=>{
+    resultados.push({tipo:'💰 Venda',titulo:v.id+' — '+(clMap[v.clienteId]||''),sub:fmtMoney(calcTotal(v))+' | '+v.pag,cor:'#16a34a',
+      acao:"showSection('vendas');fecharBusca()"});
   });
   // Produtos
-  load('produtos').filter(p=>(p.cod||'').toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q)).slice(0,3).forEach(p=>{
-    resultados.push({tipo:'📦 Produto',titulo:p.cod+' — '+p.desc,sub:'Estoque: '+p.qtd,acao:`showSection('produtos');fecharBusca()`});
+  load('produtos').filter(p=>
+    (p.cod||'').toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q)||
+    (p.marca||'').toLowerCase().includes(q)||(p.cat||'').toLowerCase().includes(q)
+  ).slice(0,4).forEach(p=>{
+    resultados.push({tipo:'📦 Produto',titulo:p.cod+' — '+p.desc,sub:'Estoque: '+p.qtd+' | '+p.cat,cor:'#8b5cf6',
+      acao:"showSection('produtos');fecharBusca()"});
+  });
+  // Receitas
+  load('receitas').filter(r=>
+    (clMap[r.clienteId]||'').toLowerCase().includes(q)||(r.medico||'').toLowerCase().includes(q)
+  ).slice(0,3).forEach(r=>{
+    resultados.push({tipo:'📋 Receita',titulo:clMap[r.clienteId]||'—',sub:'Dr(a). '+(r.medico||'')+' | '+fmtDate(r.validade),cor:'#ec4899',
+      acao:"showSection('receitas');fecharBusca()"});
+  });
+  // Agendamentos
+  load('agendamentos').filter(a=>
+    (clMap[a.clienteId]||'').toLowerCase().includes(q)||(a.tipo||'').toLowerCase().includes(q)
+  ).slice(0,3).forEach(a=>{
+    resultados.push({tipo:'📅 Agendamento',titulo:clMap[a.clienteId]||'—',sub:fmtDate(a.data)+' '+a.hora+' | '+a.tipo,cor:'#0d2b4e',
+      acao:"showSection('agendamentos');fecharBusca()"});
   });
 
   if (resultados.length===0) {
     res.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px">Nenhum resultado encontrado para "'+q+'"</div>';
     return;
   }
-  res.innerHTML = resultados.map(r=>`
-    <div class="busca-result-item" onclick="${r.acao}">
-      <span class="tipo">${r.tipo}</span>
-      <div><div style="font-weight:600">${r.titulo}</div><div style="color:#94a3b8;font-size:11px">${r.sub}</div></div>
+  res.innerHTML = '<div style="padding:8px 12px;font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">'+resultados.length+' resultado(s) encontrado(s)</div>'
+    + resultados.map(r=>`
+    <div class="busca-result-item" onclick="${r.acao}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .15s" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background='white'">
+      <span style="background:${r.cor||'#e2e8f0'};color:white;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap">${r.tipo}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;color:#0d2b4e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.titulo}</div>
+        <div style="color:#94a3b8;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.sub}</div>
+      </div>
+      <span style="color:#c9a84c;font-size:14px">→</span>
     </div>`).join('');
 }
 
 // ── GRÁFICOS DO DASHBOARD ────────────────────────────────────────
 function renderGraficos() {
-  const vendas = load('vendas');
+  var adminGraf = isAdmin();
+  var userGraf = loadUser();
+  var meuNomeGraf = userGraf ? (userGraf.nome||'').toLowerCase() : '';
+  // Vendedor vê apenas seus próprios dados nos gráficos
+  const todasVendasGraf = load('vendas');
+  const vendas = adminGraf ? todasVendasGraf : todasVendasGraf.filter(function(v){ return (v.vendedor||'').toLowerCase() === meuNomeGraf; });
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
 
@@ -8993,10 +9126,25 @@ function renderContasCrediario() {
       <td><span class="badge ${corStatus}">${labelStatus}</span></td>
       <td>
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-success" onclick="pagarParcelaCrediario('${p.vendaId}',${p.parcIdx})" data-tip="Marcar como pago">✅ Pagar</button>`:''}
+        ${p.status!=='Pago'?`<button class="btn btn-sm btn-outline" onclick="editarDataParcela('${p.vendaId}',${p.parcIdx},'${p.data}')" data-tip="Editar data">📅</button>`:''}
         <button class="btn btn-sm btn-primary" onclick="whatsappCobranca('${p.clienteNome}','${p.vendaId}',${p.parcIdx+1},${p.total},'${p.data}',${p.valor})" style="background:#16a34a" data-tip="Cobrar via WhatsApp">📱</button>
       </td>
     </tr>`;
   }).join('') : '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-muted)">Nenhuma parcela de crediário</td></tr>';
+}
+
+function editarDataParcela(vendaId, parcIdx, dataAtual) {
+  var novaData = prompt('Nova data parcela '+(parcIdx+1)+' (AAAA-MM-DD):', dataAtual);
+  if (!novaData || novaData === dataAtual) return;
+  // Validar formato
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(novaData)) { showToast('Data inválida! Use o formato AAAA-MM-DD','error'); return; }
+  var vendas = load('vendas');
+  var vi = vendas.findIndex(v=>v.id===vendaId);
+  if (vi<0 || !vendas[vi].crediario) return;
+  vendas[vi].crediario.parcelas[parcIdx].data = novaData;
+  save('vendas', vendas);
+  renderContasCrediario();
+  showToast('✅ Data da parcela atualizada!', 'success');
 }
 
 function pagarParcelaCrediario(vendaId, parcIdx) {
