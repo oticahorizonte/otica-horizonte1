@@ -1212,6 +1212,9 @@ function instalarApp() {
 </div>
 </div>
 <div id="dash-fin-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+<div id="dash-dre"></div>
+</div>
+</div>
 <!-- Gráficos -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
 <div class="card">
@@ -1241,11 +1244,6 @@ function instalarApp() {
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Cliente</th><th>Data</th><th>Telefone</th><th>Ação</th></tr></thead>
 <tbody id="tb-aniversariantes"></tbody></table>
-</div>
-</div>
-<!-- Painel Financeiro Admin -->
-
-<div id="dash-dre"></div>
 </div>
 </div>
 <!-- Meta de Vendas — só Admin -->
@@ -4124,7 +4122,7 @@ function statusBadge(s) {
 
 // 21. Alerta de receita médica vencendo
 function checkReceitasVencendo() {
-  var hoje = new Date().toISOString().slice(0,10);
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var em30 = new Date(Date.now()+30*86400000).toISOString().slice(0,10);
   var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   var receitas = load('receitas');
@@ -4156,7 +4154,7 @@ function renderInadimplencia() {
   var body = document.getElementById('inadimplencia-body');
   if (!body) return;
   var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
-  var hoje = new Date().toISOString().slice(0,10);
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var vendas = load('vendas');
   var inadimplentes = {};
   vendas.forEach(function(v) {
@@ -4257,7 +4255,12 @@ function renderDashboard() {
   // Últimas vendas
   const clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
   const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
-  document.getElementById('dash-vendas').innerHTML = vendas.slice(-5).reverse().map(v => `
+  // Últimas vendas — vendedor vê apenas as suas
+  var adminDashV = isAdmin();
+  var userDashV = loadUser();
+  var meuNomeDashV = userDashV ? (userDashV.nome||'').toLowerCase() : '';
+  var vendasParaDash = adminDashV ? vendas : vendas.filter(function(v){ return (v.vendedor||'').toLowerCase()===meuNomeDashV; });
+  document.getElementById('dash-vendas').innerHTML = vendasParaDash.slice(-5).reverse().map(v => `
     <tr><td><strong>${v.id}</strong></td><td>${clMap[v.clienteId]||'-'}</td><td>${prodMap[v.produto]||v.produto}</td>
     <td class="fw-bold text-success">${fmtMoney(calcTotal(v))}</td><td>${statusBadge(v.status)}</td></tr>
   `).join('') || '<tr><td colspan="5" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
@@ -4354,10 +4357,14 @@ function renderPainelFinanceiroAdmin() {
     return s;
   },0);
 
-  // Comissão total
+  // Comissão total — apenas vendedores (admin não conta)
   var cfg = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+  var userAtualAdmin = loadUser();
   var comissaoTotal = vendas.reduce(function(s,v){
-    var pct = cfg[(v.vendedor||'').toLowerCase()] || cfg['default'] || 0;
+    var vendedorNome = (v.vendedor||'').toLowerCase();
+    // Não contar comissão do administrador
+    if (vendedorNome === 'administrador' || vendedorNome === 'admin') return s;
+    var pct = cfg[vendedorNome] || cfg['default'] || 0;
     return s + calcTotal(v)*(pct/100);
   },0);
 
@@ -4574,6 +4581,10 @@ function aplicarControleAcesso() {
   var cardDashOS = document.getElementById('card-dash-os');
   if (cardDashOS) cardDashOS.style.display = admin ? '' : 'none';
 
+  // Botão histórico estoque — só admin
+  var btnHistEst = document.getElementById('btn-historico-estoque');
+  if (btnHistEst) btnHistEst.style.display = admin ? '' : 'none';
+
   // Sync indicator
   if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
 }
@@ -4594,7 +4605,7 @@ function renderClientes() {
       <td>${statusBadge(c.status)}</td>
       <td><div class="flex gap-2">
         ${isAdmin()?`<button class="btn btn-sm btn-info" onclick="verHistorico(${c.id})" style="background:#0ea5e9;color:white" data-tip="Ver histórico do cliente">🔍</button>`:''}
-        ${isAdmin()?`<button class="btn btn-sm btn-outline" onclick="editCliente(${c.id})" data-tip="Editar cliente">✏️</button>`:''}
+        <button class="btn btn-sm btn-outline" onclick="editCliente(${c.id})" data-tip="Editar cliente">✏️</button>
         ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delCliente(${c.id})" data-tip="Excluir cliente">🗑️</button>`:''}
       </div></td>
     </tr>`).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum cliente encontrado</td></tr>';
@@ -4644,7 +4655,7 @@ function saveCliente() {
     cidade:document.getElementById('cli-cidade').value,
     convenio:document.getElementById('cli-convenio').value,
     status:document.getElementById('cli-status').value,
-    cadastro: id ? (arr.find(x=>x.id===parseInt(id))||{}).cadastro : new Date().toISOString().slice(0,10),
+    cadastro: id ? (arr.find(x=>x.id===parseInt(id))||{}).cadastro : (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(),
     ultimaCompra: id ? (arr.find(x=>x.id===parseInt(id))||{}).ultimaCompra : '',
     totalGasto: id ? (arr.find(x=>x.id===parseInt(id))||{}).totalGasto||0 : 0,
   };
@@ -4943,7 +4954,7 @@ function renderProdutos() {
       ${isAdmin?`<td>${fmtPct(margem)}</td>`:''}
       <td>${statusBadge(status)}</td>
       <td><div class="flex gap-2">
-        <button class="btn btn-sm btn-outline" onclick="editProduto('${p.cod}')" data-tip="Editar produto">✏️</button>
+        ${isAdmin()?`<button class="btn btn-sm btn-outline" onclick="editProduto('${p.cod}')" data-tip="Editar produto">✏️</button>`:''}
         ${isAdmin()?`<button class="btn btn-sm btn-success" onclick="entradaEstoque('${p.cod}')" data-tip="Entrada de estoque">📥</button>`:''}
         ${isAdmin?`<button class="btn btn-sm btn-danger" onclick="delProduto('${p.cod}')" data-tip="Excluir produto">🗑️</button>`:''}
       </div></td>
@@ -5694,7 +5705,7 @@ function atualizarStatusOS(id) {
   if (i>=0) {
     var statusAnterior = arr[i].status;
     arr[i].status = statuses[parseInt(novo)-1];
-    if (arr[i].status==='Entregue') arr[i].entrega = new Date().toISOString().slice(0,10);
+    if (arr[i].status==='Entregue') arr[i].entrega = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
     save('os', arr);
     // WhatsApp automático quando OS fica pronta
     if (arr[i].status === 'Aguardando Retirada' && statusAnterior !== 'Aguardando Retirada') {
@@ -6341,7 +6352,7 @@ function checkOSAtrasadas() {
   if (!el) return;
   el.innerHTML = ''; // Limpar antes de recriar
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const hojeStr = new Date().toISOString().slice(0,10);
+  const hojeStr = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
 
   const atrasadas = load('os').filter(o => {
@@ -6389,7 +6400,7 @@ function openNovoAgendamento() {
   populateClienteSelect('agend-cliente');
   document.getElementById('agend-idx').value = '';
   document.getElementById('modal-agend-title').textContent = '📅 Novo Agendamento';
-  document.getElementById('agend-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('agend-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   document.getElementById('agend-hora').value = '09:00';
   document.getElementById('agend-tipo').value = 'Consulta';
   document.getElementById('agend-status').value = 'Agendado';
@@ -6403,7 +6414,7 @@ function renderAgendamentos() {
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   const clientesAtivos = new Set(load('clientes').filter(c=>c.status!=='Inativo').map(c=>c.id));
   const q = (document.getElementById('search-agend')||{}).value||'';
-  const hoje = new Date().toISOString().slice(0,10);
+  const hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const data = load('agendamentos').filter(a =>
     !q || (clMap[a.clienteId]||'').toLowerCase().includes(q.toLowerCase()) ||
     a.tipo.toLowerCase().includes(q.toLowerCase()) ||
@@ -6717,7 +6728,7 @@ function renderDespesas() {
 function openNovaDespesa() {
   document.getElementById('despesa-idx').value = '';
   document.getElementById('modal-despesa-title').textContent = '💸 Nova Despesa';
-  document.getElementById('despesa-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('despesa-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   document.getElementById('despesa-desc').value = '';
   document.getElementById('despesa-valor').value = '';
   document.getElementById('despesa-obs').value = '';
@@ -6791,7 +6802,7 @@ function converterOSemVenda(id) {
       ${o.descricao?`<div style="font-size:12px;color:#5a6a8a;margin-top:2px">Serviço: ${o.descricao}</div>`:''}
       <div style="font-size:18px;font-weight:800;color:#16a34a;margin-top:8px">${fmtMoney(o.valor)}</div>
     </div>`;
-  document.getElementById('os-caixa-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('os-caixa-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   document.getElementById('os-caixa-pag').value = 'Dinheiro';
   document.getElementById('os-caixa-parcelas').value = '1';
   document.getElementById('os-caixa-status').value = 'Pago';
@@ -6949,7 +6960,7 @@ function verHistorico(id) {
   var credPendente = 0;
   vendas.forEach(function(v){ if(v.crediario) v.crediario.parcelas.forEach(function(p){ if(p.status!=='Pago') credPendente+=p.valor; }); });
   // Receita vencendo (próximos 30 dias)
-  var hoje = new Date().toISOString().slice(0,10);
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var em30 = new Date(Date.now()+30*86400000).toISOString().slice(0,10);
   var receitaVencendo = receitas.filter(r=>r.validade && r.validade>=hoje && r.validade<=em30);
   var receitaVencida = receitas.filter(r=>r.validade && r.validade<hoje);
@@ -7138,7 +7149,7 @@ function seedAgendamentos() {
   // Agendamentos zerados para testes reais
   if (true) return; // Desabilitado
   if (load('agendamentos').length) return;
-  const hoje = new Date().toISOString().slice(0,10);
+  const hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const amanha = new Date(Date.now()+86400000).toISOString().slice(0,10);
   const ontem = new Date(Date.now()-86400000).toISOString().slice(0,10);
   save('agendamentos', [
@@ -7165,7 +7176,7 @@ function atualizarBadges() {
   if (badgeOS) { badgeOS.textContent=osAtrasadas; badgeOS.style.display=osAtrasadas>0?'inline-flex':'none'; }
 
   // Agendamentos hoje
-  const hojeStr = new Date().toISOString().slice(0,10);
+  const hojeStr = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const agendHoje = load('agendamentos').filter(a=>a.data===hojeStr&&(a.status==='Agendado'||a.status==='Confirmado')).length;
   const badgeAgend = document.getElementById('badge-agend');
   if (badgeAgend) { badgeAgend.textContent=agendHoje; badgeAgend.style.display=agendHoje>0?'inline-flex':'none'; }
@@ -7370,7 +7381,7 @@ function renderCalendario() {
   const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   titulo.textContent = meses[_calMes] + ' ' + _calAno;
 
-  const hoje = new Date().toISOString().slice(0,10);
+  const hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const agendamentos = load('agendamentos');
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
 
@@ -7481,7 +7492,7 @@ function copiarMsgWhatsApp(id) {
 
   var msg = '';
   if (o.status==='Aguardando Retirada'||o.status==='Entregue') {
-    msg = `Olá ${nome}! 😊\n\nSua OS *${o.id}* está pronta para retirada!\n\n🕶️ Serviço: ${o.tipo}\n📅 Data: ${fmtDate(new Date().toISOString().slice(0,10))}\n\nEstamos aguardando sua visita!\n\n_Ótica Horizonte — Seu olhar, nosso compromisso._`;
+    msg = `Olá ${nome}! 😊\n\nSua OS *${o.id}* está pronta para retirada!\n\n🕶️ Serviço: ${o.tipo}\n📅 Data: ${fmtDate((function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })())}\n\nEstamos aguardando sua visita!\n\n_Ótica Horizonte — Seu olhar, nosso compromisso._`;
   } else if (o.status==='Em Produção') {
     msg = `Olá ${nome}! 😊\n\nSua OS *${o.id}* está em produção.\n\n🔧 Serviço: ${o.tipo}\n📅 Previsão: ${fmtDate(o.previsao)}\n\nAssim que ficar pronta, avisamos!\n\n_Ótica Horizonte — Seu olhar, nosso compromisso._`;
   } else {
@@ -7514,7 +7525,7 @@ function copiarWhatsApp() {
 function registrarMovEstoque(cod, qtd, tipo, ref) {
   const hist = JSON.parse(localStorage.getItem('otica_mov_estoque')||'[]');
   hist.push({
-    data: new Date().toISOString().slice(0,10),
+    data: (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(),
     hora: new Date().toLocaleTimeString('pt-BR'),
     cod, qtd, tipo, ref
   });
@@ -7711,7 +7722,7 @@ function exportarExcel() {
   }
 
   // Gerar e baixar o arquivo
-  const dataStr = new Date().toISOString().slice(0,10);
+  const dataStr = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const fileName = 'OticaHorizonte_Backup_' + dataStr + '.xlsx';
   XLSX.writeFile(wb, fileName);
 
@@ -7908,7 +7919,7 @@ function confirmarConverterOSVenda() {
   if (!_compAtual) { showToast('Nenhuma composição selecionada!','error'); return; }
 
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
-  const hoje = new Date().toISOString().slice(0,10);
+  const hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
 
   // ── Criar OS ──
   const codArmacao = document.getElementById('conv-os-armacao').value;
@@ -8455,7 +8466,7 @@ function salvarComposicao() {
   const lucroTotal=totalCli-custoTotal;
   if (recBruta===0){showToast('Informe pelo menos um valor de venda!','warning');return;}
   const arr=load('composicoes');
-  arr.push({id:nextId(arr),data:new Date().toISOString().slice(0,10),
+  arr.push({id:nextId(arr),data:(function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(),
     clienteId:parseInt(document.getElementById('comp-cliente-calc').value)||null,
     desc:document.getElementById('comp-desc-calc').value||'Composição',
     armCusto,armVenda,lenCusto,lenVenda,exame,descPct,
@@ -9168,7 +9179,7 @@ function renderContasCrediario() {
   if (!body) return;
   var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   var vendas = load('vendas');
-  var hoje = new Date().toISOString().slice(0,10);
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var parcelas = [];
   vendas.forEach(function(v) {
     if (v.crediario && v.crediario.parcelas) {
@@ -9233,7 +9244,7 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
   var vi = vendas.findIndex(v=>v.id===vendaId);
   if (vi<0 || !vendas[vi].crediario) return;
   vendas[vi].crediario.parcelas[parcIdx].status = 'Pago';
-  vendas[vi].crediario.parcelas[parcIdx].dataPagamento = new Date().toISOString().slice(0,10);
+  vendas[vi].crediario.parcelas[parcIdx].dataPagamento = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   save('vendas', vendas);
   renderContasCrediario();
   showToast('✅ Parcela marcada como paga!', 'success');
@@ -9343,7 +9354,7 @@ function initVendaModal() {
     });
   }
 
-  var vdEl = document.getElementById('venda-data'); if(vdEl) vdEl.value = new Date().toISOString().slice(0,10);
+  var vdEl = document.getElementById('venda-data'); if(vdEl) vdEl.value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var vqEl = document.getElementById('venda-qtd'); if(vqEl) vqEl.value = 1;
   var vdescEl = document.getElementById('venda-desc'); if(vdescEl) vdescEl.value = 0;
   var vpEl = document.getElementById('venda-preco'); if(vpEl) vpEl.value = '';
@@ -9359,6 +9370,20 @@ function initVendaModal() {
   var vendedorEl = document.getElementById('venda-vendedor');
   if (vendedorEl && userLogado) {
     vendedorEl.value = userLogado.nome || '';
+  }
+
+  // Crediário Próprio — apenas para admin
+  var pagEl = document.getElementById('venda-pag');
+  if (pagEl) {
+    var adminVenda = isAdmin();
+    Array.from(pagEl.options).forEach(function(opt) {
+      if (opt.value === 'Crediário Próprio' || opt.text === 'Crediário Próprio') {
+        opt.style.display = adminVenda ? '' : 'none';
+        opt.disabled = !adminVenda;
+      }
+    });
+    // Se vendedor tinha crediário selecionado, mudar para PIX
+    if (!adminVenda && pagEl.value === 'Crediário Próprio') pagEl.value = 'PIX';
   }
 
   // Garantir valores padrão em pagamento e status
@@ -9509,7 +9534,7 @@ function renderCarrinho() {
 function initOSModal() {
   if(!document.getElementById('os-cliente')) return;
   populateClienteSelect('os-cliente');
-  const today = new Date().toISOString().slice(0,10);
+  const today = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const plus5 = new Date(Date.now()+5*86400000).toISOString().slice(0,10);
   document.getElementById('os-abertura').value = today;
   document.getElementById('os-previsao').value = plus5;
@@ -9538,7 +9563,7 @@ function clearClienteForm() {
 function clearReceitaForm() {
   document.getElementById('rec-id').value='';
   populateClienteSelect('rec-cliente');
-  document.getElementById('rec-data').value=new Date().toISOString().slice(0,10);
+  document.getElementById('rec-data').value=(function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   ['medico','validade','adicao','dnp','obs',
    'longe-od-esf','longe-od-cil','longe-od-eixo',
    'longe-oe-esf','longe-oe-cil','longe-oe-eixo',
@@ -9612,7 +9637,7 @@ function salvarComoOrcamento() {
 
   const novoOrc = {
     id: nextId(arr),
-    data: data || new Date().toISOString().slice(0,10),
+    data: data || (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(),
     clienteId,
     desc: desc || 'Orçamento',
     armCusto, armVenda, lenCusto, lenVenda, exame,
@@ -9935,7 +9960,7 @@ function registrarMovimentacaoEstoque(cod, qtd, tipo, motivo, ref) {
   var hist = load('historico_estoque') || [];
   hist.push({
     id: Date.now(),
-    data: new Date().toISOString().slice(0,10),
+    data: (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(),
     cod: cod,
     qtd: Math.abs(qtd),
     tipo: tipo, // 'entrada' ou 'saida'
