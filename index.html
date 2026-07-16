@@ -4224,36 +4224,62 @@ function renderMetaVendas() {
     return;
   }
 
-  body.innerHTML = Object.entries(porVendedor).map(function(entry){
-    var vend = entry[0], total = entry[1];
-    var chave = vend.toLowerCase();
-    var meta = metas[chave] || 0;
-    var pct = meta > 0 ? Math.min(100, total/meta*100) : 0;
-    var cor = pct>=100?'#16a34a':pct>=70?'#d97706':'#dc2626';
-    return '<tr>'
-      +'<td><strong>'+vend+'</strong></td>'
-      +'<td style="color:#d97706;font-weight:700">'+fmtMoney(total)+'</td>'
-      +'<td><input type="number" value="'+(meta||'')+'" placeholder="Definir meta (R$)"'
-      +' style="width:140px;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px;font-weight:600"'
-      +' data-vend="'+chave+'"'
-      +' onchange="salvarMeta(this.dataset.vend,this.value)"'
-      +'/></td>'
-      +'<td>'+(meta>0
-        ?'<div style="background:#f1f5f9;border-radius:20px;height:10px;overflow:hidden;margin-bottom:3px"><div style="background:'+cor+';height:100%;width:'+pct+'%;transition:width .5s;border-radius:20px"></div></div>'
-         +'<span style="font-size:12px;color:'+cor+';font-weight:800">'+pct.toFixed(0)+'% — '+fmtMoney(total)+' / '+fmtMoney(meta)+'</span>'
-        :'<span style="color:#94a3b8;font-size:11px">Digite a meta e pressione Enter</span>')
-      +'</td>'
-      +'</tr>';
-  }).join('');
-
-  // Adicionar listeners nos inputs de meta
-  body.querySelectorAll('input[type="number"]').forEach(function(inp) {
-    inp.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { salvarMeta(this.dataset.vend, this.value); this.blur(); }
+  if (admin) {
+    // ADMIN: vê todos com campo de edição
+    body.innerHTML = Object.entries(porVendedor).map(function(entry){
+      var vend = entry[0], total = entry[1];
+      var chave = vend.toLowerCase();
+      var meta = metas[chave] || 0;
+      var pct = meta > 0 ? Math.min(100, total/meta*100) : 0;
+      var cor = pct>=100?'#16a34a':pct>=70?'#d97706':'#dc2626';
+      return '<tr>'
+        +'<td><strong>'+vend+'</strong></td>'
+        +'<td style="color:#d97706;font-weight:700">'+fmtMoney(total)+'</td>'
+        +'<td><input type="number" value="'+(meta||'')+'" placeholder="Definir meta (R$)"'
+        +' style="width:140px;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px;font-weight:600"'
+        +' data-vend="'+chave+'"'
+        +' onchange="salvarMeta(this.dataset.vend,this.value)"'
+        +'/></td>'
+        +'<td>'+(meta>0
+          ?'<div style="background:#f1f5f9;border-radius:20px;height:10px;overflow:hidden;margin-bottom:3px"><div style="background:'+cor+';height:100%;width:'+pct+'%;transition:width .5s;border-radius:20px"></div></div>'
+           +'<span style="font-size:12px;color:'+cor+';font-weight:800">'+pct.toFixed(0)+'% — '+fmtMoney(total)+' / '+fmtMoney(meta)+'</span>'
+          :'<span style="color:#94a3b8;font-size:11px">Digite a meta e pressione Enter</span>')
+        +'</td></tr>';
+    }).join('');
+    body.querySelectorAll('input[type="number"]').forEach(function(inp) {
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { salvarMeta(this.dataset.vend, this.value); this.blur(); }
+      });
+      inp.addEventListener('focus', function() { this.style.borderColor = '#c9a84c'; });
+      inp.addEventListener('blur', function() { this.style.borderColor = '#dde3ee'; });
     });
-    inp.addEventListener('focus', function() { this.style.borderColor = '#c9a84c'; });
-    inp.addEventListener('blur', function() { this.style.borderColor = '#dde3ee'; });
-  });
+  } else {
+    // VENDEDOR: vê apenas o próprio progresso SEM edição
+    var userMetaObj2 = getUsuarios ? getUsuarios().find(function(u){ return (u.nome||'').toLowerCase()===meuNomeMeta; }) : null;
+    var minhasEntradas = Object.entries(porVendedor).filter(function(e){
+      var vendNome = e[0].toLowerCase();
+      return vendNome===meuNomeMeta || (userMetaObj2 && vendNome===(userMetaObj2.nome||'').toLowerCase());
+    });
+    if (minhasEntradas.length === 0) {
+      body.innerHTML = '<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--text-muted)">Sem vendas este mês</td></tr>';
+      return;
+    }
+    body.innerHTML = minhasEntradas.map(function(entry){
+      var vend = entry[0], total = entry[1];
+      var chave = vend.toLowerCase();
+      var meta = metas[chave] || 0;
+      var pct = meta > 0 ? Math.min(100, total/meta*100) : 0;
+      var cor = pct>=100?'#16a34a':pct>=70?'#d97706':'#dc2626';
+      return '<tr>'
+        +'<td><strong>'+vend+'</strong></td>'
+        +'<td style="color:#d97706;font-weight:700">'+fmtMoney(total)+'</td>'
+        +'<td>'+(meta>0
+          ?'<div style="background:#f1f5f9;border-radius:20px;height:12px;overflow:hidden;margin-bottom:4px"><div style="background:'+cor+';height:100%;width:'+pct+'%;transition:width .5s;border-radius:20px"></div></div>'
+           +'<span style="font-size:13px;color:'+cor+';font-weight:800">'+pct.toFixed(0)+'% — '+fmtMoney(total)+' de '+fmtMoney(meta)+'</span>'
+          :'<span style="color:#94a3b8;font-size:12px">Meta não definida pelo Admin</span>')
+        +'</td></tr>';
+    }).join('');
+  }
 }
 
 function salvarMeta(vendedor, valor) {
@@ -4315,7 +4341,12 @@ function renderDashboard() {
       <td><strong style="color:#0d2b4e">${v.id}</strong></td>
       <td style="color:#5a6a8a;font-size:12px">${fmtDate(v.data)}</td>
       <td><strong style="color:#0d2b4e">${clMap[v.clienteId]||'-'}</strong></td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a6a8a">${v.descricaoCompleta||(prodMap[v.produto]||v.produto)||'-'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a6a8a">${
+        v.descricaoCompleta ? v.descricaoCompleta.substring(0,40)+(v.descricaoCompleta.length>40?'...':'') :
+        v.produto==='OCULOS-COMPLETO' ? '🕶️ Óculos Completo' :
+        v.produto==='SERVICO' ? '🔧 Serviço' :
+        (prodMap[v.produto]||v.produto||'-').substring(0,40)
+      }</td>
       <td class="fw-bold" style="color:#16a34a;font-size:14px">${fmtMoney(calcTotal(v))}</td>
       <td>${statusBadge(v.status)}</td>
     </tr>
