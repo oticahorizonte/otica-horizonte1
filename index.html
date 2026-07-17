@@ -1171,6 +1171,7 @@ function instalarApp() {
 </button>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+<button onclick="abrirMeuCatalogo()" style="width:100%;padding:7px 4px;background:linear-gradient(135deg,rgba(201,168,76,.4),rgba(201,168,76,.2));border:1px solid rgba(201,168,76,.6);border-radius:8px;color:rgba(255,255,255,.95);font-size:11px;cursor:pointer;font-weight:700;margin-bottom:4px">📤 Meu Catálogo</button>
 <button data-tip="Enviar todos os dados para a nuvem" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">☁️ Enviar Nuvem</button>
 <button data-tip="Baixar dados da nuvem" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⬇️ Baixar Nuvem</button>
 <button data-tip="Configurações do sistema" onclick="openModal('modal-config')" style="width:100%;padding:7px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⚙️ Configurações</button>
@@ -1914,6 +1915,11 @@ function instalarApp() {
 <option value="Inativo">Inativo</option>
 </select>
 </div>
+<div class="form-group" style="grid-column:1/-1">
+<label>📱 WhatsApp (com DDD, sem espaços)</label>
+<input id="usuario-whatsapp" placeholder="Ex: 92992890085" type="text" maxlength="15"/>
+<small style="color:#64748b;font-size:11px">Usado para o catálogo público</small>
+</div>
 </div>
 <div class="form-actions">
 <button class="btn btn-primary" onclick="saveUsuario()">💾 Salvar</button>
@@ -2277,6 +2283,13 @@ function instalarApp() {
 <div class="form-group"><label>Preço Custo (R$) *</label><input id="prod-custo" min="0" placeholder="0.00" step="0.01" type="number"/></div>
 <div class="form-group"><label>Preço Venda (R$) *</label><input id="prod-venda" min="0" oninput="calcMargem()" placeholder="0.00" step="0.01" type="number"/></div>
 <div class="form-group"><label>Margem (%)</label><input id="prod-margem" readonly="" style="background:#f8fafc" type="text"/></div>
+<div class="form-group" style="grid-column:1/-1">
+<label style="display:flex;align-items:center;gap:10px">
+<input id="prod-catalogo" type="checkbox" style="width:16px;height:16px;cursor:pointer"/>
+<span>📋 Exibir no Catálogo Público</span>
+</label>
+<small style="color:#64748b;font-size:11px">Marque para que este produto apareça no catálogo compartilhável</small>
+</div>
 <div class="form-group" style="grid-column:1/-1">
 <label>📷 Foto do Produto</label>
 <div style="display:flex;gap:10px;align-items:center">
@@ -4303,6 +4316,29 @@ function renderMetaVendas() {
   }
 }
 
+
+function abrirMeuCatalogo() {
+  var user = loadUser();
+  if (!user) { showToast('Faça login primeiro!','error'); return; }
+  var usuarios = getUsuarios();
+  var uObj = usuarios.find(function(u){ return u.login===user.login; });
+  var wpp = uObj && uObj.whatsapp ? uObj.whatsapp.replace(/\D/g,'') : '';
+  if (!wpp) {
+    showToast('Cadastre seu WhatsApp no módulo Usuários para usar o catálogo!','warning');
+    return;
+  }
+  var base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+  var url = base + 'catalogo.html?v=' + encodeURIComponent(user.login) + '&w=' + wpp;
+  // Copiar link para clipboard
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function(){
+      showToast('✅ Link do catálogo copiado! Compartilhe com seus clientes.','success');
+    });
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
 function editarMeta(chave) {
   var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
   var atual = metas[chave] || '';
@@ -5173,6 +5209,7 @@ function editProduto(cod) {
   document.getElementById('prod-venda').value = p.venda;
   calcMargem();
   carregarFotoProduto(p.foto||'');
+  document.getElementById('prod-catalogo').checked = p.catalogo||false;
   openModal('modal-produto');
 }
 
@@ -5193,6 +5230,7 @@ function saveProduto() {
     custo:parseFloat(document.getElementById('prod-custo').value)||0,
     venda:parseFloat(document.getElementById('prod-venda').value)||0,
     foto:document.getElementById('prod-foto').value||'',
+    catalogo:document.getElementById('prod-catalogo').checked||false,
   };
   if (idx) { const i=arr.findIndex(x=>x.cod===idx); arr[i]=obj; }
   else {
@@ -6817,6 +6855,7 @@ function saveUsuario() {
   var nivel = document.getElementById('usuario-nivel').value;
   var comissao = parseFloat(document.getElementById('usuario-comissao').value)||0;
   var status = document.getElementById('usuario-status').value;
+  var whatsapp = (document.getElementById('usuario-whatsapp').value||'').replace(/\D/g,'');
   var idx = document.getElementById('usuario-idx').value;
 
   if (!nome) { showToast('Preencha o nome!','error'); return; }
@@ -6830,10 +6869,10 @@ function saveUsuario() {
 
   if (idx) {
     var i = arr.findIndex(function(u){ return u.id===parseInt(idx); });
-    if (i>=0) arr[i] = {id:parseInt(idx), nome, login, senha, nivel, comissao, status};
+    if (i>=0) arr[i] = {id:parseInt(idx), nome, login, senha, nivel, comissao, status, whatsapp};
   } else {
     var newId = Math.max.apply(null, arr.map(function(u){return u.id;})) + 1;
-    arr.push({id:newId, nome, login, senha, nivel, comissao, status});
+    arr.push({id:newId, nome, login, senha, nivel, comissao, status, whatsapp});
   }
   saveUsuarios(arr);
   closeModal('modal-usuario');
