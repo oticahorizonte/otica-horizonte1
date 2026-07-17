@@ -1025,8 +1025,18 @@ function resetarSistema() {
         var ok = 0;
         for (var k of Object.keys(keys)) {
           if (k === 'user' || k === 'rascunho_venda') continue;
-          var data = await window._fb.loadCollection(k);
-          if (data !== null) { localStorage.setItem(keys[k], JSON.stringify(data)); ok++; }
+          // So baixar do Firebase se localStorage estiver vazio
+          var localRaw = localStorage.getItem(keys[k]);
+          var localData = localRaw ? JSON.parse(localRaw) : null;
+          var localVazio = !localData || (Array.isArray(localData) && localData.length === 0);
+          if (localVazio) {
+            var data = await window._fb.loadCollection(k);
+            if (data !== null) { localStorage.setItem(keys[k], JSON.stringify(data)); ok++; }
+          } else {
+            // Dados locais existem - enviar para Firebase (garantir backup)
+            await window._fb.saveCollection(k, localData);
+            ok++;
+          }
         }
         return ok;
       }
@@ -3751,7 +3761,7 @@ function updatePrintDate() {
 window.addEventListener('beforeprint', updatePrintDate);
 
 // ── Storage helpers ──────────────────────────────────────────────
-const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', usuarios:'otica_usuarios' };
+const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas' }; // usuarios gerenciado separadamente
 
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
@@ -3789,19 +3799,26 @@ window.addEventListener('firebaseReady', function() {
   if (user && user.nome) {
     setTimeout(async function() {
       if (window._fb) {
-        // Carregar usuarios do Firebase primeiro
-        var usuariosCloud = await window._fb.loadCollection('usuarios');
-        if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
-          localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
-          console.log('☁️ Usuarios carregados do Firebase:', usuariosCloud.length);
+        // Carregar usuarios do Firebase APENAS se localStorage vazio
+        var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'null');
+        if (!usuariosLocal || usuariosLocal.length === 0) {
+          var usuariosCloud = await window._fb.loadCollection('usuarios');
+          if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
+            localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+            console.log('☁️ Usuarios carregados do Firebase:', usuariosCloud.length);
+          }
+        } else {
+          // Usuarios locais existem - sincronizar para Firebase
+          if (window._fb) window._fb.saveCollection('usuarios', usuariosLocal);
         }
         // Carregar metas do Firebase
         var metasCloud = await window._fb.loadCollection('metas_vendas');
         if (metasCloud && typeof metasCloud === 'object') {
           localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
         }
-        var ok = await window._fb.syncFromCloud(KEYS);
-        if (ok > 0) { console.log('☁️ Auto-sync:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
+        // Enviar dados locais para Firebase (garantir backup)
+        var ok = await window._fb.syncToCloud(KEYS);
+        if (ok > 0) { console.log('☁️ Auto-sync enviado:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
       }
     }, 1500);
   }
@@ -6937,13 +6954,13 @@ function delAgendamento(id) {
 // ── MÓDULO DE USUÁRIOS ────────────────────────────────────────────────────
 function getUsuarios() {
   var salvos = JSON.parse(localStorage.getItem('otica_usuarios')||'null');
-  // Garantir que usuários padrão sempre existem
+  // Garantir que usuários padrão sempre existem (SEM salvar automaticamente)
   if (salvos) {
     var temAdmin = salvos.find(function(u){ return u.login==='admin'; });
     var temVendedor = salvos.find(function(u){ return u.login==='vendedor'; });
     if (!temAdmin) salvos.unshift({id:1,nome:'Administrador',login:'admin',senha:'admin123',nivel:'Admin',comissao:0,status:'Ativo'});
     if (!temVendedor) salvos.push({id:2,nome:'Vendedor Padrão',login:'vendedor',senha:'venda123',nivel:'Vendedor',comissao:5,status:'Ativo'});
-    localStorage.setItem('otica_usuarios', JSON.stringify(salvos));
+    // NAO salvar aqui - evita sobrescrever dados mais recentes
   }
   if (!salvos) {
     // Inicializar com usuários padrão + 4 vendedores fictícios
@@ -6961,13 +6978,14 @@ function getUsuarios() {
 }
 
 function saveUsuarios(arr) {
+  // Salvar no localStorage imediatamente
   localStorage.setItem('otica_usuarios', JSON.stringify(arr));
   // Atualizar config de comissão
   var cfg = {};
   arr.forEach(function(u) { cfg[u.login] = u.comissao||0; });
   window._comissaoVendedor = cfg;
   localStorage.setItem('otica_config_comissao', JSON.stringify(cfg));
-  // Salvar no Firebase com retry automatico (via save() que tem retry)
+  // Salvar no Firebase com retry
   function tentarSalvarUsuarios(tentativas) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection('usuarios', arr).then(function(ok){
@@ -6975,7 +6993,6 @@ function saveUsuarios(arr) {
           localStorage.setItem('otica_ultimo_sync', Date.now().toString());
           if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
           if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
-          console.log('Usuarios salvos no Firebase!');
         }
       });
       window._fb.saveCollection('config_comissao', cfg);
@@ -6983,7 +7000,7 @@ function saveUsuarios(arr) {
       setTimeout(function() { tentarSalvarUsuarios(tentativas - 1); }, 2000);
     }
   }
-  tentarSalvarUsuarios(5);
+  tentarSalvarUsuarios(10); // Mais tentativas para garantir
 }
 
 function renderUsuarios() {
