@@ -3762,6 +3762,17 @@ window.addEventListener('firebaseReady', function() {
   if (user && user.nome) {
     setTimeout(async function() {
       if (window._fb) {
+        // Carregar usuarios do Firebase primeiro
+        var usuariosCloud = await window._fb.loadCollection('usuarios');
+        if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
+          localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+          console.log('☁️ Usuarios carregados do Firebase:', usuariosCloud.length);
+        }
+        // Carregar metas do Firebase
+        var metasCloud = await window._fb.loadCollection('metas_vendas');
+        if (metasCloud && typeof metasCloud === 'object') {
+          localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+        }
         var ok = await window._fb.syncFromCloud(KEYS);
         if (ok > 0) { console.log('☁️ Auto-sync:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
       }
@@ -4236,18 +4247,19 @@ function renderMetaVendas() {
       var cor = pct>=100?'#16a34a':pct>=70?'#d97706':'#dc2626';
       return '<tr>'
         +'<td><strong>'+vend+'</strong></td>'
-        +'<td style=\"color:#d97706;font-weight:700\">'+fmtMoney(total)+'</td>'
-        +'<td><div style=\"display:flex;flex-direction:column;gap:3px\">'
-        +'<input type=\"number\" value=\"'+(meta||'')+'\\" placeholder=\"Definir meta...\"'
-        +' style=\"width:130px;padding:5px 8px;border:2px solid #dde3ee;border-radius:8px;font-size:13px;font-weight:600\"'
-        +' data-vend=\"'+chave+'\"'
-        +' onchange=\"salvarMeta(this.dataset.vend,this.value)\"'
-        +'/>'+(meta>0?'<span style=\"font-size:11px;color:#16a34a;font-weight:700\">'+fmtMoney(meta)+'</span>':'')
-        +'</div></td>'
+        +'<td style="color:#d97706;font-weight:700">'+fmtMoney(total)+'</td>'
         +'<td>'+(meta>0
-          ?'<div style=\"background:#f1f5f9;border-radius:20px;height:10px;overflow:hidden;margin-bottom:3px\"><div style=\"background:'+cor+';height:100%;width:'+pct+'%;transition:width .5s;border-radius:20px\"></div></div>'
-           +'<span style=\"font-size:12px;color:'+cor+';font-weight:800\">'+pct.toFixed(0)+'%</span>'
-          :'<span style=\"color:#94a3b8;font-size:11px\">Defina a meta →</span>')
+          ?'<div style="display:flex;align-items:center;gap:6px">'
+           +'<span style="font-size:14px;font-weight:800;color:#16a34a">'+fmtMoney(meta)+'</span>'
+           +'<button onclick="editarMeta(\''+chave+'\')" style="background:none;border:1px solid #dde3ee;border-radius:6px;padding:2px 6px;font-size:10px;cursor:pointer;color:#64748b" title="Editar meta">✏️</button>'
+           +'</div>'
+          :'<button onclick="editarMeta(\''+chave+'\')" style="background:#f1f5f9;border:1px dashed #94a3b8;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#64748b">➕ Definir meta</button>')
+        +'</td>'
+        +'<td>'+(meta>0
+          ?'<div style="background:#f1f5f9;border-radius:20px;height:10px;overflow:hidden;margin-bottom:3px"><div style="background:'+cor+';height:100%;width:'+pct+'%;transition:width .5s;border-radius:20px"></div></div>'
+           +'<span style="font-size:11px;color:'+cor+';font-weight:800">'+pct.toFixed(0)+'%'
+           +(pct<100?' <span style="color:#64748b;font-weight:400">— faltam '+fmtMoney(meta-total)+'</span>':' <span style="color:#16a34a">✔ Meta atingida!</span>')+'</span>'
+          :'<span style="color:#94a3b8;font-size:11px">Sem meta definida</span>')
         +'</td></tr>';
     }).join('');
     body.querySelectorAll('input[type="number"]').forEach(function(inp) {
@@ -4284,6 +4296,14 @@ function renderMetaVendas() {
         +'</td></tr>';
     }).join('');
   }
+}
+
+function editarMeta(chave) {
+  var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
+  var atual = metas[chave] || '';
+  var novo = prompt('Meta de vendas para ' + chave + ' (R$):', atual);
+  if (novo === null) return;
+  salvarMeta(chave, novo);
 }
 
 function salvarMeta(vendedor, valor) {
@@ -5158,6 +5178,7 @@ function saveProduto() {
     min:parseInt(document.getElementById('prod-min').value)||0,
     custo:parseFloat(document.getElementById('prod-custo').value)||0,
     venda:parseFloat(document.getElementById('prod-venda').value)||0,
+    foto:document.getElementById('prod-foto').value||'',
   };
   if (idx) { const i=arr.findIndex(x=>x.cod===idx); arr[i]=obj; }
   else {
