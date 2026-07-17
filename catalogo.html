@@ -10,7 +10,6 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:100vh}
 
-/* HEADER */
 .header{background:linear-gradient(135deg,#0d2b4e 0%,#1a4a7a 100%);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
 .header-inner{max-width:1200px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .logo-area{display:flex;align-items:center;gap:14px}
@@ -18,8 +17,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 .logo-text h1{color:#e8c96a;font-size:20px;font-weight:800;letter-spacing:0.5px}
 .logo-text p{color:rgba(255,255,255,0.7);font-size:12px;margin-top:2px}
 .header-badge{background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.4);border-radius:20px;padding:6px 14px;color:#e8c96a;font-size:12px;font-weight:600}
+.vendedor-badge{background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);border-radius:12px;padding:4px 12px;color:#c9a84c;font-size:11px;font-weight:700}
 
-/* FILTROS */
 .filtros-bar{background:white;border-bottom:2px solid #e2e8f0;padding:14px 20px;position:sticky;top:88px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .filtros-inner{max-width:1200px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .filtro-btn{padding:8px 18px;border-radius:20px;border:2px solid #e2e8f0;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
@@ -28,17 +27,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 .search-box{flex:1;min-width:200px;max-width:320px;position:relative}
 .search-box input{width:100%;padding:8px 14px 8px 36px;border:2px solid #e2e8f0;border-radius:20px;font-size:13px;outline:none;transition:border-color .2s}
 .search-box input:focus{border-color:#1a4a7a}
-.search-box::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px}
 
-/* GRID */
 .main{max-width:1200px;margin:0 auto;padding:24px 16px}
 .resultado-info{color:#64748b;font-size:13px;margin-bottom:16px;font-weight:500}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
 
-/* CARD */
 .card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,0.15)}
-.card-foto{width:100%;height:200px;object-fit:contain;background:#f8fafc;cursor:zoom-in;transition:opacity .2s}
+.card-foto{width:100%;height:200px;object-fit:contain;background:#f8fafc;cursor:zoom-in;transition:opacity .2s;display:block}
 .card-foto:hover{opacity:0.9}
 .card-no-foto{width:100%;height:200px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;font-size:56px}
 .card-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:8px}
@@ -48,25 +45,25 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 .card-footer{padding:12px 14px;border-top:1px solid #f1f5f9}
 .btn-wpp{width:100%;padding:10px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
 .btn-wpp:hover{opacity:0.9}
+.btn-orcamento{width:100%;padding:10px;background:linear-gradient(135deg,#1a4a7a,#0d2b4e);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
+.btn-orcamento:hover{opacity:0.9}
 
-/* EMPTY */
-.empty{text-align:center;padding:60px 20px;color:#94a3b8}
+.empty{text-align:center;padding:60px 20px;color:#94a3b8;grid-column:1/-1}
 .empty-icon{font-size:64px;margin-bottom:16px}
 .empty h3{font-size:18px;font-weight:700;color:#64748b;margin-bottom:8px}
 
-/* FOOTER */
+.loading{text-align:center;padding:60px 20px;grid-column:1/-1}
+.spinner{width:40px;height:40px;border:4px solid #e2e8f0;border-top-color:#1a4a7a;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .footer{background:#0d2b4e;color:rgba(255,255,255,0.6);text-align:center;padding:20px;font-size:12px;margin-top:40px}
 .footer strong{color:#e8c96a}
 
-/* ZOOM MODAL */
-.zoom-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.93);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out}
+.zoom-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.93);z-index:9999;align-items:center;justify-content:center;flex-direction:column;cursor:zoom-out}
 .zoom-overlay.open{display:flex}
 .zoom-img{max-width:95vw;max-height:88vh;object-fit:contain;border-radius:8px}
 .zoom-close{position:fixed;top:16px;right:16px;background:#dc2626;color:white;border:none;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center}
-.zoom-desc{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:white;font-size:14px;font-weight:600;background:rgba(0,0,0,0.6);padding:8px 20px;border-radius:20px}
-
-/* VENDEDOR BADGE */
-.vendedor-badge{background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);border-radius:12px;padding:4px 12px;color:#c9a84c;font-size:11px;font-weight:700}
+.zoom-desc{margin-top:12px;color:white;font-size:14px;font-weight:600;background:rgba(0,0,0,0.6);padding:8px 20px;border-radius:20px;max-width:90vw;text-align:center}
 
 @media(max-width:600px){
   .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
@@ -79,8 +76,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 </head>
 <body>
 <!-- ZOOM MODAL -->
-<div class="zoom-overlay" id="zoom-overlay" onclick="fecharZoom()">
-<button class="zoom-close" onclick="fecharZoom()">×</button>
+<div class="zoom-overlay" id="zoom-overlay" onclick="fecharZoom(event)">
+<button class="zoom-close" onclick="fecharZoom(event)">×</button>
 <img alt="" class="zoom-img" id="zoom-img" src=""/>
 <div class="zoom-desc" id="zoom-desc"></div>
 </div>
@@ -96,7 +93,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 </div>
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
 <span class="header-badge">📋 Catálogo Oficial</span>
-<span class="vendedor-badge" id="vendedor-badge" style="display:none"></span>
+<span class="vendedor-badge" id="vendedor-badge" style="display:none">👤 Atendimento personalizado</span>
 </div>
 </div>
 </header>
@@ -108,6 +105,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 <button class="filtro-btn" onclick="filtrar('Solar',this)">☀️ Solar</button>
 <button class="filtro-btn" onclick="filtrar('Acessório',this)">🎁 Acessórios</button>
 <div class="search-box">
+<span class="search-icon">🔍</span>
 <input id="busca" oninput="renderCatalogo()" placeholder="Buscar produto..." type="text"/>
 </div>
 </div>
@@ -115,7 +113,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 <!-- MAIN -->
 <main class="main">
 <div class="resultado-info" id="resultado-info"></div>
-<div class="grid" id="grid-catalogo"></div>
+<div class="grid" id="grid-catalogo">
+<div class="loading">
+<div class="spinner"></div>
+<p style="color:#64748b;font-weight:600">Carregando catálogo...</p>
+</div>
+</div>
 </main>
 <!-- FOOTER -->
 <footer class="footer">
@@ -123,39 +126,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 <p style="margin-top:4px">Rua Henrique Martins, 481, Centro — Galeria Fábrica dos Óculos, 2º piso, loja 10</p>
 <p style="margin-top:4px">📞 (92) 99289-0085 / (92) 99445-1770</p>
 </footer>
-<script>
-// ── Configuração ──────────────────────────────────────────
-var KEYS = {
-  produtos: 'otica_produtos',
-  clientes: 'otica_clientes',
-  vendas: 'otica_vendas',
-  os: 'otica_os',
-  receitas: 'otica_receitas',
-  agendamentos: 'otica_agendamentos',
-  composicoes: 'otica_composicoes',
-  historico_estoque: 'otica_historico_estoque',
-  rascunho_venda: 'otica_rascunho_venda',
-  despesas: 'otica_despesas'
-};
+<script type="module">
+// ── Firebase Config (mesma do sistema principal) ──────────
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-// Categorias que aparecem no catálogo
-var CATS_CATALOGO = ['Armação', 'Solar', 'Solar Masculino', 'Solar Feminino', 'Solar Infantil', 'Acessório'];
-
-var _filtroAtivo = 'todos';
-var _wpp = '';
-var _vendedorNome = '';
-
-// ── Params da URL ─────────────────────────────────────────
-function getParam(name) {
-  var params = new URLSearchParams(window.location.search);
-  return params.get(name) || '';
-}
-
-// ── Logo ──────────────────────────────────────────────────
-var LOGO_B64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAC0ALQDASIAAhEBAxEB/8QAHAABAAEFAQEAAAAAAAAAAAAAAAMBAgQFBwgG/8QAPxAAAQMDAgMFBAcIAQQDAAAAAQACAwQFEQYSByExE0FRYXEiMoGRCBQjUnKxwRUzQmKSodHhUxYkY3OCsvD/xAAaAQEAAwEBAQAAAAAAAAAAAAAAAQIDBAUG/8QAMBEAAgECBAQEBAcBAAAAAAAAAAECAxEEEiExQWFxkQUTFFEygaHRFSJSscHh8UL/2gAMAwEAAhEDEQA/APZSIiAIiIAiIgCIiAIiIAiKmR4hAVREQBERAEREAREQBERAEREAREQBERAERWyPawZPf0A6lAXKMytztaC9w6hvd6qm18n7w7W/cB/MqRoDQA0AAdwQFmJndS2MeQyU7Jp95z3erv8ACkRAR9jD/wATPiMp2MX/ABM/pCkRAR9jF3N2/hJH5KnZvHuTO9HDcP8AKlRARb5G/vI8jxZz/t1V7HteMscHDyVyjfE1ztwy1/3h1/2gJEUQe5hDZcDPR46H/ClQBERAEREAREQBERAERWyODGlxz6Dv8kBSR+0AAbnH3R4/6VI2YO553PPU+HkPJImEZe/m93Xy8gpEAREQBERAEREARYtvrYqyF8jQWGOR0UjHdWPacEH+xHiCEgnc6tq43uGyLZjyyMlZOvBZdfi0XZv+C+R68jKRQOqWCubRgF0hYZHY/hbnAJ9T09Cp1eM4yvZ7FWmtyhAIIIBB7lFzhOCSYvH7v+vyUyorEFUUTPs3iM+4fcPh5KVAEREAREQBERAFEPtJd38LDgevef0+aumcWxkt948m+pVWNDGBo6AIC5ERAEVFiVF1tlOS2ouNJER3PmaD+apOpCCvJ2JjFy0SMxFq/wDqGx5wLrSH0kBU0V3tcpwy4UxP/sAWCxuGbsqkb9UaOhVWri+xmrStvUsFc+33SmFFK4kU1QXbqefwG7q13i0/AlbGqmqTAJLfHT1J7w+YsB9CAVqKyeqnaWXO0VLKd7cSsa6OeLb3kjk4eoWONxLpxXl3v0bXzfDrfTnsaUKak/zbddSy4zRU8stRUubRsrIzHOxzubZWj2XNHV3dzHkrHXeglmme6okZHO+IuJidgBuMj4rmlBdp6+rdcbk00UJ9mBlVIIhFEPdaN5HQY9TkrbVGq9MRU3ZSajsbHjuNwiz/APZfGSxviNWo3hsPKUbt/DJ30ae1t7t9W+VvUnTw9JJVKiT6pfv0XY+9tdS5jJbhM6HdUvMs0pkBjhhbyaNw5E+XiSs23XCW4zdrTU5bQgcp5Mgyn+Rv3fM9e4d65PYNS2ht4ED7rZ6u2zEvc36/A9rJWtJY8NLwM93PlzGei6NZbvca+LNFRQSMPPtJrhG7l+GIOAX0HhtfE5IqtTlBcU4u7fG7tone+2re6SscmJhSbeSSl81t3+X8H0iKyHtOyb22ztMe1tzj4ZV6+iTueaWyND2Fp+Y7vNUheXN9oYc04cPNXqJ3sTNd3P8AZPr3fqpBKiIgCIiAIiICN3OZg7mguP5D9VerGc5ZD4YH9s/qpEBrKy7FjjHQ0FXXy9PsmhrAfN7iG/LK+Q17d9c22wz3WKK30UEbmtMcTjNMA5wbkuLdoxnuC6Coa6lgraOakqoxJDMwse094K87GYOtXpyUarTs7W0V+HP6nTQrwpyTcE1xvr/X0Oa6J09W6ptguuoL1XzNfI5ogEpxy+OB8Avq6bQmloBytTJHfeke4n81m6UtT7LQy2/d2kTZS+J/eWnuPmFuVw+FeE0Fh4Tr0k6lvzOWrvx3v9NDoxeNqOpJU52jwtpp8j5+XRelpW7X2SkI9CP1WhvPCPRtxicIorrbJT0mt91qIXN9AHlvzC+3r6qGipXVFQ4tY0gchkkk4AA7ySQFh0dycZ6inqo3tqWMM7IRGNxi6DGHEOOeR6cyOXReo44aElDKuyOROrJZrvueXNd6E4zaL4hWKz6H1zX3Sjvcr2U8taQH0pjbuf2zgObQ3nuHXGMZxna8ftK8c7fott5bxDdd6WliYK6jt9MaN4yQC8bSe0GSM5IIHPHJejqOtp66vP8A2E7ZaZ7ojJIxuI3FrXEZBPUFqo+5UFTZpqmoif8AVXPfTujkZkyHcYy0AZzl3IeK6cLisNhpKpSjGNr3skr237e5lXo1a0XCbb+d+n+HDOHf0ZbJFQQV/EG5V99u0jQ+aBlS6OCMnq3LTufjxJA8l0an4K8K6du2PQ1ocPGSMyH5uJK+5pah0z3sdTTwFgB+0AwQc9CCR3KO3XGmr3VDadziaeUxPDhjnjOR4g9xW9TxGpVks03rtw+hlDCQpq0YrQ+JqeCnCqoBD9EWpuf+Jroz82uC+YvH0btCSF8+nqy+abqurJKKuc9rT+F+eXoQu0qh6K8cXXjtN9yJUKUt4o8ZUGp+Mmj+NjeGFu1jJec1sdLFPXxGWMtewP3Oa7c4BrTzwe44Xo+26g4i2wiPVGjKa4xD3qywVgf8TBNtd/SXHyWq4e8NpIOJt+4l6hYBdK+eRtupsg/VYMBgc4jl2jmNAwPdBI6k46muvGYmnKSSinorvnx2sc2GozSbba10XLhuYVoutHdIe0pnStcPfimhdFKw+DmPAI+Sy5wTE7HUcx6jmrlVea7X0O1X4lGkOaHDoRkKqjp/3IH3ct+RwpFBIREQBERARxdZPxn8gpFHF70o/n/QKRAca4u8YL7oPiDZtKxaVoLkL25jaGc3J0Ry6RseJG9mduHOHME8vkt3xt4hXzhroqm1K6xW+5xiSOCsibXPjMcj+QLCYzubkEc8HpyXH/pdzSU/HDhnURUs1XJFKx7IIcb5SKqMhjckDJ6DJAyVm/S11Xdrxwfno6vQepLLEa6ncaquNN2QIcfZ+zlc7J7uS9enhoS8l5Vrvrz6/sccqsln122O8cNL9ctU6Itmornb6a3vuUDKmGngqHTbYntDm7nFrfaweYAwPFbuWihkzufUjP3aiRv5FeabbqG6324cIuElBX1NvttVp2luN5lpZnRSzxNgLmwB7SHNaRHz2kE7hz5Lc8ZpZuC+qNKar0rUVlPZK+uFvvNqfUySU8rSMiRrXk7JA0P5jGcDPfnlqYFTnke7u0uX92NYV2o39tzudXZoZaGSminqWOdIyVkkkr5Sx7HBzSA4nlkcxyyr6Whl/aRuVXLG+cQ9gwRMIa1pduPUkkkgemF5gtdA6u1Rxvjn1Ff6CPTbTNaZorxUMFE4NlfyG/BBLQMEHlyGFma71JqW8/Qtt2sLrW11LqCMxFlZBM+CSRpqOzDzsIzvZgnuOcrJ+EU/Mi0+KXdXWnK5dYyeVp8/sz0tbKOSknrpHyNeKmpM7Q1pG32WtwfH3f7rDjshNlNBLUfaNqnVMcrGY2v7UyN5E88E48wufO0ZYRZKXVuqLzdmWW3aegxTR3WphYzaHyyzSFkgMj3bgBk93fkY5lwnu110/wAOdbcb611yFC9ksenbTVV880UUe8Ma5we4k5ftbnr7L8cnLNeF0Zwdny65ntv/AIW9XOLV+vY9N9ncHQTh1RA2VzdsRZGcMPP2jk8+7l5LEobN9Suf1mnqH9g+lbBLG5znFxafZcHE8sAkfHyXJtAaAk1jwfo9Q329XiXV16ozXsuzLhLHJSyPBdEImtcGsY0bRsAweeVyyp1LrDifwV00aa6VdJrGn1G+yuq6eqfAajFNJM3cGENy7a0ZI94Z5ZKvHwqnUlfN8Ltf231323X8EPFyittz1rBa6aD3Ja5346yV/wCblmRsbGMDefxOLvzXnWq10eIn0aX3epmqaPUVqrqOjuLYJ308sU/1qKN59gggPY93LoMuHVq2vG/RLLFw41zq4Xm8uuYZ21uMN0qY46KNojjaxrGvDScAkkg5LlaGBjCSi9He23T7lZYiUlda8Tu/wPyTPkfkuO8L9A0ldpTReqGXW8iaotLXXWCa61Msda2amIcS1zzseHlrgW4xz8sc2+jzFpTUHDC41eudUXRtzdeJqKCY6gqWVDWu7NsQYxsnM7ncvZPPryV/Sxak1LbTbrz5Eea9NNz1Yi1ekrdU2fS1rtNbWur6iipIqeWqfndM5jQ0vOSTk4yefetouRqz0NVsRw9H/jP5qRR0/uuPi935qRQSEREAREQEbeVQ8feaD8uX+FIo5fZcx/gcH0P+8KRAeTPpW3m1jj7oB4rY3NtM8L7gWZcKYfWWP9vHQ7QTjrjmvs/pq3e11HBaKkpq6nnnuFZTzUjInh5mjaS4vbjq3GOfTmPFd9Lo883M+YRro3YDSw+QIXbHGxi6enwc9/oYOg3m13PJNmLbHqDhNxZpM1tgpLHBZL7NA0yfs+RsLoy6VoGWgdoM8uWzzGftuPLqTi1f9H6H0jWQXaGK5NuV3rKN4lgo6drcDfI3Ldzg521ucnA5c13GgvFurKQVUc8bIHZDXyOa0OIyCOvIjByDzHesmJ9FTxNEb6eKNzjtDS1oJ7+nfyUfiEJyVRLVba9u1yfTOKcXxPG1bpSDiFrTjRS2auEl5FZFW2dsVQdtYInPMjA3O2UHAHMEB20+Ofp+LXEO2a6+iPK4yQUt8bLS0tXbQ3ZIyeORu7bHjO0hpcMDAHLuK9MW272+sjfIwtgEbWk9qWtIDmhwPXphwHrlZTaiiex8zZ6dzI3bXvD2kNPgT3FWXidObjK18rTWvto+HIj0so3XvyPMXHTWVv1DZNEcMKK/U1DbbrTUtVe7kZMRQ0zWghm7puJa448WsHevsNZ3fSfEDRNdwd4dT01wf+xHvikpnH6vSinMZhjLyMEvdtbyPIZJ8+2ipoSBiopiCARh7e/p81fFPSvJ7KaFxDdx2uBwPH0VfW07RUVtqtePvsT5Eru735HFeDnEyw2Lg1R23UtW22ag07SfUau01ILKt0keWxtZEfak3gNxtB5kjuXwXDzT8ugtIcPG6plhtl0u+tv2tPS1Dwx8ERpZY27wenVuc9C8A816gfVWsvbUPqaMuaPZkMjcgHwPzR9xtZcWvrqPcG7iDK33ckZ69MghR66nHNZWzavXr9yfTydr8Dy79IzTFy0Pr8agsceNP61qqSlu0IB2xVbKmOVsmO4u2Eg+Jk8QuwfSlqqan4EaojnnjjfUU3YwNc7BleXtw1o6k4BOB4FdElrbcWgS1dKWk8t0jcZHx9FVtbRSFwM8GGuwCXtweQ5jn54VXjk3Tzbx577fYeQ1mtxPjuC10tp4J6ZrPr9MKals0DKiUyANhcyIB4cf4S0g5B6Lgn0ablwrouGFwGt6mx09fFfJaqJ1U0Cqa1pjfG5hA7TG5uRt8x4r1jE+CSNxidE9mSCWkEZ71cBF/J/ZTHFRSkrfE76Pry5kOk3blyNPofUEWqtK0GoYKSalp69hmgjm9/si47HEdxc0B2O7OFuiQ0Fx6AZKDGMDCsqObBH3vOPh3/2XNJpu6NVsKcFsLAeuMn1KkRFBIREQBERAUc0OaWnoRgqyI7mFr8FzfZd5qRRS5Y7tR0xh48vH4ICKW3W+U5loaV58XQtP6KKKz2uGR0tPb6Wnmc0s7WGJrHgHrhwGQs4cxkKqo6cG72LZ5e5pJdM2uSaaZ7JTLO0tlduwXZ2gnpyOGgZHM9+VJPp22zUUVJIyUxxMcxv2hzhzg45PjuAPwW3RU9PS1/KtSfNn7mhl0papCSfrIyMOxL73N2c/1EemAsxtnpRSS0bjI6mkeHmMnlu3byc9TudzK2SIsPSW0SXVm92aOPS9qjEYjbM0xkFrhJzBwOfxwM+OMdOSkh05a4aeaCOORrZYjET2hJDSADg//Fv9IHTktwiLD0l/yh5s/c01Rpq1VEjnzRPeXOLjl/Ik5z88n/8AAKCh0tQwzPknBl2zNfAC73A3aRnxJc3J9fVfQIoeGpXvlQ82drXNBJpKyvaA6GXkzYD2h5DAA+WG/IFSN0zbQSft8F2SO0x/Fvxy59eY7xjl3rdonpqP6UPNn7mupbNQU9LJSCHtaeUND4pcOYcDA5EeAaPRoV0VmtERzHaqFn4ado/RZ6K/k0/0ornl7kcMEEIxDDHGP5GgfkqM9uVz/wCFvst/U/p8FWZx5RsPtu7/ALo7yr2tDWhrRgAYCuklsVKoiKQEREAREQBERARD7E4P7s9P5fL0UqoQCMHmFF7UPTLo/DqW/wCQgJkVGkOaHNIIPQhVQBERAEREAREQBERAFZI8MA5ZceQA71R8mHbGDc/w8PXwVY2bSXOO556n9B5IBEwtyXHL3dT+nor0RAEREAREQBERAEREAREQEbo/aLo3bHHr4H1Cp2pb+9Zt/mHNv+vipUQFAQ4ZaQR4hVUbooyc42nxacH+ybJB7sxP4mg/4QEiKP7b/wAZ+YTM33Y/mUBIijxMer2D0b/tOyz773u8s4H9kBV8rGnaTl33RzKtxI/r9m3y94/4V7WtYMNaGjyCuQFrGNY3a0YCuREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREB//9k=';
-
-// ── Firebase ──────────────────────────────────────────────
-var firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDK2rBr4xO1v2O7p4Cclz8rU-XRdZu4PRw",
   authDomain: "otica-horizonte.firebaseapp.com",
   projectId: "otica-horizonte",
@@ -164,161 +140,148 @@ var firebaseConfig = {
   appId: "1:192666792141:web:395c4896169c0d50757984"
 };
 
-var _produtos = [];
-var _firebaseOk = false;
+// Categorias exibidas no catálogo
+const CATS_CATALOGO = ['armação', 'solar', 'acessório'];
+
+let _produtos = [];
+let _filtroAtivo = 'todos';
+let _wpp = '';
+
+// ── Logo embutida ─────────────────────────────────────────
+const LOGO_B64 = 'data:image/jpeg;base64,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';
+
+// ── Params ────────────────────────────────────────────────
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name) || '';
+}
 
 // ── Init ──────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', function() {
-  // Logo
-  document.getElementById('logo-img').src = LOGO_B64;
+document.getElementById('logo-img').src = LOGO_B64;
 
-  // Params
-  var vendLogin = getParam('v');
-  _wpp = getParam('w');
-
-  if (_wpp) {
-    document.getElementById('vendedor-badge').style.display = '';
-    document.getElementById('vendedor-badge').textContent = '👤 Atendimento personalizado';
-  }
-
-  // Carregar produtos do localStorage primeiro (fallback)
-  carregarProdutosLocal();
-
-  // Tentar Firebase
-  carregarFirebase();
-});
-
-function carregarProdutosLocal() {
-  try {
-    var raw = localStorage.getItem('otica_produtos');
-    if (raw) {
-      _produtos = JSON.parse(raw) || [];
-      renderCatalogo();
-    }
-  } catch(e) {}
+_wpp = getParam('w');
+if (_wpp) {
+  document.getElementById('vendedor-badge').style.display = '';
 }
 
-async function carregarFirebase() {
-  try {
-    // Importar Firebase dinamicamente
-    var { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-    var { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+// Carregar produtos do Firebase
+try {
+  const app = initializeApp(firebaseConfig, 'catalogo-app');
+  const db = getFirestore(app);
 
-    var app = initializeApp(firebaseConfig, 'catalogo');
-    var db = getFirestore(app);
-
-    var snap = await getDocs(collection(db, 'produtos'));
-    if (!snap.empty) {
-      _produtos = [];
-      snap.forEach(function(doc) {
-        var d = doc.data();
-        if (d && d.items) _produtos = d.items;
-        else if (Array.isArray(d)) _produtos = d;
-      });
-      _firebaseOk = true;
-      renderCatalogo();
-    }
-  } catch(e) {
-    console.log('Firebase nao disponivel, usando localStorage');
+  // Os dados ficam em _collections/produtos (mesmo padrão do sistema)
+  const snap = await getDoc(doc(db, '_collections', 'produtos'));
+  if (snap.exists()) {
+    const raw = snap.data().data;
+    _produtos = JSON.parse(raw || '[]');
+    console.log('✅ Produtos carregados do Firebase:', _produtos.length);
+  } else {
+    console.log('⚠️ Nenhum produto no Firebase ainda');
   }
+} catch(e) {
+  console.warn('Firebase error:', e);
 }
+
+renderCatalogo();
 
 // ── Filtro ────────────────────────────────────────────────
-function filtrar(cat, btn) {
+window.filtrar = function(cat, btn) {
   _filtroAtivo = cat;
-  document.querySelectorAll('.filtro-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderCatalogo();
-}
+};
 
 // ── Render ────────────────────────────────────────────────
-function renderCatalogo() {
-  var busca = (document.getElementById('busca').value || '').toLowerCase();
+window.renderCatalogo = function() {
+  const busca = (document.getElementById('busca').value || '').toLowerCase();
 
-  var lista = _produtos.filter(function(p) {
+  const lista = _produtos.filter(p => {
+    const cat = (p.cat || '').toLowerCase();
+
     // Apenas categorias do catálogo
-    var catOk = CATS_CATALOGO.some(function(c){ return (p.cat||'').toLowerCase().includes(c.toLowerCase()); });
+    const catOk = CATS_CATALOGO.some(c => cat.includes(c));
     if (!catOk) return false;
 
-    // Apenas marcados para catálogo (ou sem o campo = compatibilidade)
+    // Respeitar campo catalogo (se false, não exibe; se undefined/true, exibe)
     if (p.catalogo === false) return false;
 
-    // Filtro de categoria
+    // Filtro de categoria ativo
     if (_filtroAtivo !== 'todos') {
-      if (!((p.cat||'').toLowerCase().includes(_filtroAtivo.toLowerCase()))) return false;
+      if (!cat.includes(_filtroAtivo.toLowerCase())) return false;
     }
 
-    // Busca
+    // Busca por texto
     if (busca) {
-      var texto = ((p.desc||'') + ' ' + (p.marca||'') + ' ' + (p.modelo||'') + ' ' + (p.cor||'')).toLowerCase();
+      const texto = [(p.desc||''), (p.marca||''), (p.modelo||''), (p.cor||'')].join(' ').toLowerCase();
       if (!texto.includes(busca)) return false;
     }
 
     return true;
   });
 
-  document.getElementById('resultado-info').textContent = lista.length + ' produto' + (lista.length !== 1 ? 's' : '') + ' encontrado' + (lista.length !== 1 ? 's' : '');
+  document.getElementById('resultado-info').textContent =
+    lista.length + ' produto' + (lista.length !== 1 ? 's' : '') + ' encontrado' + (lista.length !== 1 ? 's' : '');
 
   if (lista.length === 0) {
-    document.getElementById('grid-catalogo').innerHTML = (
-      '<div class="empty" style="grid-column:1/-1">' +
+    document.getElementById('grid-catalogo').innerHTML =
+      '<div class="empty">' +
       '<div class="empty-icon">🔍</div>' +
       '<h3>Nenhum produto encontrado</h3>' +
       '<p>Tente outro filtro ou termo de busca</p>' +
-      '</div>'
-    );
+      '</div>';
     return;
   }
 
-  document.getElementById('grid-catalogo').innerHTML = lista.map(function(p) {
-    var fotoHtml = p.foto
-      ? '<img class="card-foto" src="' + p.foto + '" alt="' + (p.desc||'') + '" onclick="abrirZoom(\'' + p.foto.replace(/'/g, "\\'") + '\',\'' + (p.desc||'').replace(/'/g, "\\'") + '\')" loading="lazy"/>'
-      : '<div class="card-no-foto">🕶️</div>';
+  document.getElementById('grid-catalogo').innerHTML = lista.map(p => {
+    const fotoSafe = (p.foto || '').replace(/'/g, "\\'");
+    const descSafe = (p.desc || '').replace(/'/g, "\\'");
 
-    var infoExtra = [p.marca, p.modelo, p.cor].filter(Boolean).join(' · ');
+    const fotoHtml = p.foto
+      ? `<img class="card-foto" src="${p.foto}" alt="${p.desc||''}" onclick="abrirZoom('${fotoSafe}','${descSafe}')" loading="lazy"/>`
+      : `<div class="card-no-foto">🕶️</div>`;
 
-    var msgWpp = encodeURIComponent(
-      'Olá! Vi no catálogo da Ótica Horizonte e tenho interesse no modelo:\n' +
-      '🕶️ *' + (p.desc||p.cod) + '*' +
+    const infoExtra = [p.marca, p.modelo, p.cor].filter(Boolean).join(' · ');
+
+    const msg = encodeURIComponent(
+      'Olá! Vi no catálogo da Ótica Horizonte e tenho interesse:\n' +
+      '🕶️ *' + (p.desc || p.cod) + '*' +
       (p.marca ? '\nMarca: ' + p.marca : '') +
       (p.modelo ? '\nModelo: ' + p.modelo : '') +
       (p.cor ? '\nCor: ' + p.cor : '') +
-      '\n\nPoderia me passar mais informações?'
+      '\n\nPoderia me passar mais informações e o valor?'
     );
 
-    var btnWpp = _wpp
-      ? '<button class="btn-wpp" onclick="window.open(\'https://wa.me/' + _wpp + '?text=' + msgWpp + '\',\'_blank\')">📱 Quero este modelo</button>'
-      : '<button class="btn-wpp" style="background:linear-gradient(135deg,#64748b,#475569)" onclick="alert(\'Entre em contato: (92) 99289-0085\')">📞 Pedir orçamento</button>';
+    const btnHtml = _wpp
+      ? `<button class="btn-wpp" onclick="window.open('https://wa.me/${_wpp}?text=${msg}','_blank')">📱 Quero este modelo</button>`
+      : `<button class="btn-orcamento" onclick="window.open('https://wa.me/5592992890085?text=${msg}','_blank')">📞 Pedir orçamento</button>`;
 
-    return (
-      '<div class="card">' +
-      fotoHtml +
-      '<div class="card-body">' +
-      '<div class="card-cat">' + (p.cat||'') + '</div>' +
-      '<div class="card-nome">' + (p.desc||'') + '</div>' +
-      (infoExtra ? '<div class="card-info">' + infoExtra + '</div>' : '') +
-      '</div>' +
-      '<div class="card-footer">' + btnWpp + '</div>' +
-      '</div>'
-    );
+    return `<div class="card">
+      ${fotoHtml}
+      <div class="card-body">
+        <div class="card-cat">${p.cat||''}</div>
+        <div class="card-nome">${p.desc||''}</div>
+        ${infoExtra ? `<div class="card-info">${infoExtra}</div>` : ''}
+      </div>
+      <div class="card-footer">${btnHtml}</div>
+    </div>`;
   }).join('');
-}
+};
 
 // ── Zoom ──────────────────────────────────────────────────
-function abrirZoom(src, desc) {
+window.abrirZoom = function(src, desc) {
   document.getElementById('zoom-img').src = src;
   document.getElementById('zoom-desc').textContent = desc || '';
   document.getElementById('zoom-overlay').classList.add('open');
-}
+};
 
-function fecharZoom() {
-  document.getElementById('zoom-overlay').classList.remove('open');
-  document.getElementById('zoom-img').src = '';
-}
+window.fecharZoom = function(e) {
+  if (!e || e.target !== document.getElementById('zoom-img')) {
+    document.getElementById('zoom-overlay').classList.remove('open');
+    document.getElementById('zoom-img').src = '';
+  }
+};
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') fecharZoom();
-});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') window.fecharZoom(); });
 </script>
 </body>
 </html>

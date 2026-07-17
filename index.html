@@ -3798,15 +3798,23 @@ const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const save = function(k, v) {
   _saveBase(k, v);
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes'];
-  if (window._firebaseReady && window._fb && criticos.indexOf(k) !== -1) {
-    window._fb.saveCollection(k, v).then(function(ok) {
-      if (ok) {
-        localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-        if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-        if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
-      }
-    });
+  if (criticos.indexOf(k) === -1) return;
+  // Tentar salvar no Firebase imediatamente ou aguardar conexao
+  function tentarSalvar(tentativas) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection(k, v).then(function(ok) {
+        if (ok) {
+          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+          if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
+        }
+      });
+    } else if (tentativas > 0) {
+      // Firebase ainda nao conectou, tentar em 2 segundos
+      setTimeout(function() { tentarSalvar(tentativas - 1); }, 2000);
+    }
   }
+  tentarSalvar(5); // Tenta ate 5 vezes (10 segundos)
 };
 // Sync periódico a cada 30 minutos
 setInterval(async function() {
