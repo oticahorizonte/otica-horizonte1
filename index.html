@@ -1048,6 +1048,7 @@ function resetarSistema() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
+  initGitHubToken();
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ Service Worker registrado:', reg.scope);
     }).catch(function(e) { console.warn('SW error:', e); });
@@ -1172,9 +1173,10 @@ function instalarApp() {
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
 <button onclick="abrirMeuCatalogo()" style="width:100%;padding:7px 4px;background:linear-gradient(135deg,rgba(201,168,76,.4),rgba(201,168,76,.2));border:1px solid rgba(201,168,76,.6);border-radius:8px;color:rgba(255,255,255,.95);font-size:11px;cursor:pointer;font-weight:700;margin-bottom:4px">📤 Meu Catálogo</button>
+<button onclick="gerarCatalogoJSON()" style="width:100%;padding:7px 4px;background:rgba(16,185,129,.3);border:1px solid rgba(16,185,129,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-bottom:4px">🔄 Atualizar Catálogo</button>
 <button data-tip="Enviar todos os dados para a nuvem" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">☁️ Enviar Nuvem</button>
 <button data-tip="Baixar dados da nuvem" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⬇️ Baixar Nuvem</button>
-<button data-tip="Configurações do sistema" onclick="openModal('modal-config')" style="width:100%;padding:7px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⚙️ Configurações</button>
+<button data-tip="Configurações do sistema" onclick="openModal('modal-config');setTimeout(abrirModalConfigGitHub,100)" style="width:100%;padding:7px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⚙️ Configurações</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
 <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px">© 2026 Ótica Horizonte</div>
@@ -3147,6 +3149,18 @@ function instalarApp() {
 </div>
 </div>
 </div>
+<!-- GitHub Token para Catalogo -->
+<div class="card" style="margin-bottom:16px">
+<div class="card-header"><h3>📋 Token GitHub — Catálogo Automático</h3></div>
+<div class="card-body">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Configure o token para atualizar o catálogo online automaticamente ao salvar produtos.</p>
+<div style="display:flex;gap:8px;align-items:center">
+<input id="github-token-input" type="password" placeholder="ghp_..." style="flex:1;padding:8px 12px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" value=""/>
+<button class="btn btn-primary" onclick="salvarGitHubToken()" style="white-space:nowrap">💾 Salvar Token</button>
+</div>
+<div id="github-token-status" style="font-size:11px;margin-top:6px;color:#64748b"></div>
+</div>
+</div>
 <!-- Resetar Sistema -->
 <div class="card">
 <div class="card-header"><h3>🔄 Resetar Sistema</h3></div>
@@ -4034,6 +4048,41 @@ window.addEventListener('unhandledrejection', function(e) {
 const VERSAO_SISTEMA = 'v17.0';
 // Verificação de versão será feita no DOMContentLoaded
 
+
+function salvarGitHubToken() {
+  var token = document.getElementById('github-token-input').value.trim();
+  if (!token || !token.startsWith('ghp_')) {
+    showToast('Token invalido! Deve comecar com ghp_', 'error');
+    return;
+  }
+  localStorage.setItem('otica_github_token', token);
+  document.getElementById('github-token-status').textContent = '✅ Token salvo! O catalogo sera atualizado automaticamente.';
+  document.getElementById('github-token-status').style.color = '#16a34a';
+  showToast('✅ Token GitHub salvo com sucesso!', 'success');
+}
+
+function abrirModalConfigGitHub() {
+  // Mostrar token atual (mascarado) ao abrir configuracoes
+  var token = localStorage.getItem('otica_github_token') || '';
+  var input = document.getElementById('github-token-input');
+  var status = document.getElementById('github-token-status');
+  if (input) input.value = token ? token : '';
+  if (status) {
+    if (token) {
+      status.textContent = '✅ Token configurado — catálogo automático ativo';
+      status.style.color = '#16a34a';
+    } else {
+      status.textContent = '⚠️ Sem token — clique em Atualizar Catálogo para baixar manualmente';
+      status.style.color = '#d97706';
+    }
+  }
+}
+
+function initGitHubToken() {
+  // Token configurado pelo usuario nas Configuracoes
+  // Nao armazenar token no codigo por seguranca
+}
+
 function doLogin() {
   const u = document.getElementById('login-user').value.trim().toLowerCase();
   const p = document.getElementById('login-pass').value;
@@ -4324,6 +4373,109 @@ function renderMetaVendas() {
   }
 }
 
+
+
+// Configuracao GitHub para upload automatico do catalogo
+var _GITHUB_CONFIG = {
+  user: 'oticahorizonte',
+  repo: 'otica-horizonte1',
+  token: localStorage.getItem('otica_github_token') || ''
+};
+
+function gerarCatalogoJSON() {
+  var CATS_CATALOGO = ['armação', 'solar', 'acessório'];
+  var produtos = load('produtos');
+  var catalogo = produtos.filter(function(p) {
+    var cat = (p.cat || '').toLowerCase();
+    var catOk = CATS_CATALOGO.some(function(c) { return cat.includes(c); });
+    if (!catOk) return false;
+    if (p.catalogo === false) return false;
+    return true;
+  }).map(function(p) {
+    return {
+      cod: p.cod,
+      desc: p.desc,
+      cat: p.cat,
+      marca: p.marca || '',
+      modelo: p.modelo || '',
+      cor: p.cor || '',
+      foto: p.foto || ''
+    };
+  });
+
+  var json = JSON.stringify(catalogo, null, 2);
+  var token = localStorage.getItem('otica_github_token') || _GITHUB_CONFIG.token;
+
+  if (!token) {
+    // Sem token: baixar manualmente
+    var blob = new Blob([json], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'catalogo-data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 catalogo-data.json baixado! Faça upload no GitHub.', 'success');
+    return;
+  }
+
+  // Com token: upload automatico para GitHub
+  showToast('⏳ Atualizando catálogo no GitHub...', 'success');
+  uploadCatalogoGitHub(json, token);
+}
+
+async function uploadCatalogoGitHub(json, token) {
+  var apiUrl = 'https://api.github.com/repos/' + _GITHUB_CONFIG.user + '/' + _GITHUB_CONFIG.repo + '/contents/catalogo-data.json';
+
+  try {
+    // Verificar se arquivo ja existe (para pegar o SHA)
+    var sha = null;
+    try {
+      var checkResp = await fetch(apiUrl, {
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (checkResp.ok) {
+        var checkData = await checkResp.json();
+        sha = checkData.sha;
+      }
+    } catch(e) {}
+
+    // Fazer upload
+    var body = {
+      message: 'Atualizar catálogo de produtos - ' + new Date().toLocaleDateString('pt-BR'),
+      content: btoa(unescape(encodeURIComponent(json))),
+      branch: 'main'
+    };
+    if (sha) body.sha = sha;
+
+    var resp = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (resp.ok) {
+      showToast('✅ Catálogo atualizado no GitHub automaticamente!', 'success');
+      setTimeout(function() {
+        showToast('🌐 O catálogo online já está atualizado!', 'success');
+      }, 2000);
+    } else {
+      var err = await resp.json();
+      console.warn('GitHub upload error:', err);
+      showToast('⚠️ Erro no upload: ' + (err.message || 'verifique o token'), 'warning');
+    }
+  } catch(e) {
+    console.warn('Upload error:', e);
+    showToast('⚠️ Erro de conexão ao GitHub', 'warning');
+  }
+}
 
 function abrirMeuCatalogo() {
   var user = loadUser();
@@ -5012,7 +5164,7 @@ function onFotoChange() {
     var img = new Image();
     img.onload = function() {
       var canvas = document.createElement('canvas');
-      var maxSize = 800;
+      var maxSize = 1200;
       var w = img.width, h = img.height;
       if (w > maxSize || h > maxSize) {
         if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
@@ -5021,7 +5173,7 @@ function onFotoChange() {
       canvas.width = w; canvas.height = h;
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      var compressed = canvas.toDataURL('image/jpeg', 0.72);
+      var compressed = canvas.toDataURL('image/jpeg', 0.90);
       hidden.value = compressed;
       preview.src = compressed;
       preview.style.display = 'block';
@@ -5270,6 +5422,10 @@ function saveProduto() {
   closeModal('modal-produto');
   renderProdutos();
   showToast(idx ? 'Produto atualizado!' : 'Produto cadastrado!');
+  // Auto-atualizar catalogo se produto marcado para exibir
+  if (obj.catalogo) {
+    setTimeout(function() { gerarCatalogoJSON(); }, 1500);
+  }
 }
 
 function entradaEstoque(cod) {
