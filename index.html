@@ -3751,7 +3751,7 @@ function updatePrintDate() {
 window.addEventListener('beforeprint', updatePrintDate);
 
 // ── Storage helpers ──────────────────────────────────────────────
-const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas' };
+const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', usuarios:'otica_usuarios' };
 
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
@@ -3789,26 +3789,11 @@ window.addEventListener('firebaseReady', function() {
   if (user && user.nome) {
     setTimeout(async function() {
       if (window._fb) {
-        // Carregar usuarios do Firebase - mesclar com local (preservar whatsapp local)
+        // Carregar usuarios do Firebase primeiro
         var usuariosCloud = await window._fb.loadCollection('usuarios');
         if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
-          var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-          // Mesclar: dados da nuvem + whatsapp local (mais recente)
-          var merged = usuariosCloud.map(function(u) {
-            var local = usuariosLocal.find(function(l){ return l.id===u.id || l.login===u.login; });
-            if (local && local.whatsapp) u.whatsapp = local.whatsapp;
-            return u;
-          });
-          // Adicionar usuarios locais que nao estao na nuvem
-          usuariosLocal.forEach(function(l) {
-            if (!merged.find(function(m){ return m.id===l.id || m.login===l.login; })) {
-              merged.push(l);
-            }
-          });
-          localStorage.setItem('otica_usuarios', JSON.stringify(merged));
-          console.log('☁️ Usuarios mesclados Firebase+Local:', merged.length);
-          // Salvar versao mesclada de volta no Firebase
-          if (window._fb) window._fb.saveCollection('usuarios', merged);
+          localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+          console.log('☁️ Usuarios carregados do Firebase:', usuariosCloud.length);
         }
         // Carregar metas do Firebase
         var metasCloud = await window._fb.loadCollection('metas_vendas');
@@ -3826,7 +3811,7 @@ const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const save = function(k, v) {
   _saveBase(k, v);
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes'];
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','usuarios'];
   if (criticos.indexOf(k) === -1) return;
   // Tentar salvar no Firebase imediatamente ou aguardar conexao
   function tentarSalvar(tentativas) {
@@ -7038,6 +7023,8 @@ function openNovoUsuario() {
   document.getElementById('usuario-nivel').value = 'Vendedor';
   document.getElementById('usuario-comissao').value = '5';
   document.getElementById('usuario-status').value = 'Ativo';
+  var wppEl = document.getElementById('usuario-whatsapp');
+  if (wppEl) wppEl.value = '';
   openModal('modal-usuario');
 }
 
@@ -7052,6 +7039,8 @@ function editUsuario(id) {
   document.getElementById('usuario-nivel').value = u.nivel||'Vendedor';
   document.getElementById('usuario-comissao').value = u.comissao||0;
   document.getElementById('usuario-status').value = u.status||'Ativo';
+  var wppInput = document.getElementById('usuario-whatsapp');
+  if (wppInput) wppInput.value = u.whatsapp||'';
   openModal('modal-usuario');
 }
 
