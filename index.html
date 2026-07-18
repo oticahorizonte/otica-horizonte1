@@ -1281,7 +1281,7 @@ function instalarApp() {
 </div>
 <div class="card" id="card-dash-os">
 <div class="card-header"><h3>🔧 OS em Aberto</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
+<div class="card-body" style="padding:0;max-height:220px;overflow-y:auto"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
 </div>
 </div>
 </section>
@@ -1575,27 +1575,13 @@ function instalarApp() {
 <div class="topbar">
 <h1>💈 Comissão de Vendedores</h1>
 <div class="topbar-actions">
-<select class="admin-only" id="comissao-pct-sel" onchange="renderComissoes()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
-<option value="5">Comissão 5%</option>
-<option value="8">Comissão 8%</option>
-<option selected="" value="10">Comissão 10%</option>
-<option value="12">Comissão 12%</option>
-<option value="15">Comissão 15%</option>
-</select>
+<!-- Select de comissao removido - % definido por vendedor em Usuarios -->
 </div>
 </div>
-<!-- Painel de Configuração de Comissões -->
-<div class="card" id="card-config-comissao" style="margin-bottom:20px">
-<div class="card-header" style="background:linear-gradient(135deg,#1a3a5c,#0ea5e9);border-radius:14px 14px 0 0">
-<h3 style="color:#fff">⚙️ Configuração de Comissões por Vendedor</h3>
-</div>
-<div class="card-body">
-<div id="comissao-config-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px"></div>
-<div style="display:flex;gap:10px;flex-wrap:wrap">
-<button class="btn btn-primary" onclick="salvarConfigComissoes()" style="background:#16a34a">💾 Salvar Configurações</button>
-<button class="btn btn-outline" onclick="renderComissaoConfig()">↺ Resetar</button>
-</div>
-<div id="comissao-config-msg" style="margin-top:8px;font-size:13px;color:#16a34a;display:none">✅ Configurações salvas com sucesso!</div>
+<!-- Configuracao de comissao movida para modulo Usuarios -->
+<div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd">
+<div class="card-body" style="padding:14px">
+<p style="font-size:13px;color:#0369a1">ℹ️ A comissão de cada vendedor é definida no módulo <strong>Usuários</strong> — campo "Comissão (%)" no cadastro de cada vendedor.</p>
 </div>
 </div>
 <div class="cards-grid" id="comissao-cards"></div>
@@ -7128,7 +7114,8 @@ function openNovoUsuario() {
 }
 
 function editUsuario(id) {
-  var u = getUsuarios().find(x=>x.id===id);
+  var idNum = parseInt(id)||id;
+  var u = getUsuarios().find(x=>x.id===idNum||x.id===id||String(x.id)===String(id));
   if (!u) return;
   document.getElementById('usuario-idx').value = id;
   document.getElementById('modal-usuario-title').textContent = '✏️ Editar Usuário';
@@ -7177,7 +7164,8 @@ function saveUsuario() {
 }
 
 function delUsuario(id) {
-  var u = getUsuarios().find(x=>x.id===id);
+  var idNum = parseInt(id)||id;
+  var u = getUsuarios().find(x=>x.id===idNum||x.id===id||String(x.id)===String(id));
   if (!u) return;
   if (u.login==='admin') { showToast('Não é possível excluir o administrador!','error'); return; }
   // Nao permitir excluir o proprio usuario logado
@@ -7412,10 +7400,9 @@ function renderComissoes() {
   // Ocultar elementos exclusivos do admin
   var cardConfig = document.getElementById('card-config-comissao');
   if (cardConfig) cardConfig.style.display = admin ? '' : 'none';
-  var selPct = document.getElementById('comissao-pct-sel');
-  if (selPct) selPct.style.display = admin ? '' : 'none';
+  // select de comissao removido - nao precisa mais ocultar
 
-  const pct = parseFloat(document.getElementById('comissao-pct-sel').value)||10;
+  const pct = 5; // Fallback - comissao real vem do cadastro de cada vendedor
   var todasVendas = load('vendas');
   // Vendedor vê apenas suas próprias vendas
   var vendas = admin ? todasVendas : todasVendas.filter(function(v){ return (v.vendedor||'').toLowerCase() === meuNome; });
