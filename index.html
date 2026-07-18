@@ -1928,9 +1928,27 @@ function resetarSistema() {
     window._fb = {
       async saveCollection(colName, data) {
         try {
-          await setDoc(doc(db, '_collections', colName), { data: JSON.stringify(data), ts: Date.now() });
+          var jsonStr = JSON.stringify(data);
+          // Verificar tamanho - Firebase tem limite de ~1MB por documento
+          if (jsonStr.length > 900000) {
+            // Dados muito grandes - remover fotos base64 antes de salvar
+            if (colName === 'produtos' && Array.isArray(data)) {
+              var semFotos = data.map(function(p) {
+                var c = Object.assign({}, p);
+                // Manter apenas URLs (comecam com http), remover base64
+                if (c.foto && c.foto.startsWith('data:')) c.foto = '';
+                return c;
+              });
+              jsonStr = JSON.stringify(semFotos);
+            }
+          }
+          await setDoc(doc(db, '_collections', colName), { data: jsonStr, ts: Date.now() });
           return true;
-        } catch(e) { console.warn('Firebase save error:', e); return false; }
+        } catch(e) {
+          console.warn('Firebase save error:', colName, e.message);
+          if (typeof showToast === 'function') showToast('⚠️ Erro ao salvar ' + colName + ' na nuvem', 'warning');
+          return false;
+        }
       },
       async loadCollection(colName) {
         try {
@@ -1953,8 +1971,18 @@ function resetarSistema() {
         var ok = 0;
         for (var k of Object.keys(keys)) {
           if (k === 'user' || k === 'rascunho_venda') continue;
-          var data = await window._fb.loadCollection(k);
-          if (data !== null) { localStorage.setItem(keys[k], JSON.stringify(data)); ok++; }
+          try {
+            var data = await window._fb.loadCollection(k);
+            if (data !== null && data !== undefined) {
+              // So sobrescrever se Firebase tem dados validos
+              if (Array.isArray(data) || typeof data === 'object') {
+                localStorage.setItem(keys[k], JSON.stringify(data));
+                ok++;
+              }
+            }
+          } catch(e) {
+            console.warn('syncFromCloud error for', k, e.message);
+          }
         }
         return ok;
       }
@@ -3239,7 +3267,7 @@ function instalarApp() {
   oninput="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
   onfocus="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
   style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:700;outline:none;min-width:180px;placeholder-color:rgba(255,255,255,.5)"/>
-<div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);max-height:220px;overflow-y:auto;min-width:280px;margin-top:4px"></div>
+<div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);padding:0;min-width:280px;margin-top:4px"></div>
 <select id="venda-cliente" style="display:none"></select>
 </div>
 <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
@@ -4709,8 +4737,8 @@ window.addEventListener('firebaseReady', function() {
   if (user && user.nome) {
     setTimeout(async function() {
       if (window._fb) {
-        // SEMPRE carregar todos os dados do Firebase ao iniciar
-        // Firebase e a fonte de verdade - localStorage e apenas cache
+        // Carregar dados do Firebase ao iniciar
+        // Mas preservar dados locais se Firebase retornar vazio
         var ok = await window._fb.syncFromCloud(KEYS);
         // Carregar usuarios do Firebase - so sobrescrever se Firebase tem mais usuarios
         var usuariosCloud = await window._fb.loadCollection('usuarios');
@@ -4746,6 +4774,10 @@ const save = function(k, v) {
           localStorage.setItem('otica_ultimo_sync', Date.now().toString());
           if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
           if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
+        } else if (tentativas <= 1) {
+          // Ultima tentativa falhou - avisar usuario
+          var syncEl = document.getElementById('sync-text');
+          if (syncEl) { syncEl.textContent = '⚠️ Erro ao salvar na nuvem'; syncEl.style.color = '#dc2626'; }
         }
       });
     } else if (tentativas > 0) {
@@ -5817,7 +5849,7 @@ function atualizarSyncIndicator() {
     if (diff < 1) { icon.textContent = '☁️✅'; text.textContent = 'Sincronizado agora'; }
     else if (diff < 60) { icon.textContent = '☁️✅'; text.textContent = 'Sync: '+diff+'min atrás'; }
     else { icon.textContent = '☁️⚠️'; text.textContent = 'Sync: '+Math.floor(diff/60)+'h atrás'; }
-  } else { icon.textContent = '☁️'; text.textContent = 'Aguardando sync...'; }
+  } else { icon.textContent = '☁️⏳'; text.textContent = 'Conectando...'; }
 }
 setInterval(atualizarSyncIndicator, 60000);
 
@@ -6144,34 +6176,49 @@ function onFotoChange() {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
   if (file.size > 5242880) { showToast('Foto muito grande! Use imagens até 5MB.','warning'); return; }
-  // Comprimir imagem para max 800x800px e qualidade 70% (evita limite Firebase)
+
+  // Mostrar preview local imediatamente
   var reader = new FileReader();
   reader.onload = function(e) {
-    var img = new Image();
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      var maxSize = 1200;
-      var w = img.width, h = img.height;
-      if (w > maxSize || h > maxSize) {
-        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-        else { w = Math.round(w * maxSize / h); h = maxSize; }
-      }
-      canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      var compressed = canvas.toDataURL('image/jpeg', 0.90);
-      hidden.value = compressed;
-      preview.src = compressed;
-      preview.style.display = 'block';
-      if (btnRem) btnRem.style.display = '';
-      var kb = Math.round(compressed.length * 0.75 / 1024);
-      showToast('Foto carregada (' + kb + 'KB)', 'success');
-    };
-    img.src = e.target.result;
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    if (btnRem) btnRem.style.display = '';
   };
   reader.readAsDataURL(file);
-}
 
+  // Upload para Cloudinary - URL permanente na nuvem
+  showToast('⏳ Enviando foto para a nuvem...', 'success');
+  var formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'otica_produtos');
+  formData.append('folder', 'otica_produtos');
+
+  fetch('https://api.cloudinary.com/v1_1/hvcgjmhm/image/upload', {
+    method: 'POST',
+    body: formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.secure_url) {
+      hidden.value = data.secure_url;
+      preview.src = data.secure_url;
+      showToast('✅ Foto salva na nuvem! (' + Math.round((data.bytes||0)/1024) + 'KB)', 'success');
+    } else {
+      showToast('⚠️ Erro no upload da foto. Tente novamente.', 'warning');
+      // Fallback: base64 local
+      var r2 = new FileReader();
+      r2.onload = function(e2) { hidden.value = e2.target.result; };
+      r2.readAsDataURL(file);
+    }
+  })
+  .catch(function() {
+    showToast('⚠️ Sem conexão - foto salva localmente', 'warning');
+    // Fallback: base64 local
+    var r3 = new FileReader();
+    r3.onload = function(e3) { hidden.value = e3.target.result; };
+    r3.readAsDataURL(file);
+  });
+}
 function removerFoto() {
   document.getElementById('prod-foto').value = '';
   document.getElementById('prod-foto-preview').src = '';
@@ -6268,8 +6315,8 @@ function renderProdutos() {
   var adminProd = isAdmin();
   // Histórico só para admin
   var card = document.getElementById('card-historico-estoque');
-  if (card) card.style.display = adminProd ? '' : 'none';
-  if (card && card.style.display !== 'none') renderHistoricoEstoque();
+  if (card) card.style.display = 'none'; // Historico fechado por padrao
+  // Historico abre apenas quando clicar no botao
   if(!document.getElementById('tb-produtos')) return;
   // Ocultar colunas de custo e margem para vendedor
   document.querySelectorAll('.col-custo-prod,.col-margem-prod').forEach(function(el){ el.style.display = adminProd ? '' : 'none'; });
@@ -6410,10 +6457,8 @@ function saveProduto() {
   closeModal('modal-produto');
   renderProdutos();
   showToast(idx ? 'Produto atualizado!' : 'Produto cadastrado!');
-  // Auto-atualizar catalogo se produto marcado para exibir
-  if (obj.catalogo) {
-    setTimeout(function() { gerarCatalogoJSON(); }, 1500);
-  }
+  // Catalogo atualizado manualmente via botao 'Meu Catalogo' na sidebar
+  // (download automatico desativado)
 }
 
 function entradaEstoque(cod) {
@@ -8006,10 +8051,8 @@ function renderUsuarios() {
   if (!isAdminUser) { showSection('clientes'); return; }
   var usuarios = getUsuarios();
   // Ocultar usuário "Administrador" padrão na EXIBIÇÃO se houver outro Admin cadastrado
-  var outrosAdmins = usuarios.filter(function(u){ return u.nivel==='Admin' && u.login !== 'admin'; });
-  var usuariosExibir = outrosAdmins.length > 0 
-    ? usuarios.filter(function(u){ return u.login !== 'admin'; })
-    : usuarios;
+  // Mostrar todos os usuarios incluindo admin
+  var usuariosExibir = usuarios;
   document.getElementById('tb-usuarios').innerHTML = usuariosExibir.map(function(u) {
     return '<tr>'
       +'<td><strong>'+u.nome+'</strong></td>'
@@ -8076,11 +8119,18 @@ function saveUsuario() {
   if (duplicado) { showToast('Este login já está em uso!','error'); return; }
 
   if (idx) {
-    var i = arr.findIndex(function(u){ return u.id===parseInt(idx); });
-    if (i>=0) arr[i] = {id:parseInt(idx), nome, login, senha, nivel, comissao, status, whatsapp};
+    var idxNum = parseInt(idx);
+    if (idxNum === 0) { showToast('Não é possível editar o Administrador padrão por aqui.','warning'); return; }
+    var i = arr.findIndex(function(u){ return u.id===idxNum; });
+    if (i>=0) arr[i] = {id:idxNum, nome, login, senha, nivel, comissao, status, whatsapp};
   } else {
+    // Garantir que novo usuario nao usa id:0 (reservado para admin)
     var ids = arr.filter(function(u){return u.id>0;}).map(function(u){return u.id||0;});
     var newId = ids.length > 0 ? Math.max.apply(null, ids) + 1 : 1;
+    // Verificar se login ja existe
+    if (arr.find(function(u){ return u.login===login && u.id!==0; })) {
+      showToast('Login já existe!','error'); return;
+    }
     arr.push({id:newId, nome, login, senha, nivel, comissao, status, whatsapp});
   }
   saveUsuarios(arr);
