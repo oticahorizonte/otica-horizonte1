@@ -1172,11 +1172,10 @@ function instalarApp() {
 </button>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-<button onclick="abrirMeuCatalogo()" style="width:100%;padding:7px 4px;background:linear-gradient(135deg,rgba(201,168,76,.4),rgba(201,168,76,.2));border:1px solid rgba(201,168,76,.6);border-radius:8px;color:rgba(255,255,255,.95);font-size:11px;cursor:pointer;font-weight:700;margin-bottom:4px">📤 Meu Catálogo</button>
-
+<button onclick="abrirMeuCatalogo()" style="width:100%;padding:7px 4px;background:linear-gradient(135deg,rgba(201,168,76,.4),rgba(201,168,76,.2));border:1px solid rgba(201,168,76,.6);border-radius:8px;color:rgba(255,255,255,.95);font-size:11px;cursor:pointer;font-weight:700">📤 Meu Catálogo</button>
+<button data-tip="Configurações do sistema" onclick="openModal('modal-config');setTimeout(abrirModalConfigGitHub,100)" style="width:100%;padding:7px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">⚙️ Configurações</button>
 <button data-tip="Enviar todos os dados para a nuvem" onclick="syncLocalToCloud()" style="width:100%;padding:7px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">☁️ Enviar Nuvem</button>
-<button data-tip="Baixar dados da nuvem" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⬇️ Baixar Nuvem</button>
-<button data-tip="Configurações do sistema" onclick="openModal('modal-config');setTimeout(abrirModalConfigGitHub,100)" style="width:100%;padding:7px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600;margin-top:4px">⚙️ Configurações</button>
+<button data-tip="Baixar dados da nuvem" onclick="syncFirebaseToLocal()" style="width:100%;padding:7px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">⬇️ Baixar Nuvem</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
 <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px">© 2026 Ótica Horizonte</div>
@@ -4187,7 +4186,12 @@ function finalizarLogin(userObj, usuarios) {
 // login-pass listener movido para DOMContentLoaded
 
 function doLogout() {
+  // Limpar dados de sessao
   saveUser(null);
+  // Limpar carrinho e rascunho
+  if (typeof _carrinho !== 'undefined') { _carrinho = []; }
+  if (typeof _carrinhoInterno !== 'undefined') { _carrinhoInterno = []; }
+  try { localStorage.removeItem('otica_rascunho_venda'); } catch(e) {}
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-user').value = '';
@@ -4277,7 +4281,8 @@ function statusBadge(s) {
 // 21. Alerta de receita médica vencendo
 function checkReceitasVencendo() {
   var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
-  var em30 = new Date(Date.now()+30*86400000).toISOString().slice(0,10);
+  var d30 = new Date(Date.now()+30*86400000);
+  var em30 = d30.getFullYear()+'-'+String(d30.getMonth()+1).padStart(2,'0')+'-'+String(d30.getDate()).padStart(2,'0');
   var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   var receitas = load('receitas');
   var vencendo = receitas.filter(function(r){ return r.validade && r.validade>=hoje && r.validade<=em30; });
@@ -4580,6 +4585,8 @@ function salvarMeta(vendedor, valor) {
 
 function renderDashboard() {
   if(!document.getElementById('dash-cards')) return;
+  // Declarar adminDash no inicio para uso em toda a funcao
+  var adminDash = isAdmin();
   renderGraficos();
   atualizarBadges();
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -4588,7 +4595,9 @@ function renderDashboard() {
   const totalOS = os.filter(o=>o.tipoOS!=='montagem').reduce((s,o) => s + (o.valor||0), 0);
   const baixoEstoque = produtos.filter(p => p.qtd <= p.min).length;
   const osAberto = os.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelada').length;
-  var mesAtual = new Date().toISOString().slice(0,7);
+  // Usar data local (nao UTC) para evitar erro de mes
+  var hoje = new Date();
+  var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
   var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
   var receitaMes = vendasMes.reduce((s,v)=>s+calcTotal(v),0);
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
@@ -4647,7 +4656,6 @@ function renderDashboard() {
   renderPainelFinanceiroAdmin();
 
   // Meta de vendas e inadimplência — só admin
-  var adminDash = isAdmin();
   var cardMeta = document.getElementById('card-meta-vendas');
   var cardInad = document.getElementById('card-inadimplencia');
   // Meta: admin vê todos, vendedor vê o próprio progresso
@@ -4974,7 +4982,9 @@ function renderClientes() {
   const q = (document.getElementById('search-clientes')||{}).value||'';
   const data = load('clientes').filter(c =>
     !q || c.nome.toLowerCase().includes(q.toLowerCase()) ||
-    (c.cpf||'').includes(q) || (c.cidade||'').toLowerCase().includes(q.toLowerCase())
+    (c.cpf||'').includes(q) || (c.tel||'').includes(q) ||
+    (c.email||'').toLowerCase().includes(q.toLowerCase()) ||
+    (c.cidade||'').toLowerCase().includes(q.toLowerCase())
   );
   document.getElementById('tb-clientes').innerHTML = data.length ? data.map(c => `
     <tr>
@@ -4985,7 +4995,7 @@ function renderClientes() {
       <td>${statusBadge(c.status)}</td>
       <td><div class="flex gap-2">
         ${isAdmin()?`<button class="btn btn-sm btn-info" onclick="verHistorico(${c.id})" style="background:#0ea5e9;color:white" data-tip="Ver histórico do cliente">🔍</button>`:''}
-        ${isAdmin()?`<button class="btn btn-sm btn-outline" onclick="editCliente(${c.id})" data-tip="Editar cliente">✏️</button>`:''}
+        <button class="btn btn-sm btn-outline" onclick="editCliente(${c.id})" data-tip="Editar cliente">✏️</button>
         ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delCliente(${c.id})" data-tip="Excluir cliente">🗑️</button>`:''}
       </div></td>
     </tr>`).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum cliente encontrado</td></tr>';
@@ -4995,6 +5005,8 @@ function openModal_cliente_new() {
   document.getElementById('cli-id').value = '';
   document.getElementById('modal-cliente-title').textContent = '👤 Novo Cliente';
   ['nome','cpf','tel','email','nasc','end','cidade','convenio'].forEach(f => document.getElementById('cli-'+f).value = '');
+  var numEl2 = document.getElementById('cli-numero'); if(numEl2) numEl2.value = '';
+  var bairEl2 = document.getElementById('cli-bairro'); if(bairEl2) bairEl2.value = '';
   document.getElementById('cli-status').value = 'Ativo';
   openModal('modal-cliente');
 }
@@ -5047,7 +5059,16 @@ function saveCliente() {
 }
 
 function delCliente(id) {
-  if (!confirm('Excluir este cliente?')) return;
+  var c = load('clientes').find(x=>x.id===id);
+  if (!c) return;
+  // Verificar vinculos
+  var vendas = load('vendas').filter(v=>v.clienteId===id);
+  var os = load('os').filter(o=>o.clienteId===id);
+  if (vendas.length > 0 || os.length > 0) {
+    if (!confirm('Este cliente possui '+vendas.length+' venda(s) e '+os.length+' OS. Deseja excluir mesmo assim?')) return;
+  } else {
+    if (!confirm('Excluir cliente '+c.nome+'?')) return;
+  }
   save('clientes', load('clientes').filter(c=>c.id!==id));
   renderClientes();
   showToast('Cliente excluído!','warning');
@@ -5138,15 +5159,24 @@ function editReceita(id) {
   setChk('rec-trat-fotossensivel', r.tratFotossensivel);
   setChk('rec-trat-blue-cut', r.tratBlueCut);
   setChk('rec-trat-uv', r.tratUV);
+  // Preencher campo de busca de cliente
+  var clientes = load('clientes');
+  var cli = clientes.find(function(c){ return c.id===r.clienteId; });
+  var buscaEl = document.getElementById('rec-cliente-busca');
+  if (buscaEl && cli) buscaEl.value = cli.nome;
   openModal('modal-receita');
 }
 
 function saveReceita() {
   const arr = load('receitas');
   const id = document.getElementById('rec-id').value;
+  const clienteIdVal = parseInt(document.getElementById('rec-cliente').value);
+  if (!clienteIdVal || isNaN(clienteIdVal)) { showToast('Selecione um cliente!','error'); return; }
+  const dataVal = document.getElementById('rec-data').value;
+  if (!dataVal) { showToast('Data da receita é obrigatória!','error'); return; }
   const obj = {
     id: id ? parseInt(id) : nextId(arr),
-    clienteId: parseInt(document.getElementById('rec-cliente').value),
+    clienteId: clienteIdVal,
     medico: document.getElementById('rec-medico').value,
     data: document.getElementById('rec-data').value,
     validade: document.getElementById('rec-validade').value,
@@ -5342,7 +5372,9 @@ function renderProdutos() {
   const data = load('produtos').filter(p =>
     !q || p.cod.toLowerCase().includes(q.toLowerCase()) ||
     p.desc.toLowerCase().includes(q.toLowerCase()) ||
-    p.cat.toLowerCase().includes(q.toLowerCase())
+    p.cat.toLowerCase().includes(q.toLowerCase()) ||
+    (p.marca||'').toLowerCase().includes(q.toLowerCase()) ||
+    (p.modelo||'').toLowerCase().includes(q.toLowerCase())
   );
   document.getElementById('tb-produtos').innerHTML = data.length ? data.map((p,i) => {
     const margem = p.venda>0 ? (p.venda-p.custo)/p.venda*100 : 0;
@@ -5825,7 +5857,7 @@ function saveVenda() {
     const novaOS = {
       id: numOS,
       abertura: data,
-      previsao: new Date(Date.now() + 7*86400000).toISOString().slice(0,10),
+      previsao: (function(){ var dp=new Date(Date.now()+7*86400000); return dp.getFullYear()+'-'+String(dp.getMonth()+1).padStart(2,'0')+'-'+String(dp.getDate()).padStart(2,'0'); })(),
       entrega: '',
       clienteId,
       tipo: 'Óculos de Grau — Montagem',
@@ -5858,7 +5890,6 @@ function saveVenda() {
       valor: 0,
       tipoOS: 'montagem',
       vendaRef: vendasCriadas[0] || '',
-      receitaRef: rr.id || null,
       status: 'Aberta',
       tipoLente: rr.tipoLente || (rr.tipoProgressiva?'Progressiva':rr.tipoBifocalUltex?'Bifocal Ultex':rr.tipoBifocalKriptok?'Bifocal Kriptok':rr.tipoVisaoSimples?'Visão Simples':''),
       tratamentos: rr.tratamentos || [rr.tratAntiReflexo?'Anti-reflexo':'',rr.tratFotossensivel?'Fotossensível':'',rr.tratBlueCut?'Blue Cut':'',rr.tratUV?'Proteção UV':''].filter(Boolean).join(', '),
@@ -5948,7 +5979,8 @@ function delVenda(id) {
 // ── OS ───────────────────────────────────────────────────────────
 function renderOS() {
   if(!document.getElementById('tb-os')) return;
-  var adminOS2 = isAdmin();
+  var adminOS = isAdmin();
+  var adminOS2 = adminOS; // alias para compatibilidade
   var userOS = loadUser();
   var meuNomeOS = userOS ? (userOS.nome||'').toLowerCase() : '';
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
@@ -5970,7 +6002,6 @@ function renderOS() {
   // Faturamento exclui OS de montagem (valor já cobrado na venda)
   const dataConserto = data.filter(o=>o.tipoOS!=='montagem');
   const totalFat = dataConserto.reduce((s,o)=>s+(o.valor||0),0);
-  var adminOS = isAdmin();
   if (adminOS) {
     document.getElementById('os-cards').innerHTML = `
       <div class="stat-card"><div class="label">Total OS</div><div class="value">${data.length}</div><div class="sub">${dataConserto.length} conserto(s)</div></div>
@@ -6248,6 +6279,11 @@ function editOS(id) {
     if (receitaArrow) receitaArrow.textContent = '▼';
   }
 
+  // Preencher campo de busca de cliente
+  var clientes = load('clientes');
+  var cliOS = clientes.find(function(c){ return c.id===o.clienteId; });
+  var buscaOSEl = document.getElementById('os-cliente-busca');
+  if (buscaOSEl && cliOS) buscaOSEl.value = cliOS.nome;
   openModal('modal-os');
 }
 
@@ -6335,7 +6371,13 @@ function saveOS() {
 }
 
 function delOS(id) {
-  if (!confirm(`Excluir OS ${id}?`)) return;
+  var o = load('os').find(x=>x.id===id);
+  if (!o) return;
+  var msg = 'Excluir OS ' + id + '?';
+  if (o.tipoOS === 'montagem' && o.vendaRef) {
+    msg = 'Esta OS de Montagem está vinculada à venda ' + o.vendaRef + '.\nExcluir a OS não cancela a venda.\n\nDeseja excluir mesmo assim?';
+  }
+  if (!confirm(msg)) return;
   save('os', load('os').filter(o=>o.id!==id));
   renderOS();
   showToast('OS excluída!','warning');
@@ -6371,7 +6413,7 @@ function renderRelatorios() {
       break;
   }
 
-  var dataInicioStr = dataInicio.toISOString().slice(0,10);
+  var dataInicioStr = dataInicio.getFullYear()+'-'+String(dataInicio.getMonth()+1).padStart(2,'0')+'-'+String(dataInicio.getDate()).padStart(2,'0');
   var clientes = load('clientes').filter(c=>c.status!=='Inativo');
   var produtos = load('produtos');
   var todasVendas = load('vendas');
@@ -6425,10 +6467,18 @@ function renderRelatorios() {
     <tr><td>${statusBadge(s)}</td><td>${n}</td><td>${os.length>0?(n/os.length*100).toFixed(1)+'%':'0%'}</td></tr>
   `).join('') || '<tr><td colspan="3" class="text-center" style="padding:16px;color:var(--text-muted)">Sem dados</td></tr>';
 
-  // Top produtos
+  // Top produtos - incluindo vendas compostas
   var prodCount = {};
   vendas.forEach(v=>{
-    if(v.produto&&v.produto!=='OCULOS-COMPLETO'&&v.produto!=='COMPOSICAO') {
+    if (v.itens && v.itens.length > 0) {
+      v.itens.forEach(function(it){
+        if(it.cod) {
+          prodCount[it.cod]=(prodCount[it.cod]||{qtd:0,total:0});
+          prodCount[it.cod].qtd+=(it.qtd||1);
+          prodCount[it.cod].total+=(it.preco||0)*(it.qtd||1);
+        }
+      });
+    } else if(v.produto&&v.produto!=='OCULOS-COMPLETO'&&v.produto!=='COMPOSICAO'&&v.produto!=='SERVICO') {
       prodCount[v.produto]=(prodCount[v.produto]||{qtd:0,total:0});
       prodCount[v.produto].qtd+=(v.qtd||1);
       prodCount[v.produto].total+=calcTotal(v);
@@ -6877,7 +6927,6 @@ function openNovoAgendamento() {
 function renderAgendamentos() {
   if(!document.getElementById('tb-agend')) return;
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
-  const clientesAtivos = new Set(load('clientes').filter(c=>c.status!=='Inativo').map(c=>c.id));
   const q = (document.getElementById('search-agend')||{}).value||'';
   const hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   const data = load('agendamentos').filter(a =>
@@ -6961,6 +7010,11 @@ function editAgendamento(id) {
   document.getElementById('agend-prof').value = a.prof||'';
   document.getElementById('agend-status').value = a.status;
   document.getElementById('agend-obs').value = a.obs||'';
+  // Preencher campo de busca de cliente
+  var clientes = load('clientes');
+  var cliAgend = clientes.find(function(c){ return c.id===a.clienteId; });
+  var buscaAgendEl = document.getElementById('agend-cliente-busca');
+  if (buscaAgendEl && cliAgend) buscaAgendEl.value = cliAgend.nome;
   openModal('modal-agend');
 }
 
@@ -7034,10 +7088,10 @@ function saveUsuarios(arr) {
 function renderUsuarios() {
   var navEl = document.getElementById('nav-usuarios');
   var user = loadUser();
-  var isAdmin = user && (user.nivel==='Admin'||user.nome==='Administrador');
-  if (navEl) navEl.style.display = isAdmin ? 'flex' : 'none';
+  var isAdminUser = user && (user.nivel==='Admin'||user.nome==='Administrador');
+  if (navEl) navEl.style.display = isAdminUser ? 'flex' : 'none';
   if (!document.getElementById('tb-usuarios')) return;
-  if (!isAdmin) { showSection('clientes'); return; }
+  if (!isAdminUser) { showSection('clientes'); return; }
   var usuarios = getUsuarios();
   // Ocultar usuário "Administrador" padrão na EXIBIÇÃO se houver outro Admin cadastrado
   var outrosAdmins = usuarios.filter(function(u){ return u.nivel==='Admin' && u.login !== 'admin'; });
@@ -7112,7 +7166,8 @@ function saveUsuario() {
     var i = arr.findIndex(function(u){ return u.id===parseInt(idx); });
     if (i>=0) arr[i] = {id:parseInt(idx), nome, login, senha, nivel, comissao, status, whatsapp};
   } else {
-    var newId = Math.max.apply(null, arr.map(function(u){return u.id;})) + 1;
+    var ids = arr.map(function(u){return u.id||0;});
+    var newId = ids.length > 0 ? Math.max.apply(null, ids) + 1 : 1;
     arr.push({id:newId, nome, login, senha, nivel, comissao, status, whatsapp});
   }
   saveUsuarios(arr);
@@ -7125,6 +7180,9 @@ function delUsuario(id) {
   var u = getUsuarios().find(x=>x.id===id);
   if (!u) return;
   if (u.login==='admin') { showToast('Não é possível excluir o administrador!','error'); return; }
+  // Nao permitir excluir o proprio usuario logado
+  var userAtual = loadUser();
+  if (userAtual && userAtual.login === u.login) { showToast('Você não pode excluir seu próprio usuário!','error'); return; }
   if (!confirm('Excluir usuário '+u.nome+'?')) return;
   saveUsuarios(getUsuarios().filter(x=>x.id!==id));
   renderUsuarios();
@@ -7219,6 +7277,7 @@ function openNovaDespesa() {
   document.getElementById('despesa-valor').value = '';
   document.getElementById('despesa-obs').value = '';
   document.getElementById('despesa-recorrente').value = 'nao';
+  var catEl = document.getElementById('despesa-cat'); if(catEl) catEl.value = 'Outros';
   openModal('modal-despesa');
 }
 
@@ -7369,6 +7428,8 @@ function renderComissoes() {
   const vendedores = {};
   vendas.forEach(v => {
     const vend = v.vendedor || 'Não informado';
+    // Excluir admin das comissoes
+    if (vend.toLowerCase() === 'administrador' || vend.toLowerCase() === 'admin') return;
     if (!vendedores[vend]) vendedores[vend] = {qtd:0, total:0, vendas:[]};
     const tot = calcTotal(v);
     vendedores[vend].qtd++;
@@ -7763,14 +7824,15 @@ function renderGraficos() {
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
 
-  // Gráfico vendas por mês (últimos 6 meses)
+  // Gráfico vendas por mês (últimos 6 meses) - usando data local
   const meses = [];
   for (let i=5; i>=0; i--) {
     const d = new Date(); d.setMonth(d.getMonth()-i);
-    const key = d.toISOString().slice(0,7);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     const label = d.toLocaleDateString('pt-BR',{month:'short'});
-    const total = vendas.filter(v=>(v.data||'').startsWith(key)).reduce((s,v)=>s+calcTotal(v),0);
-    meses.push({label,total,key});
+    const vendasMes = vendas.filter(v=>(v.data||'').startsWith(key));
+    const total = vendasMes.reduce((s,v)=>s+calcTotal(v),0);
+    meses.push({label,total,key,qtd:vendasMes.length});
   }
   const maxVal = Math.max(...meses.map(m=>m.total),1);
   const chartEl = document.getElementById('chart-vendas-mes');
@@ -7784,9 +7846,15 @@ function renderGraficos() {
       </div>`).join('');
   }
 
-  // Top produtos
+  // Top produtos - incluindo vendas compostas
   const prodCount = {};
-  vendas.forEach(v=>{ if(v.produto&&v.produto!=='COMPOSICAO') prodCount[v.produto]=(prodCount[v.produto]||0)+v.qtd; });
+  vendas.forEach(v=>{
+    if (v.itens && v.itens.length > 0) {
+      v.itens.forEach(function(it){ if(it.cod) prodCount[it.cod]=(prodCount[it.cod]||0)+(it.qtd||1); });
+    } else if(v.produto&&v.produto!=='COMPOSICAO'&&v.produto!=='OCULOS-COMPLETO'&&v.produto!=='SERVICO') {
+      prodCount[v.produto]=(prodCount[v.produto]||0)+(v.qtd||1);
+    }
+  });
   const topProds = Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const topEl = document.getElementById('chart-top-produtos');
   if (topEl) {
@@ -10309,6 +10377,7 @@ function exportarBackup() {
     os:           load('os'),
     agendamentos: load('agendamentos'),
     composicoes:  load('composicoes'),
+    despesas:     load('despesas'),
   };
   var json = JSON.stringify(dados, null, 2);
   var blob = new Blob([json], {type: 'application/json'});
@@ -10353,6 +10422,7 @@ function processarBackup(input) {
       if (dados.os)           save('os',           dados.os);
       if (dados.agendamentos) save('agendamentos', dados.agendamentos);
       if (dados.composicoes)  save('composicoes',  dados.composicoes);
+      if (dados.despesas)     save('despesas',     dados.despesas);
       showToast('✅ Backup restaurado com sucesso! Recarregando...');
       setTimeout(function() { location.reload(); }, 1500);
     } catch(err) {
