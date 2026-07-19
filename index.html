@@ -2105,7 +2105,7 @@ function instalarApp() {
 <span class="icon">💈</span> Comissões
       </div>
 <div class="nav-item" onclick="showSection('despesas')">
-<span class="icon">💸</span> Despesas
+<span class="icon">💰</span> Financeiro
       </div>
 <div class="nav-item" onclick="showSection('relatorios')">
 <span class="icon">📈</span> Relatórios
@@ -2559,36 +2559,104 @@ function instalarApp() {
 <!-- ── DESPESAS ── -->
 <section class="section" id="sec-despesas">
 <div class="topbar">
-<h1>💸 Despesas</h1>
-<div class="topbar-actions">
-<button class="btn btn-primary" onclick="openNovaDespesa()">➕ Nova Despesa</button>
-</div>
-</div>
-<!-- Cards resumo -->
-<div class="cards-grid" id="despesas-cards"></div>
-<!-- Filtro período -->
-<div class="card" style="margin-bottom:16px">
-<div class="card-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-<label style="font-size:13px;font-weight:600">Período:</label>
+<h1>💰 Financeiro</h1>
+<div class="topbar-actions" style="display:flex;gap:8px;flex-wrap:wrap">
 <select id="despesas-periodo" onchange="renderDespesas()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
-<option value="mes">Este Mês</option>
-<option value="semana">Últimos 7 dias</option>
 <option value="hoje">Hoje</option>
+<option value="semana">Últimos 7 dias</option>
+<option value="mes" selected>Este Mês</option>
 <option value="trimestre">Trimestre</option>
 <option value="ano">Este Ano</option>
 <option value="tudo">Tudo</option>
 </select>
+<button class="btn btn-primary" onclick="openNovaEntrada()">➕ Nova Entrada</button>
+<button class="btn btn-danger" onclick="openNovaDespesa()">➖ Nova Saída</button>
 </div>
 </div>
-<!-- Tabela de despesas -->
+<!-- Cards Financeiro -->
+<div class="cards-grid" id="despesas-cards" style="margin-bottom:16px"></div>
+<!-- Saldo do Dia -->
+<div id="fin-saldo-dia" style="margin-bottom:16px"></div>
+<!-- Abas -->
+<div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e2e8f0">
+<button id="fin-tab-fluxo" onclick="switchFinTab('fluxo')" style="padding:10px 20px;border:none;background:none;font-size:13px;font-weight:700;color:#0d2b4e;border-bottom:3px solid #0d2b4e;cursor:pointer">📊 Fluxo de Caixa</button>
+<button id="fin-tab-saidas" onclick="switchFinTab('saidas')" style="padding:10px 20px;border:none;background:none;font-size:13px;font-weight:600;color:#64748b;cursor:pointer">💸 Saídas</button>
+<button id="fin-tab-entradas" onclick="switchFinTab('entradas')" style="padding:10px 20px;border:none;background:none;font-size:13px;font-weight:600;color:#64748b;cursor:pointer">💵 Entradas</button>
+</div>
+<!-- Fluxo de Caixa -->
+<div id="fin-panel-fluxo">
+<div class="card" style="margin-bottom:16px">
+<div class="card-header"><h3>📊 Fluxo de Caixa — Saldo Diário</h3></div>
+<div class="card-body" style="padding:0"><table><thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Saldo do Dia</th><th>Saldo Acumulado</th></tr></thead><tbody id="tb-fluxo-caixa"></tbody></table></div>
+</div>
+</div>
+<!-- Saídas (despesas) -->
+<div id="fin-panel-saidas" style="display:none">
 <div class="card">
-<div class="card-header"><h3>📋 Registro de Despesas</h3></div>
+<div class="card-header"><h3>💸 Registro de Saídas</h3></div>
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Recorrente</th><th>Ações</th></tr></thead>
 <tbody id="tb-despesas"></tbody></table>
 </div>
 </div>
+</div>
+<!-- Entradas -->
+<div id="fin-panel-entradas" style="display:none">
+<div class="card">
+<div class="card-header"><h3>💵 Registro de Entradas</h3></div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
+<tbody id="tb-entradas"></tbody></table>
+</div>
+</div>
+</div>
 </section>
+
+<!-- Modal Nova Entrada Financeira -->
+<div class="modal-overlay" id="modal-entrada" style="display:none">
+<div class="modal" style="max-width:480px">
+<div class="modal-header">
+<h3 id="modal-entrada-title">💵 Nova Entrada</h3>
+<button class="modal-close" onclick="closeModal('modal-entrada')">✕</button>
+</div>
+<div class="modal-body">
+<input id="entrada-idx" type="hidden"/>
+<div class="form-grid">
+<div class="form-group">
+<label>Data *</label>
+<input id="entrada-data" type="date"/>
+</div>
+<div class="form-group">
+<label>Tipo *</label>
+<select id="entrada-tipo">
+<option value="Aporte de Capital">💼 Aporte de Capital (dinheiro próprio)</option>
+<option value="Empréstimo">🏦 Empréstimo</option>
+<option value="Bonificação Fornecedor">🎁 Bonificação de Fornecedor</option>
+<option value="Devolução">📦 Devolução de Produto</option>
+<option value="Outros">➕ Outros</option>
+</select>
+</div>
+<div class="form-group" style="grid-column:1/-1">
+<label>Descrição *</label>
+<input id="entrada-desc" placeholder="Ex: Aporte inicial para capital de giro" type="text"/>
+</div>
+<div class="form-group">
+<label>Valor (R$) *</label>
+<input id="entrada-valor" min="0" placeholder="0,00" step="0.01" type="number"/>
+</div>
+<div class="form-group">
+<label>Observações</label>
+<input id="entrada-obs" placeholder="Opcional" type="text"/>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-primary" onclick="saveEntrada()">💾 Salvar</button>
+<button class="btn btn-outline" onclick="closeModal('modal-entrada')">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
+
 <!-- Modal Nova Despesa -->
 <div class="modal-overlay" id="modal-despesa" style="display:none">
 <div class="modal" style="max-width:480px">
@@ -3210,7 +3278,7 @@ function instalarApp() {
 <label>Categoria *</label>
 <select id="prod-cat">
 <option>Armação</option><option>Lente</option><option>Solar</option>
-<option>Acessório</option><option>Contato</option>
+<option>Acessório</option><option>Contato</option><option>Serviço</option>
 </select>
 </div>
 <div class="form-group" style="grid-column:1/-1">
@@ -4678,6 +4746,7 @@ function resetarSistema() {
     localStorage.setItem('otica_os', JSON.stringify([]));
     localStorage.setItem('otica_agendamentos', JSON.stringify([]));
     localStorage.setItem('otica_despesas', JSON.stringify([]));
+    localStorage.setItem('otica_entradas', JSON.stringify([]));
     localStorage.setItem('otica_composicoes', JSON.stringify([]));
     location.reload();
   }
@@ -4699,7 +4768,7 @@ function updatePrintDate() {
 window.addEventListener('beforeprint', updatePrintDate);
 
 // ── Storage helpers ──────────────────────────────────────────────
-const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas' }; // usuarios gerenciado separadamente
+const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', entradas:'otica_entradas' }; // usuarios gerenciado separadamente
 
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
@@ -4764,7 +4833,7 @@ const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const save = function(k, v) {
   _saveBase(k, v);
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes'];
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas'];
   if (criticos.indexOf(k) === -1) return;
   // Tentar salvar no Firebase imediatamente ou aguardar conexao
   function tentarSalvar(tentativas) {
@@ -5147,7 +5216,7 @@ function showSection(id) {
     if (oc.indexOf("'"+id+"'") !== -1) el.classList.add('active');
   });
 
-  const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes,despesas:renderDespesas,usuarios:renderUsuarios};
+  const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes,despesas:renderFinanceiro,usuarios:renderUsuarios};
   if (renders[id]) { try { renders[id](); } catch(e) { console.error('Erro ao renderizar '+id+':', e); showToast('Erro ao carregar: '+e.message,'error'); } }
   } catch(e) { console.error('Erro showSection:', e); showToast('Erro de navegação: '+e.message,'error'); }
 }
@@ -5540,13 +5609,23 @@ function renderDashboard() {
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
   var ticketMedio = vendasMes.length ? receitaMes/vendasMes.length : 0;
 
+  // Calcular saldo do dia
+  var hojeStr2 = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  var vendasHoje2 = vendas.filter(function(v){ return (v.data||'').startsWith(hojeStr2); });
+  var receitaHoje = vendasHoje2.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var despesasHoje2 = load('despesas').filter(function(d){ return (d.data||'').startsWith(hojeStr2); });
+  var saidaHoje = despesasHoje2.reduce(function(s,d){ return s+(d.valor||0); },0);
+  var entradasHoje2 = load('entradas').filter(function(e){ return (e.data||'').startsWith(hojeStr2); });
+  var entradaHoje = entradasHoje2.reduce(function(s,e){ return s+(e.valor||0); },0);
+  var saldoHoje = receitaHoje + entradaHoje - saidaHoje;
+  var corSaldo = saldoHoje >= 0 ? 'green' : 'red';
   document.getElementById('dash-cards').innerHTML = `
     <div class="stat-card"><div class="label">Clientes Ativos</div><div class="value">${clientes.length}</div><div class="sub">cadastrados</div></div>
     <div class="stat-card green"><div class="label">Receita do Mês</div><div class="value">${fmtMoney(receitaMes)}</div><div class="sub">${vendasMes.length} vendas</div></div>
     <div class="stat-card"><div class="label">Ticket Médio</div><div class="value">${fmtMoney(ticketMedio)}</div><div class="sub">por venda</div></div>
+    <div class="stat-card ${corSaldo}"><div class="label">💵 Saldo Hoje</div><div class="value">${fmtMoney(saldoHoje)}</div><div class="sub">${vendasHoje2.length} vendas hoje</div></div>
     <div class="stat-card orange"><div class="label">OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
     <div class="stat-card ${baixoEstoque>0?'red':'green'}"><div class="label">Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
-    <div class="stat-card"><div class="label">OS do Mês</div><div class="value">${osMes.length}</div><div class="sub">abertas</div></div>
   `;
   // Últimas vendas
   const clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
@@ -5570,10 +5649,16 @@ function renderDashboard() {
       <td style="color:#5a6a8a;font-size:12px">${fmtDate(v.data)}</td>
       <td><strong style="color:#0d2b4e">${clMap[v.clienteId]||'-'}</strong></td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a6a8a">${
-        v.descricaoCompleta ? v.descricaoCompleta.substring(0,40)+(v.descricaoCompleta.length>40?'...':'') :
-        v.produto==='OCULOS-COMPLETO' ? '🕶️ Óculos Completo' :
-        v.produto==='SERVICO' ? '🔧 Serviço' :
-        (prodMap[v.produto]||v.produto||'-').substring(0,40)
+        (function() {
+        if (v.produto==='OCULOS-COMPLETO' && v.detalhes && v.detalhes.length>0) {
+          var partes = v.detalhes.map(function(d){ return (prodMap[d.cod]||d.cod||''); });
+          if (v.exame && v.exame > 0) partes.push('Exame');
+          return '🕶️ <strong>Óculos Completo</strong><br><small style="color:#64748b;font-size:10px">' + partes.join(' + ') + '</small>';
+        }
+        if (v.descricaoCompleta) return v.descricaoCompleta.substring(0,50)+(v.descricaoCompleta.length>50?'...':'');
+        if (v.produto==='SERVICO') return '🔧 Serviço';
+        return (prodMap[v.produto]||v.produto||'-').substring(0,40);
+      })()
       }</td>
       <td class="fw-bold" style="color:#16a34a;font-size:14px">${fmtMoney(calcTotal(v))}</td>
       <td>${statusBadge(v.status)}</td>
@@ -6740,8 +6825,11 @@ function saveVenda() {
     } else {
       const pi = prods.findIndex(p=>p.cod===item.cod);
       if (pi>=0) {
-        prods[pi].qtd = Math.max(0, prods[pi].qtd - item.qtd);
-        registrarMovimentacaoEstoque(item.cod, item.qtd, 'saida', 'Venda', grupoVenda);
+        // Servicos nao baixam estoque
+        if (prods[pi].cat !== 'Serviço') {
+          prods[pi].qtd = Math.max(0, prods[pi].qtd - item.qtd);
+          registrarMovimentacaoEstoque(item.cod, item.qtd, 'saida', 'Venda', grupoVenda);
+        }
       }
     }
 
@@ -8193,6 +8281,237 @@ function salvarConfigComissoes() {
 }
 
 // ── DESPESAS ──────────────────────────────────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════
+// MÓDULO FINANCEIRO
+// ══════════════════════════════════════════════════════════════
+
+function switchFinTab(tab) {
+  ['fluxo','saidas','entradas'].forEach(function(t) {
+    var panel = document.getElementById('fin-panel-'+t);
+    var btn = document.getElementById('fin-tab-'+t);
+    if (panel) panel.style.display = t===tab ? '' : 'none';
+    if (btn) {
+      btn.style.color = t===tab ? '#0d2b4e' : '#64748b';
+      btn.style.fontWeight = t===tab ? '700' : '600';
+      btn.style.borderBottom = t===tab ? '3px solid #0d2b4e' : 'none';
+    }
+  });
+  if (tab==='fluxo') renderFluxoCaixa();
+  if (tab==='saidas') renderDespesas();
+  if (tab==='entradas') renderEntradas();
+}
+
+function renderFinanceiro() {
+  if (!document.getElementById('despesas-cards')) return;
+  renderDespesas();
+  renderFluxoCaixa();
+  renderSaldoDia();
+}
+
+function renderSaldoDia() {
+  var el = document.getElementById('fin-saldo-dia');
+  if (!el) return;
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  
+  // Entradas do dia: vendas + OS conserto + entradas manuais
+  var vendasHoje = load('vendas').filter(function(v){ return (v.data||'').startsWith(hoje); });
+  var receitaVendas = vendasHoje.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var osHoje = load('os').filter(function(o){ return (o.abertura||'').startsWith(hoje) && o.tipoOS!=='montagem'; });
+  var receitaOS = osHoje.reduce(function(s,o){ return s+(o.valor||0); },0);
+  var entradasHoje = load('entradas').filter(function(e){ return (e.data||'').startsWith(hoje); });
+  var receitaEntradas = entradasHoje.reduce(function(s,e){ return s+(e.valor||0); },0);
+  var totalEntradas = receitaVendas + receitaOS + receitaEntradas;
+  
+  // Saidas do dia
+  var despesasHoje = load('despesas').filter(function(d){ return (d.data||'').startsWith(hoje); });
+  var totalSaidas = despesasHoje.reduce(function(s,d){ return s+(d.valor||0); },0);
+  
+  var saldo = totalEntradas - totalSaidas;
+  var cor = saldo >= 0 ? '#16a34a' : '#dc2626';
+  
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">'
+    + '<div class="stat-card green"><div class="label">Entradas Hoje</div><div class="value">'+fmtMoney(totalEntradas)+'</div><div class="sub">vendas + OS + aportes</div></div>'
+    + '<div class="stat-card red"><div class="label">Saídas Hoje</div><div class="value">'+fmtMoney(totalSaidas)+'</div><div class="sub">despesas do dia</div></div>'
+    + '<div class="stat-card" style="border-left:4px solid '+cor+'"><div class="label">Saldo do Dia</div><div class="value" style="color:'+cor+'">'+fmtMoney(saldo)+'</div><div class="sub">'+(saldo>=0?'positivo':'negativo')+'</div></div>'
+    + '<div class="stat-card"><div class="label">Vendas Hoje</div><div class="value">'+vendasHoje.length+'</div><div class="sub">transações</div></div>'
+    + '</div>';
+}
+
+function renderFluxoCaixa() {
+  var tb = document.getElementById('tb-fluxo-caixa');
+  if (!tb) return;
+  
+  var periodo = (document.getElementById('despesas-periodo')||{}).value || 'mes';
+  var hoje = new Date();
+  var dataInicio = new Date();
+  switch(periodo) {
+    case 'hoje': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()); break;
+    case 'semana': dataInicio = new Date(hoje.getTime()-7*86400000); break;
+    case 'mes': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),1); break;
+    case 'trimestre': dataInicio = new Date(hoje.getFullYear(),Math.floor(hoje.getMonth()/3)*3,1); break;
+    case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); break;
+    case 'tudo': dataInicio = new Date('2020-01-01'); break;
+  }
+  
+  // Coletar todos os dias com movimentacao
+  var diasMap = {};
+  
+  // Vendas
+  load('vendas').forEach(function(v) {
+    var d = (v.data||'').slice(0,10);
+    if (!d || new Date(d) < dataInicio) return;
+    if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
+    diasMap[d].entradas += calcTotal(v);
+  });
+  
+  // OS conserto
+  load('os').filter(function(o){ return o.tipoOS!=='montagem'; }).forEach(function(o) {
+    var d = (o.abertura||'').slice(0,10);
+    if (!d || new Date(d) < dataInicio) return;
+    if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
+    diasMap[d].entradas += (o.valor||0);
+  });
+  
+  // Entradas manuais
+  load('entradas').forEach(function(e) {
+    var d = (e.data||'').slice(0,10);
+    if (!d || new Date(d) < dataInicio) return;
+    if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
+    diasMap[d].entradas += (e.valor||0);
+  });
+  
+  // Despesas
+  load('despesas').forEach(function(d) {
+    var dt = (d.data||'').slice(0,10);
+    if (!dt || new Date(dt) < dataInicio) return;
+    if (!diasMap[dt]) diasMap[dt] = {entradas:0, saidas:0};
+    diasMap[dt].saidas += (d.valor||0);
+  });
+  
+  var dias = Object.keys(diasMap).sort().reverse();
+  
+  if (dias.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:#94a3b8">Nenhuma movimentação no período</td></tr>';
+    return;
+  }
+  
+  var saldoAcum = 0;
+  // Calcular saldo acumulado (do mais antigo para o mais recente)
+  var diasOrdem = [...dias].reverse();
+  var saldos = {};
+  diasOrdem.forEach(function(d) {
+    saldoAcum += diasMap[d].entradas - diasMap[d].saidas;
+    saldos[d] = saldoAcum;
+  });
+  
+  tb.innerHTML = dias.map(function(d) {
+    var ent = diasMap[d].entradas;
+    var sai = diasMap[d].saidas;
+    var saldoDia = ent - sai;
+    var saldoAc = saldos[d];
+    var corDia = saldoDia >= 0 ? '#16a34a' : '#dc2626';
+    var corAc = saldoAc >= 0 ? '#16a34a' : '#dc2626';
+    return '<tr>'
+      + '<td><strong>'+fmtDate(d)+'</strong></td>'
+      + '<td style="color:#16a34a;font-weight:700">'+fmtMoney(ent)+'</td>'
+      + '<td style="color:#dc2626;font-weight:700">'+fmtMoney(sai)+'</td>'
+      + '<td style="color:'+corDia+';font-weight:800">'+fmtMoney(saldoDia)+'</td>'
+      + '<td style="color:'+corAc+';font-weight:700">'+fmtMoney(saldoAc)+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ── Entradas manuais ──────────────────────────────────────
+function openNovaEntrada() {
+  document.getElementById('entrada-idx').value = '';
+  document.getElementById('modal-entrada-title').textContent = '💵 Nova Entrada';
+  document.getElementById('entrada-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  document.getElementById('entrada-desc').value = '';
+  document.getElementById('entrada-valor').value = '';
+  document.getElementById('entrada-obs').value = '';
+  document.getElementById('entrada-tipo').value = 'Aporte de Capital';
+  openModal('modal-entrada');
+}
+
+function editEntrada(id) {
+  var e = load('entradas').find(function(x){ return x.id===id; });
+  if (!e) return;
+  document.getElementById('entrada-idx').value = id;
+  document.getElementById('modal-entrada-title').textContent = '✏️ Editar Entrada';
+  document.getElementById('entrada-data').value = e.data||'';
+  document.getElementById('entrada-tipo').value = e.tipo||'Aporte de Capital';
+  document.getElementById('entrada-desc').value = e.desc||'';
+  document.getElementById('entrada-valor').value = e.valor||'';
+  document.getElementById('entrada-obs').value = e.obs||'';
+  openModal('modal-entrada');
+}
+
+function saveEntrada() {
+  var desc = document.getElementById('entrada-desc').value.trim();
+  var valor = parseFloat(document.getElementById('entrada-valor').value)||0;
+  if (!desc) { showToast('Preencha a descrição!','error'); return; }
+  if (!valor) { showToast('Preencha o valor!','error'); return; }
+  var arr = load('entradas');
+  var idx = document.getElementById('entrada-idx').value;
+  var obj = {
+    id: idx ? parseInt(idx) : nextId(arr),
+    data: document.getElementById('entrada-data').value,
+    tipo: document.getElementById('entrada-tipo').value,
+    desc, valor,
+    obs: document.getElementById('entrada-obs').value,
+  };
+  if (idx) { var i=arr.findIndex(function(x){ return x.id===parseInt(idx); }); arr[i]=obj; } else arr.push(obj);
+  save('entradas', arr);
+  closeModal('modal-entrada');
+  renderEntradas();
+  renderFluxoCaixa();
+  renderSaldoDia();
+  showToast(idx ? 'Entrada atualizada!' : 'Entrada registrada!');
+}
+
+function delEntrada(id) {
+  if (!confirm('Excluir esta entrada?')) return;
+  save('entradas', load('entradas').filter(function(x){ return x.id!==id; }));
+  renderEntradas();
+  renderFluxoCaixa();
+  showToast('Entrada excluída!','warning');
+}
+
+function renderEntradas() {
+  var tb = document.getElementById('tb-entradas');
+  if (!tb) return;
+  var periodo = (document.getElementById('despesas-periodo')||{}).value || 'mes';
+  var hoje = new Date();
+  var dataInicio = new Date();
+  switch(periodo) {
+    case 'hoje': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()); break;
+    case 'semana': dataInicio = new Date(hoje.getTime()-7*86400000); break;
+    case 'mes': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),1); break;
+    case 'trimestre': dataInicio = new Date(hoje.getFullYear(),Math.floor(hoje.getMonth()/3)*3,1); break;
+    case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); break;
+    case 'tudo': dataInicio = new Date('2020-01-01'); break;
+  }
+  var dataInicioStr = dataInicio.getFullYear()+'-'+String(dataInicio.getMonth()+1).padStart(2,'0')+'-'+String(dataInicio.getDate()).padStart(2,'0');
+  var entradas = periodo==='tudo' ? load('entradas') : load('entradas').filter(function(e){ return (e.data||'')>=dataInicioStr; });
+  var total = entradas.reduce(function(s,e){ return s+(e.valor||0); },0);
+  
+  tb.innerHTML = entradas.length ? [...entradas].reverse().map(function(e) {
+    return '<tr>'
+      + '<td>'+fmtDate(e.data)+'</td>'
+      + '<td><span class="badge badge-success">'+e.tipo+'</span></td>'
+      + '<td>'+e.desc+'</td>'
+      + '<td class="fw-bold" style="color:#16a34a">'+fmtMoney(e.valor)+'</td>'
+      + '<td><button class="btn btn-sm btn-outline" onclick="editEntrada('+e.id+')" data-tip="Editar">✏️</button> '
+      + '<button class="btn btn-sm btn-danger" onclick="delEntrada('+e.id+')" data-tip="Excluir">🗑️</button></td>'
+      + '</tr>';
+  }).join('') + '<tr style="background:#f0fdf4"><td colspan="3"><strong>Total do período</strong></td><td class="fw-bold" style="color:#16a34a">'+fmtMoney(total)+'</td><td></td></tr>'
+  : '<tr><td colspan="5" style="padding:20px;text-align:center;color:#94a3b8">Nenhuma entrada registrada</td></tr>';
+}
+
+// Atualizar renderDespesas para incluir fluxo
+var _origRenderDespesas = renderDespesas;
+
 function renderDespesas() {
   if (!document.getElementById('tb-despesas')) return;
   var periodo = document.getElementById('despesas-periodo')?.value || 'mes';
@@ -10294,7 +10613,11 @@ function filtrarEstoqueBusca(tipo) {
   var filtrados;
   if (tipo==='arm') filtrados = produtos.filter(p=>p.cat==='Armação'&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
   else if (tipo==='len') filtrados = produtos.filter(p=>(p.cat==='Lente'||p.cat==='Contato')&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
-  else filtrados = produtos.filter(p=>!q||(p.desc+p.cod+p.cat).toLowerCase().includes(q));
+  else {
+    filtrados = produtos.filter(p=>!q||(p.desc+p.cod+p.cat+(p.marca||'')).toLowerCase().includes(q));
+    // Ordenar: Servicos primeiro se busca vazia, depois por categoria
+    if (!q) filtrados = filtrados.sort(function(a,b){ return a.cat==='Serviço'?-1:b.cat==='Serviço'?1:0; });
+  }
 
   if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
   lista.style.display = 'block';
