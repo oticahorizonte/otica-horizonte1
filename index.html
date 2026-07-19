@@ -3372,6 +3372,15 @@ function instalarApp() {
 </div>
 <!-- COLUNA ESQUERDA -->
 <div id="venda-col-esq" style="background:#f8fafc;border-right:1px solid #e2e8f0;overflow-y:auto;padding:14px">
+<!-- CAIXA UNIFICADA -->
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;padding:12px;margin-bottom:10px">
+<div style="font-size:11px;font-weight:700;color:#e8c96a;text-transform:uppercase;margin-bottom:8px">🔍 Caixa Rápida — Busca Unificada</div>
+<div style="position:relative">
+<input autocomplete="off" id="venda-caixa-busca" oninput="filtrarCaixaRapida()" onfocus="filtrarCaixaRapida()" placeholder="🔍 Digite código ou nome do produto..." style="width:100%;padding:10px 14px;border:2px solid rgba(201,168,76,.5);border-radius:10px;font-size:13px;font-weight:600;background:rgba(255,255,255,.1);color:white;outline:none" type="text"/>
+<div id="venda-caixa-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);max-height:220px;overflow-y:auto;width:100%;margin-top:4px"></div>
+</div>
+<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:6px">Armações, Lentes, Solar, Acessórios, Serviços — tudo em um campo</div>
+</div>
 <!-- Óculos Completo -->
 <div style="background:#f0f4ff;border-radius:12px;padding:12px;margin-bottom:10px;border-left:4px solid #0d2b4e">
 <div style="font-size:11px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px">🔶 Óculos de Grau Completo</div>
@@ -5150,6 +5159,46 @@ function doLogin() {
 
 function finalizarLogin(userObj, usuarios) {
   saveUser({nome:userObj.nome, nivel:userObj.nivel, comissao:userObj.comissao||0, login:userObj.login});
+  // Mostrar loading enquanto Firebase sincroniza
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  // Mostrar overlay de carregamento
+  var loadingEl = document.getElementById('app-loading-overlay');
+  if (loadingEl) loadingEl.style.display = 'flex';
+  // Aguardar Firebase e sincronizar antes de mostrar conteudo
+  function aguardarFirebaseESync(tentativas) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.syncFromCloud(KEYS).then(function(ok) {
+        // Carregar usuarios
+        window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
+          if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
+            var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
+            if (usuariosCloud.length >= usuariosLocal.length) {
+              localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+            }
+          }
+          // Carregar entradas
+          window._fb.loadCollection('entradas').then(function(entradasCloud) {
+            if (entradasCloud && Array.isArray(entradasCloud)) {
+              localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
+            }
+            // Esconder loading e mostrar app
+            if (loadingEl) loadingEl.style.display = 'none';
+            showSection('dashboard');
+            aplicarControleAcesso();
+          }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
+        }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
+      }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
+    } else if (tentativas > 0) {
+      setTimeout(function() { aguardarFirebaseESync(tentativas - 1); }, 500);
+    } else {
+      // Firebase nao conectou - mostrar app com dados locais
+      if (loadingEl) loadingEl.style.display = 'none';
+      showSection('dashboard');
+      aplicarControleAcesso();
+    }
+  }
+  aguardarFirebaseESync(20); // Tenta por 10 segundos
 
   // Atualizar config de comissão com todos os usuários
   var cfg = {};
@@ -5157,8 +5206,6 @@ function finalizarLogin(userObj, usuarios) {
   window._comissaoVendedor = cfg;
   localStorage.setItem('otica_config_comissao', JSON.stringify(cfg));
 
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
   document.getElementById('sidebar-user').textContent = userObj.nome + ' • ' + userObj.nivel;
 
   // Mostrar menu Usuários só para Admin
@@ -10672,6 +10719,124 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
 }
 
 // ── Busca de estoque com campo de pesquisa ─────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════
+// CAIXA RÁPIDA — Busca Unificada
+// ══════════════════════════════════════════════════════════════
+function filtrarCaixaRapida() {
+  var input = document.getElementById('venda-caixa-busca');
+  var lista = document.getElementById('venda-caixa-lista');
+  if (!input || !lista) return;
+  var q = input.value.toLowerCase().trim();
+  var isAdminV = isAdmin();
+  var produtos = load('produtos');
+
+  // Ordenar: Serviços primeiro, depois por categoria
+  var filtrados = produtos.filter(function(p) {
+    if (!q) return true;
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
+  }).sort(function(a,b) {
+    if (a.cat === 'Serviço' && b.cat !== 'Serviço') return -1;
+    if (b.cat === 'Serviço' && a.cat !== 'Serviço') return 1;
+    return 0;
+  });
+
+  if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
+  lista.style.display = 'block';
+
+  var icones = {'Armação':'🕶️','Lente':'🔍','Solar':'☀️','Acessório':'🎁','Contato':'👁️','Serviço':'🔧'};
+
+  lista.innerHTML = filtrados.slice(0,12).map(function(p) {
+    var icone = icones[p.cat] || '📦';
+    var isServico = p.cat === 'Serviço';
+    var estoqueInfo = isServico
+      ? '<span style="color:#0ea5e9;font-size:9px">Serviço</span>'
+      : (p.qtd <= p.min
+        ? '<span style="color:#dc2626;font-size:9px">⚠️ '+p.qtd+' un.</span>'
+        : '<span style="color:#16a34a;font-size:9px">'+p.qtd+' un.</span>');
+    var bg = isServico ? '#f0fdf4' : 'white';
+    var custoInfo = isAdminV ? '<span style="color:#94a3b8;font-size:9px"> | Custo: R$'+p.custo+'</span>' : '';
+    return '<div onclick="adicionarCaixaRapida(\''+p.cod+'\')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:12px;background:'+bg+'" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\''+bg+'\'">'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+      '<span style="font-size:16px">'+icone+'</span>'+
+      '<div style="flex:1">'+
+      '<div style="font-weight:700;color:#0d2b4e">'+p.desc+'</div>'+
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:2px">'+
+      '<span style="color:#64748b;font-size:10px">'+p.cod+'</span>'+
+      '<span style="color:#16a34a;font-size:11px;font-weight:700">R$ '+p.venda+'</span>'+
+      estoqueInfo+custoInfo+
+      '</div></div></div></div>';
+  }).join('') || '<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">Nenhum produto encontrado</div>';
+
+  // Fechar ao clicar fora
+  setTimeout(function() {
+    document.addEventListener('click', function fecharCaixa(e) {
+      if (!lista.contains(e.target) && e.target !== input) {
+        lista.style.display='none';
+        document.removeEventListener('click', fecharCaixa);
+      }
+    });
+  }, 100);
+}
+
+function adicionarCaixaRapida(cod) {
+  var p = load('produtos').find(function(x){ return x.cod===cod; });
+  if (!p) return;
+
+  // Fechar lista
+  var lista = document.getElementById('venda-caixa-lista');
+  var input = document.getElementById('venda-caixa-busca');
+  if (lista) lista.style.display='none';
+  if (input) input.value = '';
+
+  // Se for armação, perguntar se quer adicionar como óculos completo
+  if (p.cat === 'Armação') {
+    if (confirm('🕶️ Armação selecionada: ' + p.desc + '\n\nDeseja montar um Óculos Completo (armação + lente + exame)?\n\nOK = Óculos Completo | Cancelar = Só a armação')) {
+      // Preencher o campo de armação do óculos completo
+      var armBusca = document.getElementById('venda-arm-busca');
+      var armSelect = document.getElementById('venda-arm-select');
+      var armCusto = document.getElementById('venda-arm-custo');
+      var armVenda = document.getElementById('venda-arm-venda');
+      if (armBusca) armBusca.value = p.desc + ' — R$ ' + p.venda;
+      if (armSelect) armSelect.value = cod;
+      if (armCusto) armCusto.value = p.custo;
+      if (armVenda) armVenda.value = p.venda;
+      calcVendaInterna();
+      showToast('🕶️ Armação selecionada! Agora escolha a lente.', 'success');
+      // Focar no campo de lente
+      var lenBusca = document.getElementById('venda-len-busca');
+      if (lenBusca) setTimeout(function(){ lenBusca.focus(); }, 300);
+      return;
+    }
+  }
+
+  // Adicionar diretamente ao carrinho como produto avulso
+  var item = {
+    cod: p.cod,
+    nome: p.desc,
+    cat: p.cat,
+    preco: p.venda,
+    custo: p.custo || 0,
+    qtd: 1,
+    desc: 0,
+    tipo: p.cat === 'Serviço' ? 'servico' : 'normal'
+  };
+
+  if (!_carrinho) _carrinho = [];
+  // Verificar se ja esta no carrinho
+  var existente = _carrinho.find(function(i){ return i.cod===cod && i.tipo!=='oculos-completo'; });
+  if (existente) {
+    existente.qtd++;
+    showToast('+1 ' + p.desc, 'success');
+  } else {
+    _carrinho.push(item);
+    showToast('✅ ' + p.desc + ' adicionado!', 'success');
+  }
+
+  renderCarrinho();
+  salvarRascunhoVenda();
+}
+
 function filtrarEstoqueBusca(tipo) {
   var isAdmin = (function(){ var u=loadUser(); return u&&(u.nivel==='Admin'||u.nome==='Administrador'); })();
   var inputId = tipo==='arm' ? 'venda-arm-busca' : tipo==='len' ? 'venda-len-busca' : 'venda-produto-busca';
