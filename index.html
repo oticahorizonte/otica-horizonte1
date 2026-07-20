@@ -1962,6 +1962,29 @@ function resetarSistema() {
         for (var k of Object.keys(keys)) {
           if (k === 'user' || k === 'rascunho_venda') continue;
           var data = JSON.parse(localStorage.getItem(keys[k]) || '[]');
+          // Para produtos: preservar fotos Cloudinary do Firebase
+          if (k === 'produtos' && Array.isArray(data)) {
+            try {
+              var fbData = await window._fb.loadCollection('produtos');
+              if (fbData && Array.isArray(fbData)) {
+                // Mesclar: usar dados locais mas preservar fotos do Firebase
+                data = data.map(function(p) {
+                  var fbProd = fbData.find(function(fp){ return fp.cod===p.cod; });
+                  // Se local nao tem foto mas Firebase tem URL Cloudinary, preservar
+                  if (fbProd && fbProd.foto && fbProd.foto.startsWith('https://') && (!p.foto || p.foto.startsWith('data:'))) {
+                    p = Object.assign({}, p, {foto: fbProd.foto});
+                  }
+                  // Preservar catalogo=true do Firebase se local nao tem
+                  if (fbProd && fbProd.catalogo === true && !p.catalogo) {
+                    p = Object.assign({}, p, {catalogo: true});
+                  }
+                  return p;
+                });
+                // Atualizar localStorage com dados mesclados
+                localStorage.setItem(keys[k], JSON.stringify(data));
+              }
+            } catch(e) { console.warn('Merge produtos error:', e); }
+          }
           var saved = await window._fb.saveCollection(k, data);
           if (saved) ok++;
         }
@@ -1974,8 +1997,21 @@ function resetarSistema() {
           try {
             var data = await window._fb.loadCollection(k);
             if (data !== null && data !== undefined) {
-              // So sobrescrever se Firebase tem dados validos
               if (Array.isArray(data) || typeof data === 'object') {
+                // Para produtos: mesclar fotos locais com dados do Firebase
+                if (k === 'produtos' && Array.isArray(data)) {
+                  var localData = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                  if (Array.isArray(localData) && localData.length > 0) {
+                    data = data.map(function(p) {
+                      var localProd = localData.find(function(lp){ return lp.cod===p.cod; });
+                      // Se Firebase nao tem foto mas local tem URL Cloudinary, usar local
+                      if (localProd && localProd.foto && localProd.foto.startsWith('https://') && (!p.foto || !p.foto.startsWith('https://'))) {
+                        p = Object.assign({}, p, {foto: localProd.foto, catalogo: localProd.catalogo||p.catalogo});
+                      }
+                      return p;
+                    });
+                  }
+                }
                 localStorage.setItem(keys[k], JSON.stringify(data));
                 ok++;
               }
