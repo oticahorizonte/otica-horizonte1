@@ -1941,7 +1941,11 @@ function resetarSistema() {
           await setDoc(doc(db, '_collections', colName), { data: jsonStr, ts: Date.now() });
           return true;
         } catch(e) {
-          console.warn('Firebase save error:', colName, e.message);
+          console.error('Firebase save error:', colName, e.message);
+          // Mostrar erro visivel ao usuario
+          if (typeof showToast === 'function') {
+            showToast('⚠️ Erro ao salvar na nuvem: ' + e.message.substring(0,50), 'warning');
+          }
           return false;
         }
       },
@@ -4839,12 +4843,6 @@ const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const save = function(k, v) {
   // 1. Salvar no localStorage imediatamente
   _saveBase(k, v);
-  // DEBUG: verificar fotos ao salvar produtos
-  if (k === 'produtos' && Array.isArray(v)) {
-    var comFoto = v.filter(function(p){ return p.foto && p.foto.startsWith('https://'); });
-    console.log('DEBUG save produtos - total:', v.length, '| com foto Cloudinary:', comFoto.length);
-    if (comFoto.length > 0) console.log('DEBUG fotos:', comFoto.map(function(p){ return p.cod+':'+p.foto.substring(0,50); }));
-  }
   // 2. Salvar no Firebase imediatamente (sem delay)
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas'];
   if (criticos.indexOf(k) === -1) return;
@@ -6598,14 +6596,6 @@ function editProduto(cod) {
 
 function saveProduto() {
   if (window._fotoUploadando) { showToast('⏳ Aguarde o upload da foto terminar!','warning'); return; }
-  // DEBUG: verificar valor da foto antes de salvar
-  var fotoDebug = document.getElementById('prod-foto').value;
-  console.log('DEBUG saveProduto - foto:', fotoDebug ? fotoDebug.substring(0,80) : 'VAZIO');
-  if (fotoDebug && fotoDebug.startsWith('https://')) {
-    showToast('📸 Foto Cloudinary detectada: ' + fotoDebug.substring(0,50), 'success');
-  } else if (!fotoDebug) {
-    console.warn('AVISO: campo prod-foto esta vazio ao salvar!');
-  }
   const cod = document.getElementById('prod-cod').value.trim().toUpperCase();
   const desc = document.getElementById('prod-desc').value.trim();
   if (!cod || !desc) { showToast('Código e descrição são obrigatórios!','error'); return; }
