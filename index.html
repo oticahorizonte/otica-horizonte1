@@ -4839,6 +4839,12 @@ const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const save = function(k, v) {
   // 1. Salvar no localStorage imediatamente
   _saveBase(k, v);
+  // DEBUG: verificar fotos ao salvar produtos
+  if (k === 'produtos' && Array.isArray(v)) {
+    var comFoto = v.filter(function(p){ return p.foto && p.foto.startsWith('https://'); });
+    console.log('DEBUG save produtos - total:', v.length, '| com foto Cloudinary:', comFoto.length);
+    if (comFoto.length > 0) console.log('DEBUG fotos:', comFoto.map(function(p){ return p.cod+':'+p.foto.substring(0,50); }));
+  }
   // 2. Salvar no Firebase imediatamente (sem delay)
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas'];
   if (criticos.indexOf(k) === -1) return;
