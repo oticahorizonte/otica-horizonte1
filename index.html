@@ -2373,11 +2373,11 @@ function instalarApp() {
 </div>
 <!-- ── Crediário — Contas a Receber ── -->
 <div class="card" id="card-contas-crediario" style="margin-bottom:12px;display:none">
-<div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('crediario-body','crediario-icon')">
+<div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-crediario-body-wrap','crediario-icon')">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
 <span id="crediario-icon" style="color:#e8c96a">▼</span>
 </div>
-<div class="card-body">
+<div id="contas-crediario-body-wrap" class="card-body">
 <div class="cards-grid" id="contas-crediario-cards" style="margin-bottom:12px"></div>
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Venda</th><th>Cliente</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
@@ -3447,16 +3447,7 @@ function instalarApp() {
       </table>
     </div>
 
-    <!-- Crediário (aparece quando selecionado) -->
-    <div id="venda-crediario-box" style="display:none;background:#fef3c7;border-top:2px solid #d97706;padding:12px 16px">
-      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <div><label style="font-size:10px;color:#92400e">Entrada (R$)*</label><input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"/></div>
-        <div><label style="font-size:10px;color:#92400e">Forma Entrada</label><select id="cred-entrada-pag" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option></select></div>
-        <div><label style="font-size:10px;color:#92400e">Nº Parcelas</label><select id="cred-parcelas" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="8">8x</option><option value="10">10x</option><option value="12">12x</option></select></div>
-        <div><label style="font-size:10px;color:#92400e">Periodicidade</label><select id="cred-periodo" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option></select></div>
-      </div>
-    </div>
+
   </div>
 
   <!-- COLUNA DIREITA: Painel interno + Totais -->
@@ -3521,6 +3512,17 @@ function instalarApp() {
         <div id="venda-unif-desc-info" style="font-size:11px;color:#0d2b4e;opacity:0.7;margin-top:2px"></div>
       </div>
 
+      <!-- Crediário -->
+      <div id="venda-crediario-box" style="display:none;background:#fef3c7;border:1px solid #d97706;border-radius:10px;padding:12px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+          <div><label style="font-size:10px;color:#92400e">Entrada (R$)*</label><input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"/></div>
+          <div><label style="font-size:10px;color:#92400e">Forma Entrada</label><select id="cred-entrada-pag" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option></select></div>
+          <div><label style="font-size:10px;color:#92400e">Nº Parcelas</label><select id="cred-parcelas" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="8">8x</option><option value="10">10x</option><option value="12">12x</option></select></div>
+          <div><label style="font-size:10px;color:#92400e">Periodicidade</label><select id="cred-periodo" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option></select></div>
+        </div>
+        <div id="cred-preview" style="font-size:11px;color:#92400e;background:rgba(217,119,6,.1);border-radius:6px;padding:6px;margin-top:4px"></div>
+      </div>
       <!-- Botões -->
       <button onclick="salvarOrcamentoVendaUnif()" style="width:100%;padding:10px;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px">
         📋 Salvar como Orçamento
@@ -10714,6 +10716,32 @@ function onChangePagamento() {
   var pag = (document.getElementById('venda-pag')||{}).value||'';
   var credBox = document.getElementById('venda-crediario-box');
   if (credBox) credBox.style.display = pag === 'Crediário Próprio' ? '' : 'none';
+  if (pag === 'Crediário Próprio') atualizarPreviewCrediario();
+}
+
+function atualizarPreviewCrediario() {
+  var preview = document.getElementById('cred-preview');
+  if (!preview) return;
+  var total = 0;
+  if (typeof _vendaItens !== 'undefined' && _vendaItens.length > 0) {
+    var sub = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
+    var desc = parseFloat((document.getElementById('venda-unif-desc-reais')||{}).value)||0;
+    total = Math.max(0, sub - desc);
+  }
+  var entrada = parseFloat((document.getElementById('cred-entrada')||{}).value)||0;
+  var numParc = parseInt((document.getElementById('cred-parcelas')||{}).value)||2;
+  var periodo = (document.getElementById('cred-periodo')||{}).value||'mensal';
+  if (total <= 0 || entrada <= 0 || entrada >= total) {
+    preview.textContent = entrada >= total && total > 0 ? '⚠️ Entrada não pode ser maior ou igual ao total' : '';
+    return;
+  }
+  var restante = total - entrada;
+  var valorParc = restante / numParc;
+  var periodoLabel = periodo==='quinzenal'?'quinzenal':periodo==='semanal'?'semanal':'mensal';
+  preview.innerHTML = '✅ Entrada: <strong>R$ '+entrada.toFixed(2).replace('.',',')+
+    '</strong> | '+numParc+'x de <strong>R$ '+valorParc.toFixed(2).replace('.',',')+
+    '</strong> ('+periodoLabel+') | Restante: <strong>R$ '+restante.toFixed(2).replace('.',',')+
+    '</strong>';
 }
 
 function salvarOrcamentoVendaUnif() {
