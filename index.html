@@ -6468,14 +6468,25 @@ function forceSyncFotos() {
   
   showToast('⏳ Sincronizando ' + produtos.length + ' produtos com ' + comFoto.length + ' fotos...', 'success');
   
+  // Mostrar o que vai ser enviado
+  console.log('forceSyncFotos - enviando', produtos.length, 'produtos,', comFoto.length, 'com foto');
+  if (comFoto.length > 0) {
+    console.log('Fotos a enviar:', comFoto.map(function(p){ return p.cod+': '+p.foto.substring(0,60); }));
+  }
+
   window._fb.saveCollection('produtos', produtos).then(function(ok) {
+    console.log('saveCollection resultado:', ok);
     if (ok) {
       localStorage.setItem('otica_ultimo_sync', Date.now().toString());
       if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
       showToast('✅ ' + produtos.length + ' produtos sincronizados! ' + comFoto.length + ' com foto, ' + comCatalogo.length + ' no catálogo.', 'success');
     } else {
       showToast('⚠️ Erro ao sincronizar. Verifique a conexão.', 'warning');
+      console.error('forceSyncFotos FALHOU - saveCollection retornou false');
     }
+  }).catch(function(e) {
+    console.error('forceSyncFotos ERRO:', e);
+    showToast('⚠️ Erro: ' + e.message, 'warning');
   });
 }
 
