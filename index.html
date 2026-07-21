@@ -3356,655 +3356,187 @@ function instalarApp() {
 <!-- Modal Venda -->
 <div class="modal-overlay" id="modal-venda" style="display:none">
 <div class="modal" style="max-width:100vw;width:100vw;height:100dvh;max-height:100dvh;padding:0;overflow:hidden;border-radius:0;margin:0">
+
 <!-- BARRA SUPERIOR -->
-<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-radius:14px 14px 0 0;border-bottom:2px solid #c9a84c">
-<h3 style="color:#e8c96a;font-size:18px;margin:0;font-weight:800">💰 Nova Venda</h3>
-<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px;position:relative">
-<span style="color:#c9a84c;font-size:11px">👤</span>
-<input id="venda-cliente-busca" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off"
-  oninput="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
-  onfocus="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
-  style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:700;outline:none;min-width:180px;placeholder-color:rgba(255,255,255,.5)"/>
-<div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);padding:0;min-width:280px;margin-top:4px"></div>
-<select id="venda-cliente" style="display:none"></select>
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:2px solid #c9a84c">
+  <h3 style="color:#e8c96a;font-size:18px;margin:0;font-weight:800">💰 Nova Venda</h3>
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <!-- Cliente -->
+    <div style="position:relative;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+      <span style="color:#c9a84c;font-size:11px">👤</span>
+      <input id="venda-cliente-busca" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off"
+        oninput="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
+        onfocus="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
+        style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:700;outline:none;min-width:160px"/>
+      <div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);padding:0;min-width:260px;margin-top:4px"></div>
+      <select id="venda-cliente" style="display:none"></select>
+    </div>
+    <!-- Data -->
+    <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+      <span style="color:#c9a84c;font-size:11px">📅</span>
+      <input id="venda-data" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;color-scheme:dark" type="date"/>
+    </div>
+    <!-- Pagamento -->
+    <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+      <span style="color:#c9a84c;font-size:11px">💳</span>
+      <select id="venda-pag" onchange="onChangePagamento()" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px">
+        <option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option><option>Crediário Próprio</option>
+      </select>
+      <select id="venda-parcelas" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px;margin-left:4px">
+        <option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option>
+      </select>
+    </div>
+    <!-- Vendedor -->
+    <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+      <span style="color:#c9a84c;font-size:11px">🏷️</span>
+      <input id="venda-vendedor" placeholder="Vendedor" style="background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;width:100px" type="text"/>
+    </div>
+    <!-- Status -->
+    <select id="venda-status" style="background:#0d2b4e;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:12px;border-radius:8px;padding:5px 8px;outline:none;cursor:pointer;font-weight:600">
+      <option>Pago</option><option>Pendente</option><option>Cancelado</option>
+    </select>
+    <button onclick="fecharModalVenda()" style="color:white;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+  </div>
 </div>
-<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
-<span style="color:#c9a84c;font-size:11px">📅</span>
-<input id="venda-data" style="background:transparent;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;color-scheme:dark" type="date"/>
-</div>
-<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
-<span style="color:#c9a84c;font-size:11px">💳</span>
-<select id="venda-pag" onchange="onChangePagamento()" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px">
-<option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option><option>Crediário Próprio</option>
-</select>
-<select id="venda-parcelas" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px;margin-left:4px">
-<option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option>
-</select>
-</div>
-<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
-<span style="color:#c9a84c;font-size:11px">🏷️</span>
-<input id="venda-vendedor" placeholder="Vendedor" style="background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;width:120px" type="text"/>
-</div>
-<select id="venda-status" style="background:#0d2b4e;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:12px;border-radius:8px;padding:6px 10px;outline:none;cursor:pointer;font-weight:600">
-<option>Pago</option><option>Pendente</option><option>Cancelado</option>
-</select>
-<button onclick="fecharModalVenda()" style="color:white;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Fechar venda">✕</button>
-</div>
-</div>
+
 <!-- CORPO: 2 COLUNAS -->
-<div id="venda-corpo-grid" style="display:grid;grid-template-columns:380px 1fr;height:calc(100dvh - 56px);overflow:hidden">
-<!-- ABAS MOBILE -->
-<div id="venda-tabs-mobile" style="display:none;border-bottom:1px solid #e2e8f0">
-<div style="display:flex">
-<button class="venda-tab-btn active" onclick="switchVendaTab('produtos')">🛒 Produtos</button>
-<button class="venda-tab-btn" onclick="switchVendaTab('carrinho')">🛍️ Carrinho <span id="venda-tab-badge" style="background:#0ea5e9;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px">0</span></button>
-</div>
-</div>
-<!-- COLUNA ESQUERDA -->
-<div id="venda-col-esq" style="background:#f8fafc;border-right:1px solid #e2e8f0;overflow-y:auto;padding:14px">
-<!-- CAIXA UNIFICADA -->
-<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;padding:12px;margin-bottom:10px">
-<div style="font-size:11px;font-weight:700;color:#e8c96a;text-transform:uppercase;margin-bottom:8px">🔍 Caixa Rápida — Busca Unificada</div>
-<div style="position:relative">
-<input autocomplete="off" id="venda-caixa-busca" oninput="filtrarCaixaRapida()" onfocus="filtrarCaixaRapida()" placeholder="🔍 Digite código ou nome do produto..." style="width:100%;padding:10px 14px;border:2px solid rgba(201,168,76,.5);border-radius:10px;font-size:13px;font-weight:600;background:rgba(255,255,255,.1);color:white;outline:none" type="text"/>
-<div id="venda-caixa-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);max-height:220px;overflow-y:auto;width:100%;margin-top:4px"></div>
-</div>
-<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:6px">Armações, Lentes, Solar, Acessórios, Serviços — tudo em um campo</div>
-</div>
-<!-- Óculos Completo -->
-<div style="background:#f0f4ff;border-radius:12px;padding:12px;margin-bottom:10px;border-left:4px solid #0d2b4e">
-<div style="font-size:11px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px">🔶 Óculos de Grau Completo</div>
-<!-- Busca Armação -->
-<div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">🔍 Armação do Estoque</label>
-<input autocomplete="off" id="venda-arm-busca" oninput="filtrarEstoqueBusca('arm')" placeholder="Digite para buscar armação..." style="font-size:12px" type="text"/>
-<div id="venda-arm-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:160px;overflow-y:auto;width:320px"></div>
-<input id="venda-arm-select" onchange="onSelectVendaEstoque('arm')" type="hidden"/>
-</div>
-<!-- Custos Armação — só Admin vê -->
-<div id="venda-arm-custo-box" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-<div class="form-group" id="venda-arm-custo-wrap">
-<label style="font-size:10px">Custo Arm. (R$)</label>
-<input id="venda-arm-custo" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px" type="number"/>
-</div>
-<div class="form-group">
-<label style="font-size:10px">Venda Arm. (R$)</label>
-<input id="venda-arm-venda" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px;color:#16a34a" type="number"/>
-</div>
-</div>
-<!-- Busca Lente -->
-<div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">🔍 Lente do Estoque</label>
-<input autocomplete="off" id="venda-len-busca" oninput="filtrarEstoqueBusca('len')" placeholder="Digite para buscar lente..." style="font-size:12px" type="text"/>
-<div id="venda-len-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:160px;overflow-y:auto;width:320px"></div>
-<input id="venda-len-select" onchange="onSelectVendaEstoque('len')" type="hidden"/>
-</div>
-<!-- Custos Lente — só Admin vê -->
-<div id="venda-len-custo-box" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-<div class="form-group" id="venda-len-custo-wrap">
-<label style="font-size:10px">Custo Lente (R$)</label>
-<input id="venda-len-custo" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px" type="number"/>
-</div>
-<div class="form-group">
-<label style="font-size:10px">Venda Lente (R$)</label>
-<input id="venda-len-venda" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px;color:#16a34a" type="number"/>
-</div>
-</div>
-<div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">Exame de Vista (R$)</label>
-<input id="venda-exame" oninput="calcVendaInterna()" placeholder="0,00" step="0.01" style="font-size:12px" type="number"/>
-</div>
-<div class="form-group" style="margin-bottom:8px">
-<label style="font-size:10px">Descrição</label>
-<input id="venda-oculos-desc" placeholder="Óculos de Grau Completo" style="font-size:12px" type="text"/>
-</div>
-<button class="btn btn-primary" onclick="adicionarOculosCompleto()" style="width:100%;justify-content:center;font-size:12px;background:var(--gradient-primary)">
-        🔶 Adicionar Óculos Completo
+<div style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
+
+  <!-- COLUNA ESQUERDA: Busca + Itens -->
+  <div style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
+
+    <!-- Barra de busca unificada -->
+    <div style="padding:12px 16px;background:white;border-bottom:2px solid #e2e8f0;display:flex;gap:8px;align-items:center">
+      <div style="flex:1;position:relative">
+        <input id="venda-busca-unif" type="text" autocomplete="off"
+          placeholder="🔍 Buscar produto (armação, lente, solar, serviço...)"
+          oninput="filtrarVendaUnif()" onkeydown="onVendaUnifKeydown(event)" onfocus="filtrarVendaUnif()"
+          style="width:100%;padding:10px 14px;border:2px solid #0d2b4e;border-radius:10px;font-size:14px;font-weight:600;outline:none;background:white"/>
+        <div id="venda-unif-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);max-height:280px;overflow-y:auto;width:100%;margin-top:4px"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:white;border:2px solid #e2e8f0;border-radius:8px;padding:6px 12px">
+        <span style="font-size:12px;color:#64748b;font-weight:600">Qtd:</span>
+        <input id="venda-unif-qtd" type="number" value="1" min="1" style="width:45px;border:none;font-size:14px;font-weight:700;text-align:center;outline:none"/>
+      </div>
+    </div>
+
+    <!-- Tabela de itens da venda -->
+    <div style="flex:1;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead style="position:sticky;top:0;z-index:10">
+          <tr style="background:#0d2b4e;color:#e8c96a">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;width:40px">#</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;width:80px">Código</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700">Produto / Serviço</th>
+            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;width:65px">Qtd</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;font-weight:700;width:95px">Valor</th>
+            <th style="padding:10px 12px;text-align:right;font-size:11px;font-weight:700;width:100px">Subtotal</th>
+            <th style="padding:10px 12px;width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="venda-unif-itens">
+          <tr id="venda-unif-empty">
+            <td colspan="7" style="padding:50px;text-align:center;color:#94a3b8">
+              <div style="font-size:40px;margin-bottom:10px">🛒</div>
+              <div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div>
+              <div style="font-size:12px;margin-top:4px;color:#cbd5e1">Armações, Lentes, Solar, Acessórios, Serviços</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Crediário (aparece quando selecionado) -->
+    <div id="venda-crediario-box" style="display:none;background:#fef3c7;border-top:2px solid #d97706;padding:12px 16px">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><label style="font-size:10px;color:#92400e">Entrada (R$)*</label><input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"/></div>
+        <div><label style="font-size:10px;color:#92400e">Forma Entrada</label><select id="cred-entrada-pag" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option></select></div>
+        <div><label style="font-size:10px;color:#92400e">Nº Parcelas</label><select id="cred-parcelas" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="8">8x</option><option value="10">10x</option><option value="12">12x</option></select></div>
+        <div><label style="font-size:10px;color:#92400e">Periodicidade</label><select id="cred-periodo" style="width:100%;padding:6px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUNA DIREITA: Painel interno + Totais -->
+  <div style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
+
+    <!-- Painel Interno (Admin) com toggle -->
+    <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1)">
+      <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="togglePainelInternoVenda()">
+        <span style="font-size:10px;font-weight:700;color:#e8c96a;text-transform:uppercase">📊 Painel Interno</span>
+        <span id="venda-painel-toggle-icon" style="color:#e8c96a;font-size:12px">▼</span>
+      </div>
+      <div id="venda-painel-interno-body" style="padding:0 14px 12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+          <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px">
+            <div style="color:rgba(255,255,255,.6)">Custo Total</div>
+            <div id="venda-pi-custo" style="color:#fbbf24;font-weight:700;font-size:14px">R$ 0,00</div>
+          </div>
+          <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px">
+            <div style="color:rgba(255,255,255,.6)">Margem</div>
+            <div id="venda-pi-margem" style="color:#34d399;font-weight:700;font-size:14px">0%</div>
+          </div>
+          <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px;grid-column:span 2">
+            <div style="color:rgba(255,255,255,.6)">Lucro Estimado</div>
+            <div id="venda-pi-lucro" style="color:#34d399;font-weight:700;font-size:16px">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Totais -->
+    <div style="padding:14px;flex:1">
+      <div style="font-size:10px;font-weight:700;color:#e8c96a;text-transform:uppercase;margin-bottom:10px">💰 Resumo</div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="color:rgba(255,255,255,.7);font-size:13px">Subtotal</span>
+        <span id="venda-unif-subtotal" style="color:white;font-weight:700;font-size:14px">R$ 0,00</span>
+      </div>
+
+      <!-- Desconto -->
+      <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px;margin-bottom:10px">
+        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:6px">🏷️ Desconto Global</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div>
+            <label style="font-size:9px;color:rgba(255,255,255,.5)">Em R$</label>
+            <input id="venda-unif-desc-reais" type="number" min="0" step="0.01" placeholder="0,00"
+              oninput="syncDescVendaUnif('reais')"
+              style="width:100%;padding:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:white;font-size:12px;font-weight:600;outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:9px;color:rgba(255,255,255,.5)">Em %</label>
+            <input id="venda-unif-desc-pct" type="number" min="0" max="100" step="0.1" placeholder="0%"
+              oninput="syncDescVendaUnif('pct')"
+              style="width:100%;padding:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:white;font-size:12px;font-weight:600;outline:none"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div style="background:linear-gradient(135deg,#c9a84c,#e8c96a);border-radius:10px;padding:14px;margin-bottom:12px;text-align:center">
+        <div style="font-size:11px;color:#0d2b4e;font-weight:700;margin-bottom:4px">TOTAL</div>
+        <div id="venda-unif-total" style="font-size:28px;font-weight:800;color:#0d2b4e">R$ 0,00</div>
+        <div id="venda-unif-desc-info" style="font-size:11px;color:#0d2b4e;opacity:0.7;margin-top:2px"></div>
+      </div>
+
+      <!-- Botões -->
+      <button onclick="salvarOrcamentoVendaUnif()" style="width:100%;padding:10px;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px">
+        📋 Salvar como Orçamento
       </button>
-</div>
-<!-- Produto Avulso -->
-<div style="background:#fff;border-radius:12px;padding:12px;border:1px solid #dde3ee;border-left:4px solid #c9a84c">
-<div style="font-size:11px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:8px">➕ Produto Avulso</div>
-<div class="form-group" style="margin-bottom:6px">
-<label style="font-size:10px">🔍 Buscar Produto</label>
-<input autocomplete="off" id="venda-produto-busca" oninput="filtrarEstoqueBusca('prod')" placeholder="Digite para buscar produto..." style="font-size:12px" type="text"/>
-<div id="venda-prod-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:160px;overflow-y:auto;width:320px"></div>
-<select id="venda-produto" onchange="onProdutoVenda()" style="display:none"><option value="">— Selecione —</option></select>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
-<div class="form-group">
-<label style="font-size:10px">Qtd</label>
-<input id="venda-qtd" min="1" oninput="calcVenda()" style="font-size:12px" type="number" value="1"/>
-</div>
-<div class="form-group">
-<label style="font-size:10px">Preço (R$)</label>
-<input id="venda-preco" oninput="calcVenda()" step="0.01" style="font-size:12px" type="number"/>
-</div>
-<div class="form-group">
-<label style="font-size:10px">Desc (%)</label>
-<input id="venda-desc" max="100" min="0" oninput="calcVenda()" style="font-size:12px" type="number" value="0"/>
-</div>
-</div>
-<div style="font-size:11px;color:#64748b;margin-bottom:8px">
-        Item: <strong id="venda-item-total" style="color:#16a34a">R$ 0,00</strong>
-         |  Desc: <strong id="venda-item-desc" style="color:#dc2626">R$ 0,00</strong>
-</div>
-<button class="btn btn-primary" onclick="adicionarItemCarrinho()" style="width:100%;justify-content:center;font-size:12px">
-        ➕ Adicionar ao Carrinho
+      <button onclick="registrarVendaUnif()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:6px">
+        ✅ Registrar Venda
       </button>
+      <button onclick="fecharModalVenda()" style="width:100%;padding:10px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:13px;cursor:pointer">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
 </div>
 </div>
-<!-- COLUNA DIREITA -->
-<div id="venda-col-dir" style="display:flex;flex-direction:column;overflow-y:auto;background:#fff;height:100%">
-<!-- Carrinho scrollável -->
-<div style="flex:1;padding:14px 14px 0;min-height:100px">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-<div style="font-size:13px;font-weight:700;color:#1a3a5c">🛒 Carrinho</div>
-<span id="venda-carrinho-badge" style="background:#0ea5e9;color:#fff;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700">0 itens</span>
 </div>
-<div id="venda-carrinho-box" style="min-height:80px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden">
-<table style="width:100%;border-collapse:collapse;font-size:12px">
-<thead><tr style="background:#f1f5f9">
-<th style="padding:7px 10px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:11px">Produto</th>
-<th style="padding:7px 6px;text-align:center;border-bottom:1px solid #e2e8f0;font-size:11px">Qtd</th>
-<th style="padding:7px 10px;text-align:right;border-bottom:1px solid #e2e8f0;font-size:11px">Total</th>
-<th style="padding:7px 6px;border-bottom:1px solid #e2e8f0"></th>
-</tr></thead>
-<tbody id="venda-carrinho-tbody">
-<tr><td colspan="4" style="padding:24px;text-align:center;color:#94a3b8;font-size:12px">Carrinho vazio — adicione produtos à esquerda</td></tr>
-</tbody>
-</table>
-</div>
-<!-- Painel Interno protegido -->
-<div id="venda-painel-interno-wrapper" style="margin-bottom:8px">
-<div id="venda-painel-toggle" onclick="togglePainelInterno()" style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
-<span style="font-size:11px;font-weight:700;color:#854d0e">🔒 Painel Interno — Gestão (Admin)</span>
-<span id="venda-painel-arrow" style="color:#854d0e;font-size:12px">▼</span>
-</div>
-<div id="venda-painel-interno" style="display:none;background:#1a3a5c;border-radius:0 0 8px 8px;padding:10px;max-height:200px;overflow-y:auto">
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;color:rgba(255,255,255,.8)">
-<div>Custo Total:<br/><strong id="venda-int-custo" style="color:#fbbf24;font-size:13px">R$ 0,00</strong></div>
-<div>Receita Bruta:<br/><strong id="venda-int-bruta" style="color:#34d399;font-size:13px">R$ 0,00</strong></div>
-<div>Desconto:<br/><strong id="venda-int-desc" style="color:#f87171;font-size:13px">R$ 0,00</strong></div>
-<div>Rec. Líquida:<br/><strong id="venda-int-liquida" style="color:#34d399;font-size:13px">R$ 0,00</strong></div>
-<div>Comissão:<br/><strong id="venda-int-comissao" style="color:#fb923c;font-size:13px">R$ 0,00</strong></div>
-<div>Lucro Real:<br/><strong id="venda-int-lucro" style="color:#34d399;font-size:14px;font-weight:800">R$ 0,00</strong></div>
-</div>
-<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;align-items:center">
-<span style="font-size:11px;color:rgba(255,255,255,.7)">Margem Real:</span>
-<strong id="venda-int-margem" style="color:#60a5fa;font-size:16px;font-weight:800">0%</strong>
-</div>
-</div>
-</div>
-</div>
-<!-- Painel Crediário — aparece só quando selecionado -->
-<div id="painel-crediario" style="display:none;margin:0 14px 8px;background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;padding:14px">
-<div style="font-size:11px;font-weight:700;color:#e8c96a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💳 Crediário Próprio</div>
-<!-- Entrada -->
-<div style="background:rgba(255,255,255,.1);border-radius:8px;padding:10px;margin-bottom:8px">
-<div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:6px;font-weight:600">ENTRADA OBRIGATÓRIA</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
-<div>
-<label style="font-size:9px;color:rgba(255,255,255,.6)">Valor Entrada (R$)</label>
-<input id="cred-entrada-valor" min="0" oninput="calcCrediario()" placeholder="0,00" step="0.01" style="width:100%;background:#0d2b4e;border:1px solid rgba(201,168,76,.4);color:#fff;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700" type="number"/>
-</div>
-<div>
-<label style="font-size:9px;color:rgba(255,255,255,.6)">Forma da Entrada</label>
-<select id="cred-entrada-pag" style="width:100%;background:#0d2b4e;border:1px solid rgba(201,168,76,.4);color:#fff;border-radius:6px;padding:5px 8px;font-size:11px">
-<option>Dinheiro</option><option>PIX</option><option>Cartão Crédito</option><option>Cartão Débito</option>
-</select>
-</div>
-</div>
-<div id="cred-entrada-cartao-box" style="display:none">
-<label style="font-size:9px;color:rgba(255,255,255,.6)">Parcelas da Entrada no Cartão</label>
-<select id="cred-entrada-parcelas" style="width:100%;background:#0d2b4e;border:1px solid rgba(201,168,76,.4);color:#fff;border-radius:6px;padding:5px 8px;font-size:11px;margin-top:4px">
-<option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option>
-</select>
-</div>
-</div>
-<!-- Parcelas -->
-<div style="background:rgba(255,255,255,.1);border-radius:8px;padding:10px;margin-bottom:8px">
-<div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:6px;font-weight:600">PARCELAS DO CREDIÁRIO</div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">
-<div>
-<label style="font-size:9px;color:rgba(255,255,255,.6)">Nº Parcelas</label>
-<select id="cred-num-parcelas" onchange="calcCrediario()" style="width:100%;background:#0d2b4e;border:1px solid rgba(201,168,76,.4);color:#fff;border-radius:6px;padding:5px 8px;font-size:11px">
-<option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="8">8x</option><option value="10">10x</option><option value="12">12x</option>
-</select>
-</div>
-<div>
-<label style="font-size:9px;color:rgba(255,255,255,.6)">Intervalo</label>
-<select id="cred-intervalo" onchange="calcCrediario()" style="width:100%;background:#0d2b4e;border:1px solid rgba(201,168,76,.4);color:#fff;border-radius:6px;padding:5px 8px;font-size:11px">
-<option value="30">Mensal (30d)</option><option value="15">Quinzenal (15d)</option><option value="7">Semanal (7d)</option>
-</select>
-</div>
-<div>
-<label style="font-size:9px;color:rgba(255,255,255,.6)">1ª Parcela</label>
-<input id="cred-primeira-data" onchange="calcCrediario()" style="width:100%;background:#0d2b4e;border:1px solid rgba(201,168,76,.4);color:#fff;border-radius:6px;padding:5px 8px;font-size:11px;color-scheme:dark" type="date"/>
-</div>
-</div>
-</div>
-<!-- Resumo das parcelas -->
-<div id="cred-resumo" style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;font-size:11px;color:rgba(255,255,255,.9);max-height:120px;overflow-y:auto">
-<div style="color:rgba(255,255,255,.5);text-align:center">Preencha os dados acima</div>
-</div>
-</div>
-<!-- Rodapé fixo — SEMPRE VISÍVEL -->
-<div style="position:sticky;bottom:0;padding:10px 14px;border-top:2px solid #e2e8f0;background:#fff;box-shadow:0 -4px 12px rgba(0,0,0,.1);z-index:10">
-<!-- Desconto Global -->
-<div style="background:#fdf2f8;border-radius:10px;padding:8px 12px;margin-bottom:8px;border-left:3px solid #ec4899">
-<div style="font-size:10px;font-weight:700;color:#9d174d;text-transform:uppercase;margin-bottom:5px">🏷️ Desconto Global</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div class="form-group" style="margin:0">
-<label style="font-size:10px">Desconto (R$)</label>
-<input id="venda-desc-global-reais" min="0" oninput="syncDescontoVenda('reais')" placeholder="0,00" step="0.01" style="color:#dc2626;font-weight:600;font-size:12px" type="number"/>
-</div>
-<div class="form-group" style="margin:0">
-<label style="font-size:10px">Desconto (%)</label>
-<input id="venda-desc-global-pct" max="100" min="0" oninput="syncDescontoVenda('pct')" placeholder="0%" step="0.1" style="color:#9d174d;font-weight:600;font-size:12px" type="number"/>
-</div>
-</div>
-</div>
-<!-- Totais -->
-<div style="background:#dcfce7;border-radius:10px;padding:8px 14px;margin-bottom:8px">
-<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
-<span style="color:#64748b">Subtotal:</span>
-<span id="venda-subtotal-total" style="font-weight:600">R$ 0,00</span>
-</div>
-<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
-<span style="color:#dc2626">Desconto:</span>
-<span id="venda-desc-total" style="font-weight:600;color:#dc2626">- R$ 0,00</span>
-</div>
-<div style="display:flex;justify-content:space-between;font-size:19px;font-weight:800;border-top:2px solid #16a34a;padding-top:5px">
-<span style="color:#1a3a5c">TOTAL:</span>
-<span id="venda-total-final" style="color:#16a34a">R$ 0,00</span>
-</div>
-</div>
-<!-- Botões de ação -->
-<div style="padding:8px 0 0">
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:5px">
-<button class="btn btn-primary" onclick="gerarOrcamentoVenda()" style="justify-content:center;background:#0ea5e9;font-size:12px">🖨️ Ver Orçamento</button>
-<button class="btn btn-success" onclick="saveVenda()" style="justify-content:center;font-size:13px;font-weight:700">✅ Registrar Venda</button>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-<button class="btn btn-primary" onclick="salvarComoOrcamento()" style="justify-content:center;background:#1d4ed8;font-size:12px">💾 Salvar Orçamento</button>
-<button class="btn btn-outline" onclick="fecharModalVenda()" style="justify-content:center;font-size:12px">Cancelar</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Modal OS -->
-<div class="modal-overlay" id="modal-os" style="display:none">
-<div class="modal" style="max-width:700px">
-<div class="modal-header">
-<h3 id="modal-os-title">🔧 Nova Ordem de Serviço</h3>
-<button class="modal-close" onclick="closeModal('modal-os')">✕</button>
-</div>
-<div class="modal-body">
-<input id="os-idx" type="hidden"/>
-<div class="form-grid">
-<div class="form-group" style="position:relative">
-<label>Cliente *</label>
-<input id="os-cliente-busca" type="text" placeholder="🔍 Digite nome, CPF ou telefone..." autocomplete="off"
-  oninput="filtrarClienteBusca('os-cliente-busca','os-cliente-lista','os-cliente')"
-  onfocus="filtrarClienteBusca('os-cliente-busca','os-cliente-lista','os-cliente')"
-  style="width:100%"/>
-<div id="os-cliente-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;width:100%"></div>
-<select id="os-cliente" style="display:none"></select>
-</div>
-<div class="form-group">
-<label>Tipo de Serviço *</label>
-<select id="os-tipo" onchange="onTipoOSChange()">
-<optgroup label="🔧 Montagem">
-<option>Óculos de Grau — Montagem</option>
-<option>Óculos Solar — Montagem</option>
-<option>Lente de Contato</option>
-</optgroup>
-<optgroup label="🛠️ Conserto de Armação">
-<option>Conserto de Armação — Solda</option>
-<option>Conserto de Armação — Parafuso</option>
-<option>Conserto de Armação — Haste</option>
-<option>Conserto de Armação — Plaqueta</option>
-<option>Ajuste de Armação</option>
-</optgroup>
-<optgroup label="🔍 Troca de Lente">
-<option>Troca de Lente — Arranhada</option>
-<option>Troca de Lente — Quebrada</option>
-<option>Troca de Lente — Graduação</option>
-</optgroup>
-<optgroup label="✨ Outros Serviços">
-<option>Limpeza Ultrassônica</option>
-<option>Adaptação de Lente</option>
-<option>Outro</option>
-</optgroup>
-</select>
-</div>
-<div class="form-group">
-<label>Armação</label>
-<input id="os-armacao" placeholder="Código ou descrição" type="text"/>
-</div>
-<div class="form-group">
-<label>Técnico Responsável</label>
-<input id="os-tecnico" placeholder="Nome do técnico" type="text"/>
-</div>
-<div class="form-group">
-<label>Data Abertura</label>
-<input id="os-abertura" type="date"/>
-</div>
-<div class="form-group">
-<label>Previsão Entrega</label>
-<input id="os-previsao" type="date"/>
-</div>
-</div>
-<div class="divider"></div>
-<!-- LONGE -->
-<!-- Toggle Receita Óptica -->
-<div style="margin-top:8px">
-<div onclick="toggleOSReceita()" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
-<span style="font-size:11px;font-weight:700;color:#1d4ed8">👁️ Receita Óptica (Longe / Perto)</span>
-<span id="os-receita-arrow" style="color:#1d4ed8;font-size:12px">▼</span>
-</div>
-<div id="os-receita-box" style="display:none;margin-top:4px">
-<!-- LONGE -->
-<div style="background:#eff6ff;border-radius:8px;padding:12px;margin-top:6px;border-left:3px solid #3b82f6">
-<div style="font-size:10px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:8px">👁️ LONGE</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div><div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:4px">OD</div>
-<div class="form-group"><label style="font-size:10px">Esférico</label><input id="os-longe-od-esf" placeholder="ex: +2.00" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Cilindro</label><input id="os-longe-od-cil" placeholder="ex: -0.75" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Eixo</label><input id="os-longe-od-eixo" placeholder="ex: 90" type="number"/></div>
-</div>
-<div><div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:4px">OE</div>
-<div class="form-group"><label style="font-size:10px">Esférico</label><input id="os-longe-oe-esf" placeholder="ex: +1.50" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Cilindro</label><input id="os-longe-oe-cil" placeholder="ex: -0.75" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Eixo</label><input id="os-longe-oe-eixo" placeholder="ex: 155" type="number"/></div>
-</div>
-</div>
-</div>
-<!-- PERTO -->
-<div style="background:#f0fdf4;border-radius:8px;padding:12px;margin-top:6px;border-left:3px solid #10b981">
-<div style="font-size:10px;font-weight:700;color:#065f46;text-transform:uppercase;margin-bottom:8px">👁️ PERTO</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div><div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:4px">OD</div>
-<div class="form-group"><label style="font-size:10px">Esférico</label><input id="os-perto-od-esf" placeholder="ex: +2.00" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Cilindro</label><input id="os-perto-od-cil" placeholder="ex: -0.75" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Eixo</label><input id="os-perto-od-eixo" placeholder="ex: 90" type="number"/></div>
-</div>
-<div><div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:4px">OE</div>
-<div class="form-group"><label style="font-size:10px">Esférico</label><input id="os-perto-oe-esf" placeholder="ex: +1.50" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Cilindro</label><input id="os-perto-oe-cil" placeholder="ex: -0.75" step="0.25" type="number"/></div>
-<div class="form-group mt-2"><label style="font-size:10px">Eixo</label><input id="os-perto-oe-eixo" placeholder="ex: 155" type="number"/></div>
-</div>
-</div>
-</div>
-<div class="form-group" style="margin-top:8px">
-<label>Adição (ADD)</label>
-<input id="os-adicao" placeholder="ex: +2.50" step="0.25" type="number"/>
-</div>
-</div>
-</div>
-<!-- Descrição do Serviço + Valor + Status -->
-<div class="form-group" style="margin-top:10px">
-<label>📝 Descrição do Serviço</label>
-<textarea id="os-descricao" placeholder="Descreva o serviço a ser realizado..." rows="2" style="width:100%;resize:vertical"></textarea>
-</div>
-<!-- Valor — oculto para OS de montagem -->
-<div class="form-group" id="os-valor-group" style="margin-top:8px">
-<label>Valor Total (R$)</label>
-<input id="os-valor" placeholder="0.00" step="0.01" type="number"/>
-</div>
-<div class="form-grid" style="margin-top:8px">
-<div class="form-group">
-<label>Status</label>
-<select id="os-status">
-<option>Aberta</option><option>Em Produção</option>
-<option>Aguardando Retirada</option><option>Entregue</option><option>Cancelada</option>
-</select>
-</div>
-<div class="form-group" style="grid-column:1/-1">
-<label>Observações</label>
-<textarea id="os-obs" placeholder="Observações..." rows="2"></textarea>
-</div>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" onclick="saveOS()">💾 Salvar OS</button>
-<button class="btn btn-outline" onclick="closeModal('modal-os')">Cancelar</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Modal Visualizar OS -->
-<div class="modal-overlay" id="modal-view-os" style="display:none">
-<div class="modal" style="max-width:500px">
-<div class="modal-header">
-<h3>🔧 Detalhes da OS</h3>
-<button class="modal-close" onclick="closeModal('modal-view-os')">✕</button>
-</div>
-<div class="modal-body" id="view-os-body"></div>
-</div>
-</div>
-<!-- Modal Impressão OS -->
-<div class="modal-overlay" id="modal-print-os" style="display:none">
-<div class="modal" style="max-width:960px;width:95vw">
-<div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
-<h3>🖨️ Impressão de Ordem de Serviço</h3>
-<div style="display:flex;gap:8px">
-<button class="btn btn-success" onclick="doPrintOS()">🖨️ Imprimir</button>
-<button class="modal-close" onclick="closeModal('modal-print-os')">✕</button>
-</div>
-</div>
-<div class="modal-body" style="padding:0">
-<div id="os-print-area" style="padding:32px;font-family:'Segoe UI',sans-serif;color:#1e293b">
-<!-- Cabeçalho -->
-<div style="display:flex;align-items:center;gap:20px;padding-bottom:16px;border-bottom:3px solid #1a3a5c;margin-bottom:24px">
-<img alt="Ótica Horizonte" src="data:image/jpeg;base64,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" style="width:80px;height:80px;object-fit:contain;border-radius:50%;background:#f8fafc;padding:4px"/>
-<div style="flex:1">
-<h1 style="font-size:22px;font-weight:800;color:#1a3a5c;margin:0">Ótica Horizonte</h1>
-<p style="font-style:italic;color:#64748b;font-size:13px;margin:2px 0">Seu olhar, nosso compromisso.</p>
-</div>
-<div style="text-align:right">
-<div id="pos-num-os" style="font-size:20px;font-weight:800;color:#1a3a5c"></div>
-<div id="pos-data-emissao" style="font-size:12px;color:#64748b"></div>
-</div>
-</div>
-<!-- Título -->
-<div style="background:#1a3a5c;color:white;padding:10px 16px;border-radius:8px;margin-bottom:20px;text-align:center">
-<span style="font-size:16px;font-weight:700;letter-spacing:1px">ORDEM DE SERVIÇO</span>
-</div>
-<!-- Dados do Cliente e OS -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-<div style="background:#f8fafc;border-radius:10px;padding:16px;border-left:4px solid #0ea5e9">
-<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">👤 Dados do Cliente</div>
-<div style="margin-bottom:6px"><span style="font-size:12px;color:#64748b">Nome:</span><br/><strong id="pos-cliente" style="font-size:14px"></strong></div>
-</div>
-<div style="background:#f8fafc;border-radius:10px;padding:16px;border-left:4px solid #1a3a5c">
-<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📋 Dados da OS</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
-<div><span style="color:#64748b">Abertura:</span><br/><strong id="pos-abertura"></strong></div>
-<div><span style="color:#64748b">Previsão:</span><br/><strong id="pos-previsao"></strong></div>
-<div><span style="color:#64748b">Técnico:</span><br/><strong id="pos-tecnico"></strong></div>
-<div><span style="color:#64748b">Status:</span><br/><strong id="pos-status"></strong></div>
-</div>
-</div>
-</div>
-<!-- Serviço -->
-<div style="background:#f8fafc;border-radius:10px;padding:16px;margin-bottom:20px;border-left:4px solid #16a34a">
-<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🔧 Serviço</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
-<div><span style="color:#64748b">Tipo:</span> <strong id="pos-tipo"></strong></div>
-<div><span style="color:#64748b">Armação:</span> <strong id="pos-armacao"></strong></div>
-<div id="pos-tipo-lente-box" style="display:none"><span style="color:#64748b">Tipo Lente:</span> <strong id="pos-tipo-lente"></strong></div>
-<div id="pos-tratamentos-box" style="display:none"><span style="color:#64748b">Tratamentos:</span> <strong id="pos-tratamentos"></strong></div>
-</div>
-</div>
-<!-- Receita Óptica -->
-<div style="margin-bottom:20px">
-<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding:8px 16px;background:#1a3a5c;color:white;border-radius:8px">👁️ Receita Óptica</div>
-<table style="width:100%;border-collapse:collapse;font-size:12px">
-<thead>
-<tr style="background:#1a3a5c;color:white">
-<th style="padding:8px;text-align:left;border:1px solid #1a3a5c"></th>
-<th colspan="3" style="padding:8px;text-align:center;border:1px solid #1a3a5c">👁️ OD</th>
-<th colspan="3" style="padding:8px;text-align:center;border:1px solid #1a3a5c">👁️ OE</th>
-</tr>
-<tr style="background:#d6e4f0">
-<th style="padding:6px;border:1px solid #e2e8f0;color:#1a3a5c;font-size:11px">Distância</th>
-<th style="padding:6px;border:1px solid #e2e8f0;color:#64748b;font-size:10px">Esférico</th>
-<th style="padding:6px;border:1px solid #e2e8f0;color:#64748b;font-size:10px">Cilindro</th>
-<th style="padding:6px;border:1px solid #e2e8f0;color:#64748b;font-size:10px">Eixo</th>
-<th style="padding:6px;border:1px solid #e2e8f0;color:#64748b;font-size:10px">Esférico</th>
-<th style="padding:6px;border:1px solid #e2e8f0;color:#64748b;font-size:10px">Cilindro</th>
-<th style="padding:6px;border:1px solid #e2e8f0;color:#64748b;font-size:10px">Eixo</th>
-</tr>
-</thead>
-<tbody>
-<tr style="background:#eff6ff">
-<td style="padding:10px 8px;border:1px solid #e2e8f0;font-weight:700;color:#1d4ed8;font-size:11px">LONGE</td>
-<td id="pos-longe-od-esf" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-longe-od-cil" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-longe-od-eixo" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px"></td>
-<td id="pos-longe-oe-esf" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-longe-oe-cil" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-longe-oe-eixo" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px"></td>
-</tr>
-<tr style="background:#f0fdf4">
-<td style="padding:10px 8px;border:1px solid #e2e8f0;font-weight:700;color:#065f46;font-size:11px">PERTO</td>
-<td id="pos-perto-od-esf" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-perto-od-cil" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-perto-od-eixo" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px"></td>
-<td id="pos-perto-oe-esf" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-perto-oe-cil" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700"></td>
-<td id="pos-perto-oe-eixo" style="padding:10px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px"></td>
-</tr>
-<tr>
-<td style="padding:8px;border:1px solid #e2e8f0;font-weight:700;color:#92400e;font-size:11px">ADD</td>
-<td colspan="6" id="pos-adicao-print" style="padding:8px;border:1px solid #e2e8f0;font-weight:700"></td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Descrição do Serviço (só conserto) -->
-<div id="pos-descricao-box" style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:14px;margin-bottom:12px;display:none">
-<div style="font-size:11px;font-weight:700;color:#854d0e;text-transform:uppercase;margin-bottom:6px">📝 Descrição do Serviço</div>
-<div id="pos-descricao" style="font-size:13px;color:#1e293b"></div>
-</div>
-<!-- Observações -->
-<div id="pos-obs-box" style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:20px">
-<div style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:6px">📝 Observações</div>
-<div id="pos-obs" style="font-size:13px;color:#78350f"></div>
-</div>
-<!-- Valor e Assinaturas -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
-<div style="background:#dcfce7;border-radius:10px;padding:16px;border-left:4px solid #16a34a;text-align:center">
-<div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:6px">💰 Valor Total</div>
-<div id="pos-valor" style="font-size:28px;font-weight:800;color:#16a34a"></div>
-</div>
-<div style="background:#f8fafc;border-radius:10px;padding:16px;border:1px solid #e2e8f0;text-align:center">
-<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px">📅 Entrega Prevista</div>
-<div id="pos-previsao2" style="font-size:18px;font-weight:700;color:#1a3a5c"></div>
-</div>
-</div>
-<!-- Assinaturas -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0">
-<div style="text-align:center">
-<div style="border-top:2px solid #1a3a5c;padding-top:8px;margin-top:40px">
-<div style="font-size:12px;color:#64748b">Assinatura do Cliente</div>
-<div id="pos-cliente2" style="font-size:11px;color:#94a3b8;margin-top:2px"></div>
-</div>
-</div>
-<div style="text-align:center">
-<div style="border-top:2px solid #1a3a5c;padding-top:8px;margin-top:40px">
-<div style="font-size:12px;color:#64748b">Responsável Técnico</div>
-<div id="pos-tecnico2" style="font-size:11px;color:#94a3b8;margin-top:2px"></div>
-</div>
-</div>
-</div>
-<!-- Rodapé -->
-<div style="text-align:center;margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;font-style:italic">
-          Ótica Horizonte — Seu olhar, nosso compromisso. | Documento gerado em <span id="pos-data-rodape"></span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Modal Agendamento -->
-<div class="modal-overlay" id="modal-agend" style="display:none">
-<div class="modal" style="max-width:580px">
-<div class="modal-header">
-<h3 id="modal-agend-title">📅 Novo Agendamento</h3>
-<button class="modal-close" onclick="closeModal('modal-agend')">✕</button>
-</div>
-<div class="modal-body">
-<input id="agend-idx" type="hidden"/>
-<div class="form-grid">
-<div class="form-group" style="position:relative">
-<label>Cliente *</label>
-<input id="agend-cliente-busca" type="text" placeholder="🔍 Digite nome, CPF ou telefone..." autocomplete="off"
-  oninput="filtrarClienteBusca('agend-cliente-busca','agend-cliente-lista','agend-cliente')"
-  onfocus="filtrarClienteBusca('agend-cliente-busca','agend-cliente-lista','agend-cliente')"
-  style="width:100%"/>
-<div id="agend-cliente-lista" style="display:none;position:absolute;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;width:100%"></div>
-<select id="agend-cliente" style="display:none"></select>
-</div>
-<div class="form-group">
-<label>Tipo *</label>
-<select id="agend-tipo">
-<option>Consulta</option>
-<option>Retorno</option>
-<option>Entrega de Óculos</option>
-<option>Ajuste</option>
-<option>Exame de Vista</option>
-<option>Outro</option>
-</select>
-</div>
-<div class="form-group">
-<label>Data *</label>
-<input id="agend-data" type="date"/>
-</div>
-<div class="form-group">
-<label>Horário *</label>
-<input id="agend-hora" type="time"/>
-</div>
-<div class="form-group">
-<label>Profissional</label>
-<input id="agend-prof" placeholder="Nome do profissional" type="text"/>
-</div>
-<div class="form-group">
-<label>Status</label>
-<select id="agend-status">
-<option>Agendado</option>
-<option>Confirmado</option>
-<option>Realizado</option>
-<option>Cancelado</option>
-<option>Faltou</option>
-</select>
-</div>
-<div class="form-group" style="grid-column:1/-1">
-<label>Observações</label>
-<textarea id="agend-obs" placeholder="Observações sobre o agendamento..." rows="2"></textarea>
-</div>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" onclick="saveAgendamento()">💾 Salvar</button>
-<button class="btn btn-outline" onclick="closeModal('modal-agend')">Cancelar</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Modal Histórico Cliente -->
-<div class="modal-overlay" id="modal-historico" style="display:none">
-<div class="modal" style="max-width:700px">
-<div class="modal-header">
-<h3 id="modal-hist-title">🔍 Histórico do Cliente</h3>
-<button class="modal-close" onclick="closeModal('modal-historico')">✕</button>
-</div>
-<div class="modal-body" id="hist-body"></div>
-</div>
-</div>
+
 <!-- Modal Recibo de Venda -->
 <div class="modal-overlay" id="modal-recibo" style="display:none">
 <div class="modal" style="max-width:560px">
@@ -10848,6 +10380,531 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
 // ══════════════════════════════════════════════════════════════
 // CAIXA RÁPIDA — Busca Unificada
 // ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// NOVA VENDA — FLUXO UNIFICADO INTELIGENTE
+// ══════════════════════════════════════════════════════════════
+
+var _vendaItens = []; // [{cod, nome, cat, preco, custo, qtd, tipo, grupo}]
+var _vendaGrupoAtual = null; // grupo de oculos completo em montagem
+
+function initVendaModal() {
+  _vendaItens = [];
+  _vendaGrupoAtual = null;
+  renderVendaItens();
+  calcVendaTotais();
+
+  // Data local
+  var d = new Date();
+  var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var dataEl = document.getElementById('venda-data');
+  if (dataEl) dataEl.value = ds;
+
+  // Vendedor
+  var user = loadUser();
+  var vendEl = document.getElementById('venda-vendedor');
+  if (vendEl && user) vendEl.value = user.nome || '';
+
+  // Cliente
+  populateClienteSelect('venda-cliente');
+
+  // Painel interno - so admin ve
+  var painelWrap = document.getElementById('venda-painel-interno-wrap');
+  if (painelWrap) painelWrap.style.display = isAdmin() ? '' : 'none';
+
+  // Focar na busca
+  setTimeout(function() {
+    var b = document.getElementById('venda-busca-unif');
+    if (b) b.focus();
+  }, 100);
+
+  // Restaurar rascunho
+  try {
+    var r = JSON.parse(localStorage.getItem('otica_rascunho_venda')||'null');
+    if (r && r.itens && r.itens.length > 0) {
+      _vendaItens = r.itens;
+      renderVendaItens();
+      calcVendaTotais();
+    }
+  } catch(e) {}
+}
+
+function togglePainelInternoVenda() {
+  var body = document.getElementById('venda-painel-interno-body');
+  var icon = document.getElementById('venda-painel-toggle-icon');
+  if (!body) return;
+  var oculto = body.style.display === 'none';
+  body.style.display = oculto ? '' : 'none';
+  if (icon) icon.textContent = oculto ? '▼' : '▶';
+}
+
+// ── Busca unificada ───────────────────────────────────────────
+function filtrarVendaUnif() {
+  var input = document.getElementById('venda-busca-unif');
+  var lista = document.getElementById('venda-unif-lista');
+  if (!input || !lista) return;
+  var q = input.value.toLowerCase().trim();
+  var isAdminV = isAdmin();
+  var produtos = load('produtos');
+
+  var filtrados = produtos.filter(function(p) {
+    if (!q) return true;
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
+  }).sort(function(a,b) {
+    if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
+    if (b.cat==='Serviço' && a.cat!=='Serviço') return 1;
+    return 0;
+  });
+
+  if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
+  lista.style.display = 'block';
+
+  var icones = {'Armação':'🕶️','Lente':'🔍','Solar':'☀️','Acessório':'🎁','Contato':'👁️','Serviço':'🔧'};
+
+  lista.innerHTML = filtrados.slice(0,15).map(function(p) {
+    var icone = icones[p.cat] || '📦';
+    var isServico = p.cat === 'Serviço';
+    var estoqueInfo = isServico
+      ? '<span style="color:#0ea5e9;font-size:10px">Serviço</span>'
+      : (p.qtd <= p.min
+        ? '<span style="color:#dc2626;font-size:10px">⚠️ '+p.qtd+' un.</span>'
+        : '<span style="color:#16a34a;font-size:10px">'+p.qtd+' un.</span>');
+    var bg = isServico ? '#f0fdf4' : 'white';
+    var custoInfo = isAdminV ? ' <span style="color:#94a3b8;font-size:10px">Custo: R$'+p.custo+'</span>' : '';
+    return '<div onclick="adicionarItemVendaUnif(\''+p.cod+'\')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;background:'+bg+'" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\''+bg+'\'">'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+      '<span style="font-size:18px">'+icone+'</span>'+
+      '<div style="flex:1">'+
+      '<div style="font-weight:700;color:#0d2b4e;font-size:13px">'+p.desc+'</div>'+
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:2px">'+
+      '<span style="color:#64748b;font-size:11px">'+p.cod+'</span>'+
+      '<span style="color:#16a34a;font-size:12px;font-weight:700">R$ '+p.venda+'</span>'+
+      estoqueInfo+custoInfo+
+      '</div></div></div></div>';
+  }).join('') || '<div style="padding:14px;text-align:center;color:#94a3b8">Nenhum produto encontrado</div>';
+
+  setTimeout(function() {
+    document.addEventListener('click', function fecharUnif(e) {
+      var l = document.getElementById('venda-unif-lista');
+      var i = document.getElementById('venda-busca-unif');
+      if (l && !l.contains(e.target) && e.target !== i) {
+        l.style.display='none';
+        document.removeEventListener('click', fecharUnif);
+      }
+    });
+  }, 100);
+}
+
+function onVendaUnifKeydown(e) {
+  if (e.key === 'Enter') {
+    var lista = document.getElementById('venda-unif-lista');
+    if (lista && lista.style.display !== 'none') {
+      var primeiro = lista.querySelector('div[onclick]');
+      if (primeiro) { primeiro.click(); return; }
+    }
+    var q = document.getElementById('venda-busca-unif').value.trim().toUpperCase();
+    var p = load('produtos').find(function(x){ return x.cod.toUpperCase()===q; });
+    if (p) adicionarItemVendaUnif(p.cod);
+  }
+}
+
+function adicionarItemVendaUnif(cod) {
+  var p = load('produtos').find(function(x){ return x.cod===cod; });
+  if (!p) return;
+
+  var qtd = parseInt(document.getElementById('venda-unif-qtd').value)||1;
+
+  // Fechar lista e limpar busca
+  var lista = document.getElementById('venda-unif-lista');
+  var input = document.getElementById('venda-busca-unif');
+  if (lista) lista.style.display='none';
+  if (input) { input.value=''; input.focus(); }
+  document.getElementById('venda-unif-qtd').value = 1;
+
+  // Se for Armação: perguntar se quer montar óculos completo
+  if (p.cat === 'Armação') {
+    var resp = confirm('🕶️ Armação: ' + p.desc + '\n\nDeseja montar um Óculos Completo?\n\nOK = Óculos Completo (armação + lente + exame)\nCancelar = Só a armação');
+    if (resp) {
+      // Iniciar grupo de óculos completo
+      var grupoId = 'OC-' + Date.now();
+      _vendaGrupoAtual = grupoId;
+      _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:grupoId, isArmacao:true});
+      renderVendaItens();
+      calcVendaTotais();
+      salvarRascunhoVendaUnif();
+      showToast('🕶️ Armação adicionada! Agora adicione a lente.', 'success');
+      // Sugerir lentes
+      setTimeout(function() {
+        if (input) { input.value = ''; input.focus(); }
+        showToast('🔍 Busque a lente para completar o óculos', 'success');
+      }, 500);
+      return;
+    }
+  }
+
+  // Se for Lente e tem grupo de óculos em andamento: adicionar ao grupo
+  if ((p.cat === 'Lente' || p.cat === 'Contato') && _vendaGrupoAtual) {
+    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:_vendaGrupoAtual, isLente:true});
+    renderVendaItens();
+    calcVendaTotais();
+    salvarRascunhoVendaUnif();
+    showToast('🔍 Lente adicionada! Adicione o exame ou finalize.', 'success');
+    // Sugerir exame
+    setTimeout(function() {
+      var servicos = load('produtos').filter(function(x){ return x.cat==='Serviço'; });
+      if (servicos.length > 0 && input) {
+        input.value = servicos[0].desc;
+        filtrarVendaUnif();
+      }
+    }, 500);
+    return;
+  }
+
+  // Se for Serviço e tem grupo de óculos em andamento: adicionar ao grupo como exame
+  if (p.cat === 'Serviço' && _vendaGrupoAtual) {
+    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:_vendaGrupoAtual, isExame:true});
+    _vendaGrupoAtual = null; // Fechar o grupo
+    renderVendaItens();
+    calcVendaTotais();
+    salvarRascunhoVendaUnif();
+    showToast('✅ Óculos Completo montado! Pode adicionar mais produtos.', 'success');
+    return;
+  }
+
+  // Produto avulso normal
+  if (_vendaGrupoAtual && p.cat !== 'Lente' && p.cat !== 'Serviço') {
+    _vendaGrupoAtual = null; // Fechar grupo se adicionar produto avulso
+  }
+
+  var existente = _vendaItens.find(function(i){ return i.cod===cod && !i.grupo; });
+  if (existente && p.cat !== 'Serviço') {
+    existente.qtd += qtd;
+    showToast('+'+qtd+' '+p.desc, 'success');
+  } else {
+    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:qtd, tipo:'normal', grupo:null});
+    showToast('✅ '+p.desc+' adicionado!', 'success');
+  }
+
+  renderVendaItens();
+  calcVendaTotais();
+  salvarRascunhoVendaUnif();
+}
+
+function renderVendaItens() {
+  var tbody = document.getElementById('venda-unif-itens');
+  if (!tbody) return;
+
+  if (_vendaItens.length === 0) {
+    tbody.innerHTML = '<tr id="venda-unif-empty"><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div><div style="font-size:12px;margin-top:4px;color:#cbd5e1">Armações, Lentes, Solar, Acessórios, Serviços</div></td></tr>';
+    return;
+  }
+
+  var icones = {'Armação':'🕶️','Lente':'🔍','Solar':'☀️','Acessório':'🎁','Contato':'👁️','Serviço':'🔧'};
+  var gruposVistos = {};
+
+  tbody.innerHTML = _vendaItens.map(function(item, idx) {
+    var icone = icones[item.cat] || '📦';
+    var subtotal = item.preco * item.qtd;
+    var isOculos = item.tipo === 'oculos-completo';
+    var bg = isOculos ? '#f0f9ff' : 'white';
+    var border = isOculos ? 'border-left:3px solid #3b82f6' : '';
+
+    // Label do grupo
+    var grupoLabel = '';
+    if (isOculos && item.grupo) {
+      if (!gruposVistos[item.grupo]) {
+        gruposVistos[item.grupo] = 1;
+        grupoLabel = '<div style="font-size:9px;color:#3b82f6;font-weight:700;margin-bottom:2px">🕶️ ÓCULOS COMPLETO</div>';
+      }
+    }
+
+    var indent = isOculos ? 'padding-left:20px' : '';
+
+    return '<tr style="background:'+bg+';border-bottom:1px solid #f1f5f9;'+border+'">'
+      + '<td style="padding:8px 12px;color:#64748b;font-size:12px">'+(idx+1)+'</td>'
+      + '<td style="padding:8px 12px;font-size:11px;color:#64748b">'+item.cod+'</td>'
+      + '<td style="padding:8px 12px;'+indent+'">'+grupoLabel+'<div style="font-weight:600;color:#0d2b4e;font-size:13px">'+icone+' '+item.nome+'</div></td>'
+      + '<td style="padding:8px 12px;text-align:center"><input type="number" value="'+item.qtd+'" min="1" onchange="atualizarQtdVendaUnif('+idx+',this.value)" style="width:50px;padding:4px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;font-size:13px;font-weight:700"/></td>'
+      + '<td style="padding:8px 12px;text-align:right;font-size:13px;font-weight:600;color:#0d2b4e">R$ '+item.preco.toFixed(2).replace('.',',')+'</td>'
+      + '<td style="padding:8px 12px;text-align:right;font-size:14px;font-weight:700;color:#16a34a">R$ '+subtotal.toFixed(2).replace('.',',')+'</td>'
+      + '<td style="padding:8px 12px;text-align:center"><button onclick="removerItemVendaUnif('+idx+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px">✕</button></td>'
+      + '</tr>';
+  }).join('');
+}
+
+function atualizarQtdVendaUnif(idx, val) {
+  var qtd = parseInt(val)||1;
+  if (qtd < 1) qtd = 1;
+  _vendaItens[idx].qtd = qtd;
+  renderVendaItens();
+  calcVendaTotais();
+  salvarRascunhoVendaUnif();
+}
+
+function removerItemVendaUnif(idx) {
+  var item = _vendaItens[idx];
+  // Se remover armação de um grupo, remover todo o grupo
+  if (item.grupo && item.isArmacao) {
+    if (confirm('Remover o óculos completo inteiro (armação + lente + exame)?')) {
+      _vendaItens = _vendaItens.filter(function(i){ return i.grupo !== item.grupo; });
+    } else return;
+  } else {
+    _vendaItens.splice(idx, 1);
+  }
+  renderVendaItens();
+  calcVendaTotais();
+  salvarRascunhoVendaUnif();
+}
+
+function syncDescVendaUnif(origem) {
+  var subtotal = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
+  if (subtotal <= 0) return;
+  var reaisEl = document.getElementById('venda-unif-desc-reais');
+  var pctEl = document.getElementById('venda-unif-desc-pct');
+  if (!reaisEl || !pctEl) return;
+  if (origem === 'reais') {
+    var r = parseFloat(reaisEl.value)||0;
+    pctEl.value = (r/subtotal*100).toFixed(1);
+  } else {
+    var p = parseFloat(pctEl.value)||0;
+    reaisEl.value = (subtotal*p/100).toFixed(2);
+  }
+  calcVendaTotais();
+}
+
+function calcVendaTotais() {
+  var subtotal = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
+  var custo = _vendaItens.reduce(function(s,i){ return s+(i.custo||0)*i.qtd; },0);
+  var descReais = parseFloat((document.getElementById('venda-unif-desc-reais')||{}).value)||0;
+  var total = Math.max(0, subtotal - descReais);
+  var lucro = total - custo;
+  var margem = total > 0 ? (lucro/total*100) : 0;
+
+  var fmt = function(v){ return 'R$ '+v.toFixed(2).replace('.',','); };
+  var el = function(id){ return document.getElementById(id); };
+
+  if (el('venda-unif-subtotal')) el('venda-unif-subtotal').textContent = fmt(subtotal);
+  if (el('venda-unif-total')) el('venda-unif-total').textContent = fmt(total);
+  if (el('venda-pi-custo')) el('venda-pi-custo').textContent = fmt(custo);
+  if (el('venda-pi-lucro')) el('venda-pi-lucro').textContent = fmt(lucro);
+  if (el('venda-pi-margem')) el('venda-pi-margem').textContent = margem.toFixed(1)+'%';
+  if (el('venda-unif-desc-info')) el('venda-unif-desc-info').textContent = descReais > 0 ? 'Desconto: '+fmt(descReais) : '';
+}
+
+function salvarRascunhoVendaUnif() {
+  try {
+    localStorage.setItem('otica_rascunho_venda', JSON.stringify({itens:_vendaItens, ts:Date.now()}));
+  } catch(e) {}
+}
+
+function onChangePagamento() {
+  var pag = (document.getElementById('venda-pag')||{}).value||'';
+  var credBox = document.getElementById('venda-crediario-box');
+  if (credBox) credBox.style.display = pag === 'Crediário Próprio' ? '' : 'none';
+}
+
+function salvarOrcamentoVendaUnif() {
+  if (_vendaItens.length === 0) { showToast('Adicione produtos primeiro!','warning'); return; }
+  var clienteId = parseInt((document.getElementById('venda-cliente')||{}).value||'0');
+  var subtotal = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
+  var descReais = parseFloat((document.getElementById('venda-unif-desc-reais')||{}).value)||0;
+  var total = Math.max(0, subtotal - descReais);
+
+  var arr = load('composicoes');
+  var obj = {
+    id: nextId(arr),
+    data: (document.getElementById('venda-data')||{}).value || '',
+    clienteId: clienteId,
+    itens: _vendaItens,
+    desconto: descReais,
+    total: total,
+    status: 'aberto'
+  };
+  arr.push(obj);
+  save('composicoes', arr);
+  showToast('📋 Orçamento salvo! Acesse em Orçamentos para fechar a venda.', 'success');
+  closeModal('modal-venda');
+  _vendaItens = [];
+  localStorage.removeItem('otica_rascunho_venda');
+}
+
+function registrarVendaUnif() {
+  if (window._saveVendaEmAndamento) { showToast('Aguarde...','warning'); return; }
+  window._saveVendaEmAndamento = true;
+  setTimeout(function(){ window._saveVendaEmAndamento = false; }, 5000);
+
+  var clienteId = parseInt((document.getElementById('venda-cliente')||{}).value||'0');
+  if (!clienteId) { window._saveVendaEmAndamento = false; showToast('Selecione o cliente!','error'); return; }
+  if (_vendaItens.length === 0) { window._saveVendaEmAndamento = false; showToast('Adicione pelo menos um produto!','warning'); return; }
+
+  var data = (document.getElementById('venda-data')||{}).value || '';
+  var pag = (document.getElementById('venda-pag')||{}).value || 'PIX';
+  var parcelas = (document.getElementById('venda-parcelas')||{}).value || '1';
+  var status = (document.getElementById('venda-status')||{}).value || 'Pago';
+  var vendedor = (document.getElementById('venda-vendedor')||{}).value || '';
+  var descReais = parseFloat((document.getElementById('venda-unif-desc-reais')||{}).value)||0;
+  var subtotal = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
+
+  var crediarioData = null;
+  if (pag === 'Crediário Próprio') {
+    crediarioData = getCrediarioData();
+    if (crediarioData === false) { window._saveVendaEmAndamento = false; return; }
+  }
+
+  var arr = load('vendas');
+  var prods = load('produtos');
+  var clis = load('clientes');
+  var grupoVenda = 'GV-' + Date.now();
+  var vendasCriadas = [];
+  var totalGeral = 0;
+
+  // Agrupar itens por grupo de óculos completo
+  var grupos = {};
+  var avulsos = [];
+  _vendaItens.forEach(function(item) {
+    if (item.grupo) {
+      if (!grupos[item.grupo]) grupos[item.grupo] = [];
+      grupos[item.grupo].push(item);
+    } else {
+      avulsos.push(item);
+    }
+  });
+
+  // Processar grupos de óculos completo
+  Object.values(grupos).forEach(function(itensGrupo) {
+    var totalGrupo = itensGrupo.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
+    var descProp = subtotal > 0 ? (totalGrupo/subtotal)*descReais : 0;
+    var totalComDesc = totalGrupo - descProp;
+    totalGeral += totalComDesc;
+
+    // Baixar estoque de cada item do grupo
+    itensGrupo.forEach(function(item) {
+      if (item.cat !== 'Serviço') {
+        var pi = prods.findIndex(function(p){ return p.cod===item.cod; });
+        if (pi >= 0) {
+          prods[pi].qtd = Math.max(0, prods[pi].qtd - item.qtd);
+          registrarMovimentacaoEstoque(item.cod, item.qtd, 'saida', 'Venda', grupoVenda);
+        }
+      }
+    });
+
+    var armacao = itensGrupo.find(function(i){ return i.isArmacao; });
+    var lente = itensGrupo.find(function(i){ return i.isLente; });
+    var exame = itensGrupo.find(function(i){ return i.isExame; });
+
+    var descricao = '🕶️ Óculos Completo';
+    if (armacao) descricao += ' — ' + armacao.nome;
+    if (lente) descricao += ' + ' + lente.nome;
+    if (exame) descricao += ' + ' + exame.nome;
+
+    var venda = {
+      id: nextCode(arr, 'V'),
+      grupoVenda: grupoVenda,
+      data: data, clienteId: clienteId,
+      produto: 'OCULOS-COMPLETO',
+      descricaoCompleta: descricao,
+      qtd: 1,
+      preco: totalGrupo,
+      desc: subtotal > 0 ? (descProp/totalGrupo*100) : 0,
+      descGlobal: descProp,
+      totalReal: totalComDesc,
+      tipo: 'oculos-completo',
+      detalhes: itensGrupo.map(function(i){ return {cod:i.cod, nome:i.nome, qtd:i.qtd, preco:i.preco}; }),
+      custo: itensGrupo.reduce(function(s,i){ return s+(i.custo||0)*i.qtd; },0),
+      pag: pag, parcelas: parcelas, status: status, vendedor: vendedor,
+      crediario: crediarioData ? {entrada:crediarioData.entrada, entradaPag:crediarioData.entradaPag, entradaParc:crediarioData.entradaParc, parcelas:crediarioData.parcelas} : null
+    };
+    arr.push(venda);
+    vendasCriadas.push(venda.id);
+
+    // Gerar OS de montagem
+    if (armacao && lente) {
+      var osArr = load('os');
+      var recsCli = load('receitas').filter(function(r){ return r.clienteId===clienteId; });
+      recsCli.sort(function(a,b){ return (b.data||'')>(a.data||'')?1:-1; });
+      var rr = recsCli[0] || {};
+      var dp = new Date(Date.now()+7*86400000);
+      var prevStr = dp.getFullYear()+'-'+String(dp.getMonth()+1).padStart(2,'0')+'-'+String(dp.getDate()).padStart(2,'0');
+      osArr.push({
+        id: nextCode(osArr,'OS'), abertura:data, previsao:prevStr, entrega:'',
+        clienteId:clienteId, tipo:'Óculos de Grau — Montagem', armacao:armacao.cod,
+        tecnico:'', valor:0, tipoOS:'montagem', vendaRef:venda.id, status:'Aberta',
+        longeOdEsf:parseFloat(rr.longeOdEsf||rr.odEsf||0), longeOdCil:parseFloat(rr.longeOdCil||rr.odCil||0),
+        longeOdEixo:parseFloat(rr.longeOdEixo||0), longeOeEsf:parseFloat(rr.longeOeEsf||rr.oeEsf||0),
+        longeOeCil:parseFloat(rr.longeOeCil||rr.oeCil||0), longeOeEixo:parseFloat(rr.longeOeEixo||0),
+        pertoOdEsf:parseFloat(rr.pertoOdEsf||0), pertoOdCil:parseFloat(rr.pertoOdCil||0),
+        pertoOeEsf:parseFloat(rr.pertoOeEsf||0), pertoOeCil:parseFloat(rr.pertoOeCil||0),
+        adicao:parseFloat(rr.adicao||0), dnp:parseFloat(rr.dnp||0),
+        medico:rr.medico||'', receitaRef:rr.id||null,
+        obs:'OS de Montagem — Venda '+grupoVenda
+      });
+      save('os', osArr);
+    }
+  });
+
+  // Processar itens avulsos
+  avulsos.forEach(function(item) {
+    var itemSubtotal = item.preco * item.qtd;
+    var descProp = subtotal > 0 ? (itemSubtotal/subtotal)*descReais : 0;
+    var itemTotal = itemSubtotal - descProp;
+    totalGeral += itemTotal;
+
+    if (item.cat !== 'Serviço') {
+      var pi = prods.findIndex(function(p){ return p.cod===item.cod; });
+      if (pi >= 0) {
+        prods[pi].qtd = Math.max(0, prods[pi].qtd - item.qtd);
+        registrarMovimentacaoEstoque(item.cod, item.qtd, 'saida', 'Venda', grupoVenda);
+      }
+    }
+
+    var venda = {
+      id: nextCode(arr,'V'), grupoVenda:grupoVenda, data:data, clienteId:clienteId,
+      produto:item.cod, descricaoCompleta:item.nome, qtd:item.qtd, preco:item.preco,
+      desc:subtotal>0?(descProp/itemSubtotal*100):0, descGlobal:descProp, totalReal:itemTotal,
+      tipo:item.cat==='Serviço'?'servico':'normal', custo:item.custo||0,
+      pag:pag, parcelas:parcelas, status:status, vendedor:vendedor,
+      crediario:crediarioData?{entrada:crediarioData.entrada,entradaPag:crediarioData.entradaPag,entradaParc:crediarioData.entradaParc,parcelas:crediarioData.parcelas}:null
+    };
+    arr.push(venda);
+    vendasCriadas.push(venda.id);
+  });
+
+  save('vendas', arr);
+  save('produtos', prods);
+
+  // Atualizar cliente
+  var ci = clis.findIndex(function(c){ return c.id===clienteId; });
+  if (ci >= 0) {
+    clis[ci].ultimaCompra = data;
+    clis[ci].totalGasto = (clis[ci].totalGasto||0) + totalGeral;
+    save('clientes', clis);
+  }
+
+  window._saveVendaEmAndamento = false;
+  _vendaItens = [];
+  _vendaGrupoAtual = null;
+  localStorage.removeItem('otica_rascunho_venda');
+
+  closeModal('modal-venda');
+  renderVendas();
+
+  showToast('✅ Venda registrada! Total: R$ '+totalGeral.toFixed(2).replace('.',','), 'success');
+  setTimeout(function() {
+    if (vendasCriadas.length > 0) imprimirRecibo(vendasCriadas[0]);
+  }, 400);
+  showSection('vendas');
+}
+
+function fecharModalVenda() {
+  if (_vendaItens && _vendaItens.length > 0) {
+    if (!confirm('Tem itens no carrinho! Deseja sair sem registrar a venda?')) return;
+  }
+  _vendaItens = [];
+  _vendaGrupoAtual = null;
+  localStorage.removeItem('otica_rascunho_venda');
+  closeModal('modal-venda');
+}
+
 function filtrarCaixaRapida() {
   var input = document.getElementById('venda-caixa-busca');
   var lista = document.getElementById('venda-caixa-lista');
