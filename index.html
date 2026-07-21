@@ -1973,6 +1973,18 @@ function resetarSistema() {
           try {
             var data = await window._fb.loadCollection(k);
             if (data !== null && data !== undefined) {
+              // Para produtos: preservar fotos Cloudinary do localStorage
+              if (k === 'produtos' && Array.isArray(data)) {
+                var localProds = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                data = data.map(function(p) {
+                  var lp = localProds.find(function(x){ return x.cod===p.cod; });
+                  // Se Firebase nao tem foto mas local tem URL Cloudinary, preservar
+                  if (lp && lp.foto && lp.foto.startsWith('https://') && (!p.foto || !p.foto.startsWith('https://'))) {
+                    p = Object.assign({}, p, {foto: lp.foto, catalogo: lp.catalogo !== undefined ? lp.catalogo : p.catalogo});
+                  }
+                  return p;
+                });
+              }
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
             }
@@ -1980,6 +1992,25 @@ function resetarSistema() {
             console.warn('syncFromCloud error:', k, e.message);
           }
         }
+        // Mesclar fotos da colecao separada (nunca sobrescrita)
+        try {
+          var fotosMap = await window._fb.loadCollection('fotos_produtos');
+          if (fotosMap && typeof fotosMap === 'object' && !Array.isArray(fotosMap)) {
+            var prodsLocal = JSON.parse(localStorage.getItem(keys['produtos'])||'[]');
+            var atualizado = false;
+            prodsLocal = prodsLocal.map(function(p) {
+              if (fotosMap[p.cod]) {
+                p = Object.assign({}, p, {foto: fotosMap[p.cod].foto, catalogo: fotosMap[p.cod].catalogo});
+                atualizado = true;
+              }
+              return p;
+            });
+            if (atualizado) {
+              localStorage.setItem(keys['produtos'], JSON.stringify(prodsLocal));
+              console.log('☁️ Fotos restauradas do Firebase:', Object.keys(fotosMap).length);
+            }
+          }
+        } catch(e) { console.warn('fotos_produtos load error:', e.message); }
         return ok;
       }
     };
@@ -6477,6 +6508,16 @@ function forceSyncFotos() {
       showToast('⚠️ Erro ao sincronizar. Verifique a conexão.', 'warning');
     }
   });
+  // Salvar fotos em colecao separada (persistente)
+  if (comFoto.length > 0) {
+    var fotosMap = {};
+    comFoto.forEach(function(p) {
+      fotosMap[p.cod] = {foto: p.foto, catalogo: p.catalogo||false};
+    });
+    window._fb.saveCollection('fotos_produtos', fotosMap).then(function(ok) {
+      if (ok) showToast('📸 ' + comFoto.length + ' fotos salvas permanentemente!', 'success');
+    });
+  }
 }
 
 function renderProdutos() {
@@ -6620,7 +6661,7 @@ function saveProduto() {
     arr.push(obj);
   }
   save('produtos', arr);
-  // Sync imediato com Firebase para garantir que foto Cloudinary seja salva
+  // Sync imediato com Firebase
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('produtos', arr).then(function(ok) {
       if (ok) {
@@ -6629,6 +6670,16 @@ function saveProduto() {
         if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
       }
     });
+    // Salvar fotos em colecao separada (nunca sobrescrita pelo sync geral)
+    var fotosMap = {};
+    arr.forEach(function(p) {
+      if (p.foto && p.foto.startsWith('https://')) {
+        fotosMap[p.cod] = {foto: p.foto, catalogo: p.catalogo||false};
+      }
+    });
+    if (Object.keys(fotosMap).length > 0) {
+      window._fb.saveCollection('fotos_produtos', fotosMap);
+    }
   }
   document.getElementById('prod-cod').disabled = false;
   document.getElementById('prod-idx').value = '';
