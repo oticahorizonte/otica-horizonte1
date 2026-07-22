@@ -1990,8 +1990,14 @@ function resetarSistema() {
             }
           } catch(e) {
             console.warn('syncFromCloud error:', k, e.message);
+            // Tentar novamente para este modulo
+            try {
+              var data2 = await window._fb.loadCollection(k);
+              if (data2 !== null) { localStorage.setItem(keys[k], JSON.stringify(data2)); ok++; }
+            } catch(e2) { console.warn('syncFromCloud retry failed:', k); }
           }
         }
+        console.log('☁️ Dados carregados do Firebase:', ok, 'modulos');
         // Mesclar fotos da colecao separada (nunca sobrescrita)
         try {
           var fotosMap = await window._fb.loadCollection('fotos_produtos');
@@ -3311,6 +3317,7 @@ function instalarApp() {
 <select id="prod-cat" onchange="onChangeProdCat()">
 <option>Armação</option><option>Lente</option><option>Solar</option>
 <option>Acessório</option><option>Contato</option><option>Serviço</option>
+<option>Serviço OS</option>
 </select>
 </div>
 <div class="form-group" style="grid-column:1/-1">
@@ -3691,7 +3698,7 @@ function instalarApp() {
 <!-- Tipo -->
 <div class="form-group">
 <label>Tipo de Serviço *</label>
-<select id="os-tipo">
+<select id="os-tipo" onchange="onChangeTipoOS()">
 <option>Óculos de Grau — Montagem</option>
 <option>Óculos Solar — Montagem</option>
 <option>Lente de Contato</option>
@@ -4526,9 +4533,21 @@ function _fbAutoSync(k, v) {
 
 async function syncLocalToCloud() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
-  showToast('☁️ Enviando dados para a nuvem...','success');
+  showToast('☁️ Enviando TODOS os dados para a nuvem...','success');
   var ok = await window._fb.syncToCloud(KEYS);
-  showToast('✅ ' + ok + ' módulos enviados para a nuvem!','success');
+  // Tambem salvar usuarios e entradas (nao estao no KEYS)
+  var usuarios = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
+  if (usuarios.length > 0) { await window._fb.saveCollection('usuarios', usuarios); ok++; }
+  var entradas = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
+  if (entradas.length > 0) { await window._fb.saveCollection('entradas', entradas); ok++; }
+  // Salvar fotos
+  var fotosMap = {};
+  var prods = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
+  prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
+  if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
+  localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+  if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+  showToast('✅ ' + ok + ' módulos sincronizados! Celular e PC atualizados.','success');
 }
 
 async function syncFirebaseToLocal() {
@@ -4576,24 +4595,27 @@ const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 const save = function(k, v) {
   // 1. Salvar no localStorage imediatamente
   _saveBase(k, v);
-  // 2. Salvar no Firebase imediatamente (sem delay)
+  // 2. Salvar no Firebase
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas'];
   if (criticos.indexOf(k) === -1) return;
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection(k, v).then(function(ok) {
-      if (ok) {
-        localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-        if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-      }
-    });
-  } else {
-    // Firebase nao conectou ainda - tentar em 3 segundos
-    setTimeout(function() {
-      if (window._firebaseReady && window._fb) {
-        window._fb.saveCollection(k, v);
-      }
-    }, 3000);
+  function tentarSalvarFirebase(tentativas) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection(k, v).then(function(ok) {
+        if (ok) {
+          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+          if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
+        } else if (tentativas > 0) {
+          setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
+        }
+      }).catch(function() {
+        if (tentativas > 0) setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
+      });
+    } else if (tentativas > 0) {
+      setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 1000);
+    }
   }
+  tentarSalvarFirebase(5);
 };
 
 // Auto-sync periódico removido — save() já salva imediatamente no Firebase
@@ -5717,9 +5739,10 @@ function atualizarSyncIndicator() {
   var ultimo = localStorage.getItem('otica_ultimo_sync');
   if (ultimo) {
     var diff = Math.floor((Date.now() - parseInt(ultimo)) / 60000);
-    if (diff < 1) { icon.textContent = '☁️✅'; text.textContent = 'Sincronizado agora'; }
-    else if (diff < 60) { icon.textContent = '☁️✅'; text.textContent = 'Sync: '+diff+'min atrás'; }
-    else { icon.textContent = '☁️⚠️'; text.textContent = 'Sync: '+Math.floor(diff/60)+'h atrás'; }
+    if (diff < 1) { icon.textContent = '☁️✅'; text.textContent = 'Salvo na nuvem!'; text.style.color='rgba(52,211,153,.9)'; }
+    else if (diff < 5) { icon.textContent = '☁️✅'; text.textContent = 'Sync: '+diff+'min'; text.style.color=''; }
+    else if (diff < 60) { icon.textContent = '☁️'; text.textContent = 'Sync: '+diff+'min atrás'; text.style.color=''; }
+    else { icon.textContent = '☁️⚠️'; text.textContent = 'Sync: '+Math.floor(diff/60)+'h atrás'; text.style.color='rgba(251,146,60,.9)'; }
   } else { icon.textContent = '☁️⏳'; text.textContent = 'Conectando...'; }
 }
 setInterval(atualizarSyncIndicator, 60000);
@@ -7184,6 +7207,30 @@ function toggleOsReceita() {
   var oculto = box.style.display === 'none';
   box.style.display = oculto ? 'block' : 'none';
   if (arrow) arrow.textContent = oculto ? '▲' : '▼';
+}
+
+
+function popularTiposOS() {
+  var sel = document.getElementById('os-tipo');
+  if (!sel) return;
+  var valorAtual = sel.value;
+  var fixas = ['Oculos de Grau - Montagem','Oculos Solar - Montagem','Lente de Contato',
+    'Conserto de Armacao - Solda','Conserto de Armacao - Parafuso','Conserto de Armacao - Haste',
+    'Conserto de Armacao - Plaqueta','Ajuste de Armacao','Troca de Lente - Arranhada',
+    'Troca de Lente - Quebrada','Troca de Lente - Graduacao','Adaptacao de Lente','Outros'];
+  var servicosOS = load('produtos').filter(function(p){ return p.cat==='Servico OS'; });
+  var todasOpcoes = fixas.concat(servicosOS.map(function(s){ return s.desc; }));
+  sel.innerHTML = todasOpcoes.map(function(o){ return '<option value="'+o+'">'+o+'</option>'; }).join('');
+  if (valorAtual) sel.value = valorAtual;
+}
+
+function onChangeTipoOS() {
+  var tipo = (document.getElementById('os-tipo')||{}).value||'';
+  var isMontagem = tipo.toLowerCase().includes('montagem');
+  var recBox = document.getElementById('os-receita-box');
+  if (recBox) recBox.style.display = isMontagem ? 'block' : 'none';
+  var valGrp = document.getElementById('os-valor-group');
+  if (valGrp) valGrp.style.display = isMontagem ? 'none' : '';
 }
 
 function editOS(id) {
@@ -11186,10 +11233,13 @@ function registrarVendaUnif() {
         pertoOeEsf:parseFloat(rr.pertoOeEsf||0), pertoOeCil:parseFloat(rr.pertoOeCil||0),
         adicao:parseFloat(rr.adicao||0), dnp:parseFloat(rr.dnp||0),
         medico:rr.medico||'', receitaRef:rr.id||null,
+        obsReceita:rr.obs||'',
+        tipoLente:rr.tipoLente||(rr.tipoProgressiva?'Progressiva':rr.tipoBifocalUltex?'Bifocal Ultex':rr.tipoBifocalKriptok?'Bifocal Kriptok':rr.tipoVisaoSimples?'Visao Simples':''),
+        tratamentos:[rr.tratAntiReflexo?'Anti-reflexo':'',rr.tratFotossensivel?'Fotossensivel':'',rr.tratBlueCut?'Blue Cut':'',rr.tratUV?'Protecao UV':''].filter(Boolean).join(', '),
         tipoLente: rr.tipoLente || (rr.tipoProgressiva?'Progressiva':rr.tipoBifocalUltex?'Bifocal Ultex':rr.tipoBifocalKriptok?'Bifocal Kriptok':rr.tipoVisaoSimples?'Visao Simples':''),
         tratamentos: [rr.tratAntiReflexo?'Anti-reflexo':'',rr.tratFotossensivel?'Fotossensivel':'',rr.tratBlueCut?'Blue Cut':'',rr.tratUV?'Protecao UV':''].filter(Boolean).join(', '),
         pertoOdEixo:parseFloat(rr.pertoOdEixo||0), pertoOeEixo:parseFloat(rr.pertoOeEixo||0),
-        obs:'OS de Montagem — Venda '+grupoVenda
+        obs:'OS de Montagem | Venda: '+(venda?venda.id:grupoVenda)+(rr.medico?' | Dr(a). '+rr.medico:'')+(rr.obs?' | Obs: '+rr.obs:'')
       });
       save('os', osArr);
     }
@@ -11386,8 +11436,11 @@ function filtrarEstoqueBusca(tipo) {
   if (tipo==='arm') filtrados = produtos.filter(p=>p.cat==='Armação'&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
   else if (tipo==='len') filtrados = produtos.filter(p=>(p.cat==='Lente'||p.cat==='Contato')&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
   else {
-    filtrados = produtos.filter(p=>!q||(p.desc+p.cod+p.cat+(p.marca||'')).toLowerCase().includes(q));
-    // Ordenar: Servicos primeiro se busca vazia, depois por categoria
+    filtrados = produtos.filter(p=>{
+      if (p.cat==='Serviço OS') return false; // Exclusivo para OS
+      return !q||(p.desc+p.cod+p.cat+(p.marca||'')).toLowerCase().includes(q);
+    });
+    // Ordenar: Servicos primeiro se busca vazia
     if (!q) filtrados = filtrados.sort(function(a,b){ return a.cat==='Serviço'?-1:b.cat==='Serviço'?1:0; });
   }
 
@@ -12245,6 +12298,7 @@ function initOSModal() {
   document.getElementById('os-previsao').value = plus5;
   document.getElementById('os-idx').value = '';
   document.getElementById('modal-os-title').textContent = '🔧 Nova Ordem de Serviço';
+  popularTiposOS();
 }
 
 // Override openModal buttons — executar após DOM carregar
