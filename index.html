@@ -3877,6 +3877,74 @@ function instalarApp() {
 </div>
 </div>
 <!-- Modal Configurações -->
+
+<!-- Modal Agendamento -->
+<div class="modal-overlay" id="modal-agend" style="display:none">
+<div class="modal" style="max-width:560px">
+<div class="modal-header">
+<h3 id="modal-agend-title">📅 Novo Agendamento</h3>
+<button class="modal-close" onclick="closeModal('modal-agend')">✕</button>
+</div>
+<div class="modal-body">
+<input id="agend-idx" type="hidden"/>
+<div class="form-group" style="margin-bottom:12px">
+<label>Cliente *</label>
+<div style="position:relative">
+<input id="agend-cliente-busca" type="text" placeholder="🔍 Buscar cliente por nome, CPF ou telefone..."
+  oninput="filtrarClientesAgend(this.value)"
+  style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:var(--bg-card);color:var(--text-primary)"
+  autocomplete="off"/>
+<input id="agend-cliente" type="hidden"/>
+<div id="agend-cliente-lista" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid #e2e8f0;border-radius:8px;max-height:180px;overflow-y:auto;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)"></div>
+</div>
+</div>
+<div class="form-grid">
+<div class="form-group">
+<label>Data *</label>
+<input id="agend-data" type="date"/>
+</div>
+<div class="form-group">
+<label>Horário *</label>
+<input id="agend-hora" type="time" value="09:00"/>
+</div>
+<div class="form-group">
+<label>Tipo</label>
+<select id="agend-tipo">
+<option value="Consulta">👁️ Consulta</option>
+<option value="Retorno">🔄 Retorno</option>
+<option value="Entrega">📦 Entrega de Óculos</option>
+<option value="Ajuste">🔧 Ajuste/Manutenção</option>
+<option value="Outro">📋 Outro</option>
+</select>
+</div>
+<div class="form-group">
+<label>Status</label>
+<select id="agend-status">
+<option value="Agendado">📅 Agendado</option>
+<option value="Confirmado">✅ Confirmado</option>
+<option value="Realizado">✔️ Realizado</option>
+<option value="Cancelado">❌ Cancelado</option>
+<option value="Faltou">⚠️ Faltou</option>
+</select>
+</div>
+<div class="form-group" style="grid-column:1/-1">
+<label>Profissional / Responsável</label>
+<input id="agend-prof" placeholder="Ex: Dr. Roberto Lima" type="text"/>
+</div>
+<div class="form-group" style="grid-column:1/-1">
+<label>Observações</label>
+<textarea id="agend-obs" placeholder="Observações sobre o agendamento..." rows="2"
+  style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:var(--bg-card);color:var(--text-primary);resize:vertical"></textarea>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-primary" onclick="saveAgendamento()">💾 Salvar</button>
+<button class="btn btn-outline" onclick="closeModal('modal-agend')">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
+
 <div class="modal-overlay" id="modal-config" style="display:none">
 <div class="modal" style="max-width:480px">
 <div class="modal-header">
@@ -6202,7 +6270,11 @@ function exportarRelatorioPDF() {
     +'<div class="no-print" style="text-align:center;margin-top:20px">'
     +'<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>'
     +'<button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-left:10px">✕ Fechar</button>'
-    +'</div></body></html>';
+    +'</div><div id="app-loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(30,58,95,0.85);z-index:99998;align-items:center;justify-content:center;flex-direction:column">
+<div style="color:white;font-size:18px;font-weight:700;margin-bottom:16px">⏳ Carregando...</div>
+<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+</div>
+</body></html>';
 
   var win = window.open('','_blank','width=900,height=700');
   if (win) { win.document.write(html); win.document.close(); setTimeout(function(){ win.focus(); },300); }
@@ -7951,16 +8023,54 @@ function checkOSAtrasadas() {
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────────
 function openNovoAgendamento() {
-  populateClienteSelect('agend-cliente');
   document.getElementById('agend-idx').value = '';
   document.getElementById('modal-agend-title').textContent = '📅 Novo Agendamento';
-  document.getElementById('agend-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  document.getElementById('agend-data').value = hoje;
   document.getElementById('agend-hora').value = '09:00';
   document.getElementById('agend-tipo').value = 'Consulta';
   document.getElementById('agend-status').value = 'Agendado';
   document.getElementById('agend-prof').value = '';
   document.getElementById('agend-obs').value = '';
+  // Limpar busca de cliente
+  var buscaEl = document.getElementById('agend-cliente-busca');
+  if (buscaEl) buscaEl.value = '';
+  var hiddenEl = document.getElementById('agend-cliente');
+  if (hiddenEl) hiddenEl.value = '';
+  var listaEl = document.getElementById('agend-cliente-lista');
+  if (listaEl) listaEl.style.display = 'none';
   openModal('modal-agend');
+}
+
+
+function filtrarClientesAgend(q) {
+  var lista = document.getElementById('agend-cliente-lista');
+  var hiddenInput = document.getElementById('agend-cliente');
+  if (!lista) return;
+  if (!q || q.length < 1) { lista.style.display='none'; return; }
+  var clientes = load('clientes').filter(function(c){ return c.ativo !== false; });
+  var ql = q.toLowerCase();
+  var filtrados = clientes.filter(function(c){
+    return (c.nome||'').toLowerCase().includes(ql) ||
+           (c.cpf||'').includes(q) ||
+           (c.telefone||'').includes(q);
+  }).slice(0,8);
+  if (!filtrados.length) { lista.style.display='none'; return; }
+  lista.innerHTML = filtrados.map(function(c){
+    return '<div onclick="selecionarClienteAgend('+c.id+',''+c.nome.replace(/'/g,"\'")+'')" '+
+      'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;color:var(--text-primary)" '+
+      'onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">' +
+      '<strong>' + c.nome + '</strong>' +
+      (c.telefone ? ' <span style="color:#64748b;font-size:11px">— ' + c.telefone + '</span>' : '') +
+      '</div>';
+  }).join('');
+  lista.style.display = 'block';
+}
+
+function selecionarClienteAgend(id, nome) {
+  document.getElementById('agend-cliente').value = id;
+  document.getElementById('agend-cliente-busca').value = nome;
+  document.getElementById('agend-cliente-lista').style.display = 'none';
 }
 
 function renderAgendamentos() {
@@ -8054,6 +8164,8 @@ function editAgendamento(id) {
   var cliAgend = clientes.find(function(c){ return c.id===a.clienteId; });
   var buscaAgendEl = document.getElementById('agend-cliente-busca');
   if (buscaAgendEl && cliAgend) buscaAgendEl.value = cliAgend.nome;
+  var listaEl = document.getElementById('agend-cliente-lista');
+  if (listaEl) listaEl.style.display = 'none';
   openModal('modal-agend');
 }
 
@@ -12843,7 +12955,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Modal Zoom Foto -->
-<div id="modal-zoom-foto" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;cursor:zoom-out;display:none;align-items:center;justify-content:center;flex-direction:column">
+<div id="modal-zoom-foto" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;cursor:zoom-out;align-items:center;justify-content:center;flex-direction:column">
   <div style="position:relative;max-width:95vw;max-height:90vh">
     <img id="zoom-foto-img" src="" style="max-width:95vw;max-height:85vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5)"/>
     <div id="zoom-foto-desc" style="color:white;text-align:center;margin-top:12px;font-size:14px;font-weight:600;opacity:0.9"></div>
