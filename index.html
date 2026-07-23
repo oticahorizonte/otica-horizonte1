@@ -4947,21 +4947,42 @@ function doLogin() {
     if (window._firebaseReady && window._fb) {
       showToast('Verificando credenciais na nuvem...', 'success');
       window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
-        if (usuariosCloud && Array.isArray(usuariosCloud)) {
+        if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
           localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+          // Verificar admin hardcoded também
           var userCloud = usuariosCloud.find(function(x){ return x.login===u && x.senha===p && x.status==='Ativo'; });
+          if (!userCloud && u === 'admin' && p === 'admin123') {
+            userCloud = {nome:'Administrador', nivel:'Admin', comissao:0, login:'admin', senha:'admin123', status:'Ativo'};
+          }
           if (userCloud) {
             finalizarLogin(userCloud, usuariosCloud);
           } else {
+            document.getElementById('login-err').textContent = 'Usuário ou senha incorretos!';
             showToast('Usuário ou senha incorretos!', 'error');
           }
         } else {
-          showToast('Usuário ou senha incorretos!', 'error');
+          // Firebase sem usuários - tentar admin hardcoded
+          if (u === 'admin' && p === 'admin123') {
+            finalizarLogin({nome:'Administrador', nivel:'Admin', comissao:0, login:'admin', senha:'admin123', status:'Ativo'}, []);
+          } else {
+            document.getElementById('login-err').textContent = 'Usuário ou senha incorretos!';
+            showToast('Usuário ou senha incorretos!', 'error');
+          }
         }
+      }).catch(function(e) {
+        console.warn('Erro ao buscar usuários do Firebase:', e);
+        document.getElementById('login-err').textContent = 'Erro de conexão. Tente novamente.';
+        showToast('Erro de conexão com Firebase!', 'error');
       });
       return;
     }
-    showToast('Usuário ou senha incorretos! Verifique o módulo Usuários.','error');
+    // Firebase não disponível - só admin funciona offline
+    if (u === 'admin' && p === 'admin123') {
+      finalizarLogin({nome:'Administrador', nivel:'Admin', comissao:0, login:'admin', senha:'admin123', status:'Ativo'}, []);
+      return;
+    }
+    document.getElementById('login-err').textContent = 'Aguarde a conexão com Firebase ou use admin/admin123.';
+    showToast('Firebase ainda conectando... aguarde e tente novamente.','warning');
     return;
   }
 
