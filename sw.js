@@ -1,28 +1,34 @@
-// Service Worker — Ótica Horizonte v184
-// Estratégia: Network First sem cache (sempre busca versão mais recente)
+// Service Worker — Ótica Horizonte v199
+// Estratégia: Limpar TODOS os caches antigos e buscar sempre da rede
 
-const CACHE_NAME = 'otica-horizonte-v184';
+const CACHE_NAME = 'otica-horizonte-v199';
 
 self.addEventListener('install', function(event) {
+  console.log('SW v199: instalando...');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', function(event) {
-  // Deletar TODOS os caches antigos
+  console.log('SW v199: ativando, limpando caches antigos...');
   event.waitUntil(
-    caches.keys().then(function(names) {
-      return Promise.all(names.map(function(n) { return caches.delete(n); }));
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName !== CACHE_NAME) {
+            console.log('SW v199: removendo cache antigo:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(function() {
+      console.log('SW v199: todos os caches antigos removidos!');
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
-// Network First: sempre busca da rede, sem cache
 self.addEventListener('fetch', function(event) {
-  if (event.request.method !== 'GET') return;
-  if (event.request.url.includes('firestore') || event.request.url.includes('firebase')) return;
-  if (event.request.url.includes('cloudinary')) return;
-
+  // Sempre buscar da rede - nunca servir do cache
   event.respondWith(
     fetch(event.request).catch(function() {
       return caches.match(event.request);
