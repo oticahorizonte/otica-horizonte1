@@ -1917,13 +1917,10 @@ function resetarSistema() {
 // Evita o flash da tela de login ao pressionar F5
 (function() {
   try {
-    var u = JSON.parse(localStorage.getItem('otica_user') || 'null');
-    if (u && u.nome) {
-      // Injeta CSS para ocultar login-screen antes do render
-      var s = document.createElement('style');
-      s.textContent = '#login-screen{display:none!important}#app{display:block!important}';
-      document.head.appendChild(s);
-    }
+    // Limpar TODOS os dados do localStorage para remover qualquer corrompido
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log('🧹 Cache limpo automaticamente');
   } catch(e) {}
 })();
 </script>
