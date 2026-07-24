@@ -4700,9 +4700,9 @@ window.addEventListener('firebaseReady', function() {
               localStorage.setItem(KEYS[k], JSON.stringify(cloudData));
               ok++;
             } else if (localLen > 0 && cloudLen < localLen) {
-              // Local tem mais dados - enviar para Firebase
-              await window._fb.saveCollection(k, localData);
-              console.log('☁️ Local enviado para Firebase:', k, localLen, '>', cloudLen);
+              // Local tem mais dados - NÃO enviar automaticamente (evita quota exceeded)
+              // Usuário deve clicar "Enviar Nuvem" manualmente
+              console.log('ℹ️ Local tem mais dados que Firebase:', k, localLen, '>', cloudLen, '- clique Enviar Nuvem');
             }
           } catch(e) { console.warn('Sync error:', k, e.message); }
         }
@@ -4713,14 +4713,16 @@ window.addEventListener('firebaseReady', function() {
           if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length >= usuariosLocal.length && usuariosCloud.length > 0) {
             localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
           } else if (usuariosLocal.length > usuariosCloud.length) {
-            await window._fb.saveCollection('usuarios', usuariosLocal);
+            // Não enviar automaticamente - evita quota exceeded
+            console.log('ℹ️ Usuários locais mais recentes - clique Enviar Nuvem');
           }
           var entradasCloud = await window._fb.loadCollection('entradas');
           var entradasLocal = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
           if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length >= entradasLocal.length && entradasCloud.length > 0) {
             localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
           } else if (entradasLocal.length > 0 && entradasLocal.length > (entradasCloud||[]).length) {
-            await window._fb.saveCollection('entradas', entradasLocal);
+            // Não enviar automaticamente - evita quota exceeded
+            console.log('ℹ️ Entradas locais mais recentes - clique Enviar Nuvem');
           }
           var metasCloud = await window._fb.loadCollection('metas_vendas');
           if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
@@ -4752,7 +4754,7 @@ function sanitizarDados(v) {
 
 // Salvar no Firebase com retry automático
 function salvarFirebase(k, v, tentativas) {
-  tentativas = tentativas || 5;
+  tentativas = tentativas || 2; // Reduzido para evitar quota exceeded
   if (!sanitizarDados(v)) return; // Bloquear dados suspeitos
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection(k, v).then(function(ok) {
@@ -4762,7 +4764,7 @@ function salvarFirebase(k, v, tentativas) {
         if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
         if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
       } else if (tentativas > 0) {
-        setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 3000); // Delay maior para evitar resource-exhausted
+        setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 10000); // 10s delay para evitar quota exceeded
       } else {
         // Todas tentativas falharam - colocar na fila
         _filaSalvamento[k] = v;
@@ -4776,15 +4778,22 @@ function salvarFirebase(k, v, tentativas) {
   }
 }
 
+// Debounce para evitar múltiplas escritas simultâneas
+var _saveDebounce = {};
 const save = function(k, v) {
   // 1. Sanitizar dados antes de salvar
   if (!sanitizarDados(v)) { showToast('⚠️ Dado inválido bloqueado!', 'error'); return; }
   // 2. Salvar no localStorage imediatamente
   _saveBase(k, v);
-  // 3. Salvar no Firebase - TODOS os módulos sem exceção
-  var ignorar = ['user', 'rascunho_venda'];
+  // 3. Salvar no Firebase com debounce (evita quota exceeded)
+  var ignorar = ['user', 'rascunho_venda', 'historico_estoque', 'composicoes'];
   if (ignorar.indexOf(k) !== -1) return;
-  salvarFirebase(k, v, 5);
+  // Cancelar save anterior pendente para este módulo
+  if (_saveDebounce[k]) clearTimeout(_saveDebounce[k]);
+  _saveDebounce[k] = setTimeout(function() {
+    delete _saveDebounce[k];
+    salvarFirebase(k, v, 2);
+  }, 1500); // Aguarda 1.5s antes de enviar (agrupa múltiplos saves)
 };
 
 // Auto-sync periódico removido — save() já salva imediatamente no Firebase
