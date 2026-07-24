@@ -2024,6 +2024,8 @@ function resetarSistema() {
 
     window._firebaseReady = true;
     console.log('✅ Firebase conectado!');
+    // Processar fila de salvamentos pendentes
+    setTimeout(processarFilaSalvamento, 500);
     window.dispatchEvent(new Event('firebaseReady'));
   } catch(e) {
     console.warn('Firebase init error:', e);
@@ -4589,20 +4591,63 @@ function _fbAutoSync(k, v) {
 async function syncLocalToCloud() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
   showToast('☁️ Enviando TODOS os dados para a nuvem...','success');
-  var ok = await window._fb.syncToCloud(KEYS);
-  // Tambem salvar usuarios e entradas (nao estao no KEYS)
+  var ok = 0;
+  
+  // Sincronizar todos os módulos do KEYS
+  var modulos = ['clientes','receitas','produtos','vendas','os','agendamentos',
+                 'composicoes','historico_estoque','despesas'];
+  for (var i = 0; i < modulos.length; i++) {
+    var k = modulos[i];
+    var chave = KEYS[k] || ('otica_' + k);
+    var data = JSON.parse(localStorage.getItem(chave) || '[]');
+    if (!sanitizarDados(data)) continue;
+    var saved = await window._fb.saveCollection(k, data);
+    if (saved) ok++;
+  }
+  
+  // Módulos especiais (não estão no KEYS padrão)
   var usuarios = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-  if (usuarios.length > 0) { await window._fb.saveCollection('usuarios', usuarios); ok++; }
+  if (usuarios.length > 0 && sanitizarDados(usuarios)) {
+    var s = await window._fb.saveCollection('usuarios', usuarios);
+    if (s) ok++;
+  }
+  
   var entradas = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
-  if (entradas.length > 0) { await window._fb.saveCollection('entradas', entradas); ok++; }
-  // Salvar fotos
+  if (entradas.length > 0 && sanitizarDados(entradas)) {
+    var s2 = await window._fb.saveCollection('entradas', entradas);
+    if (s2) ok++;
+  }
+  
+  var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
+  if (Object.keys(metas).length > 0 && sanitizarDados(metas)) {
+    var s3 = await window._fb.saveCollection('metas_vendas', metas);
+    if (s3) ok++;
+  }
+  
+  var cfg = JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+  if (Object.keys(cfg).length > 0 && sanitizarDados(cfg)) {
+    var s4 = await window._fb.saveCollection('config_comissao', cfg);
+    if (s4) ok++;
+  }
+  
+  // Fotos Cloudinary
   var fotosMap = {};
   var prods = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
-  prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
-  if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
+  prods.forEach(function(p){ 
+    if(p.foto && p.foto.startsWith('https://')) 
+      fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; 
+  });
+  if (Object.keys(fotosMap).length > 0) { 
+    var s5 = await window._fb.saveCollection('fotos_produtos', fotosMap); 
+    if (s5) ok++;
+  }
+  
+  // Processar fila pendente também
+  processarFilaSalvamento();
+  
   localStorage.setItem('otica_ultimo_sync', Date.now().toString());
   if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-  showToast('✅ ' + ok + ' módulos sincronizados! Celular e PC atualizados.','success');
+  showToast('✅ ' + ok + ' módulos sincronizados! Dados salvos na nuvem.','success');
 }
 
 async function syncFirebaseToLocal() {
@@ -4625,16 +4670,18 @@ window.addEventListener('firebaseReady', function() {
         // Carregar dados do Firebase ao iniciar
         // Mas preservar dados locais se Firebase retornar vazio
         var ok = await window._fb.syncFromCloud(KEYS);
-        // Carregar usuarios do Firebase - so sobrescrever se Firebase tem mais usuarios
+        // Carregar TODOS os módulos extras do Firebase
+        // Usuários
         var usuariosCloud = await window._fb.loadCollection('usuarios');
         if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
-          var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-          // So sobrescrever se Firebase tem mais usuarios que o local
-          if (usuariosCloud.length >= usuariosLocal.length) {
-            localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
-          }
+          localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
         }
-        // Carregar metas
+        // Entradas financeiras
+        var entradasCloud = await window._fb.loadCollection('entradas');
+        if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) {
+          localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
+        }
+        // Metas de vendas
         var metasCloud = await window._fb.loadCollection('metas_vendas');
         if (metasCloud && typeof metasCloud === 'object') {
           localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
@@ -4669,10 +4716,15 @@ function salvarFirebase(k, v, tentativas) {
     window._fb.saveCollection(k, v).then(function(ok) {
       if (ok) {
         localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+        delete _filaSalvamento[k]; // Remover da fila se estava
         if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
         if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
       } else if (tentativas > 0) {
         setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 2000);
+      } else {
+        // Todas tentativas falharam - colocar na fila
+        _filaSalvamento[k] = v;
+        showToast('⚠️ Dado pendente - será enviado quando conectar', 'warning');
       }
     }).catch(function() {
       if (tentativas > 0) setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 2000);
