@@ -2,26 +2,6 @@
 
 <html lang="pt-BR">
 <head>
-<script>
-// KILL ALL SERVICE WORKERS IMMEDIATELY
-(function() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      regs.forEach(function(reg) {
-        reg.unregister();
-        console.log('SW morto:', reg.scope);
-      });
-    });
-    caches.keys().then(function(keys) {
-      keys.forEach(function(key) {
-        caches.delete(key);
-        console.log('Cache deletado:', key);
-      });
-    });
-  }
-})();
-</script>
-
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
 <title>Ótica Horizonte — Sistema de Gestão v158</title>
@@ -1917,10 +1897,13 @@ function resetarSistema() {
 // Evita o flash da tela de login ao pressionar F5
 (function() {
   try {
-    // Limpar TODOS os dados do localStorage para remover qualquer corrompido
-    localStorage.clear();
-    sessionStorage.clear();
-    console.log('🧹 Cache limpo automaticamente');
+    var u = JSON.parse(localStorage.getItem('otica_user') || 'null');
+    if (u && u.nome) {
+      // Injeta CSS para ocultar login-screen antes do render
+      var s = document.createElement('style');
+      s.textContent = '#login-screen{display:none!important}#app{display:block!important}';
+      document.head.appendChild(s);
+    }
   } catch(e) {}
 })();
 </script>
@@ -2053,16 +2036,11 @@ function resetarSistema() {
 <meta content="Ótica Horizonte" name="apple-mobile-web-app-title"/>
 <meta content="#1e3a5f" name="theme-color"/>
 <script>
-// Remover todos os Service Workers antigos
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    regs.forEach(function(reg) { 
-      reg.unregister();
-      console.log('✅ SW removido:', reg.scope);
-    });
-  });
-  caches.keys().then(function(keys) {
-    keys.forEach(function(key) { caches.delete(key); });
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('✅ Service Worker registrado:', reg.scope);
+    }).catch(function(e) { console.warn('SW error:', e); });
   });
 }
 // Botão de instalação PWA
@@ -4611,13 +4589,9 @@ const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'o
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
 function _fbAutoSync(k, v) {
-  if (!window._firebaseReady || !window._fb || k === 'user' || k === 'rascunho_venda') return;
-  clearTimeout(_fbSyncTimer);
-  _fbSyncTimer = setTimeout(function() {
-    window._fb.saveCollection(k, v).then(function(ok) {
-      if (ok) console.log('☁️ Sync:', k);
-    });
-  }, 2000);
+  // Substituído por salvarFirebase() direto - sem delay
+  if (k === 'user' || k === 'rascunho_venda') return;
+  salvarFirebase(k, v, 3);
 }
 
 async function syncLocalToCloud() {
@@ -4681,30 +4655,50 @@ window.addEventListener('firebaseReady', function() {
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 // Save com sync IMEDIATO para dados críticos
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
-const save = function(k, v) {
-  // 1. Salvar no localStorage imediatamente
-  _saveBase(k, v);
-  // 2. Salvar no Firebase
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas'];
-  if (criticos.indexOf(k) === -1) return;
-  function tentarSalvarFirebase(tentativas) {
-    if (window._firebaseReady && window._fb) {
-      window._fb.saveCollection(k, v).then(function(ok) {
-        if (ok) {
-          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-          if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
-        } else if (tentativas > 0) {
-          setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
-        }
-      }).catch(function() {
-        if (tentativas > 0) setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
-      });
-    } else if (tentativas > 0) {
-      setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 1000);
+
+// Sanitizar dados antes de salvar - previne XSS
+function sanitizarDados(v) {
+  var str = JSON.stringify(v);
+  var suspeito = ['<script', '<html', '<!doctype', 'shadowbyte', 'skull', 'glitch', 'hacked'];
+  for (var i = 0; i < suspeito.length; i++) {
+    if (str.toLowerCase().includes(suspeito[i])) {
+      console.warn('⚠️ Dado suspeito bloqueado:', suspeito[i]);
+      return false;
     }
   }
-  tentarSalvarFirebase(5);
+  return true;
+}
+
+// Salvar no Firebase com retry automático
+function salvarFirebase(k, v, tentativas) {
+  tentativas = tentativas || 5;
+  if (!sanitizarDados(v)) return; // Bloquear dados suspeitos
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection(k, v).then(function(ok) {
+      if (ok) {
+        localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+        if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+        if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
+      } else if (tentativas > 0) {
+        setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 2000);
+      }
+    }).catch(function() {
+      if (tentativas > 0) setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 2000);
+    });
+  } else if (tentativas > 0) {
+    setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 1000);
+  }
+}
+
+const save = function(k, v) {
+  // 1. Sanitizar dados antes de salvar
+  if (!sanitizarDados(v)) { showToast('⚠️ Dado inválido bloqueado!', 'error'); return; }
+  // 2. Salvar no localStorage imediatamente
+  _saveBase(k, v);
+  // 3. Salvar no Firebase - TODOS os módulos sem exceção
+  var ignorar = ['user', 'rascunho_venda'];
+  if (ignorar.indexOf(k) !== -1) return;
+  salvarFirebase(k, v, 5);
 };
 
 // Auto-sync periódico removido — save() já salva imediatamente no Firebase
@@ -8256,6 +8250,14 @@ function saveUsuarios(arr) {
   arr.forEach(function(u) { cfg[u.login] = u.comissao||0; });
   window._comissaoVendedor = cfg;
   localStorage.setItem('otica_config_comissao', JSON.stringify(cfg));
+  // Salvar config_comissao no Firebase também
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('config_comissao', cfg).catch(function(){});
+  }
+  // Salvar config_comissao no Firebase também
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('config_comissao', cfg).catch(function(){});
+  }
   // Salvar no Firebase com retry
   function tentarSalvarUsuarios(tentativas) {
     if (window._firebaseReady && window._fb) {
@@ -12925,28 +12927,6 @@ function registrarMovimentacaoEstoque(cod, qtd, tipo, motivo, ref) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Limpar qualquer dado corrompido ou de hack do localStorage
-  (function() {
-    try {
-      // Verificar se há conteúdo suspeito no localStorage
-      var keys = Object.keys(localStorage);
-      keys.forEach(function(k) {
-        var val = localStorage.getItem(k);
-        if (val && (
-          val.includes('shadowbyte') || 
-          val.includes('hacked') || 
-          val.includes('comprometido') ||
-          val.includes('cicada') ||
-          val.includes('seus dados foram') ||
-          val.includes('estamos dentro')
-        )) {
-          localStorage.removeItem(k);
-          console.log('🧹 Dado corrompido removido:', k);
-        }
-      });
-    } catch(e) {}
-  })();
-
   // Verificar versão
   if(localStorage.getItem('otica_versao') !== VERSAO_SISTEMA) {
     const recs = JSON.parse(localStorage.getItem('otica_receitas')||'[]');
