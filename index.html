@@ -5608,7 +5608,15 @@ function renderDashboard() {
   var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
   var receitaMes = vendasMes.reduce((s,v)=>s+calcTotal(v),0);
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
-  var ticketMedio = vendasMes.length ? receitaMes/vendasMes.length : 0;
+  // Ticket médio por GRUPO de venda (por cliente/data) - não por item
+  var gruposVenda = {};
+  vendasMes.forEach(function(v) {
+    var chave = v.grupoVenda || (v.clienteId + '-' + v.data);
+    if (!gruposVenda[chave]) gruposVenda[chave] = 0;
+    gruposVenda[chave] += calcTotal(v);
+  });
+  var numGrupos = Object.keys(gruposVenda).length;
+  var ticketMedio = numGrupos > 0 ? receitaMes / numGrupos : 0;
 
   // Calcular saldo do dia
   var hojeStr2 = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
