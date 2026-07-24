@@ -1973,12 +1973,21 @@ function resetarSistema() {
           try {
             var data = await window._fb.loadCollection(k);
             if (data !== null && data !== undefined) {
+              // Verificar se Firebase tem dados antes de sobrescrever local
+              var cloudLen = Array.isArray(data) ? data.length : Object.keys(data).length;
+              var localRaw = localStorage.getItem(keys[k]);
+              var localData = localRaw ? JSON.parse(localRaw) : [];
+              var localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
+              // NUNCA sobrescrever local com dados vazios do Firebase
+              if (cloudLen === 0 && localLen > 0) {
+                console.log('⚠️ Firebase vazio para', k, '- mantendo dados locais');
+                continue;
+              }
               // Para produtos: preservar fotos Cloudinary do localStorage
               if (k === 'produtos' && Array.isArray(data)) {
                 var localProds = JSON.parse(localStorage.getItem(keys[k])||'[]');
                 data = data.map(function(p) {
                   var lp = localProds.find(function(x){ return x.cod===p.cod; });
-                  // Se Firebase nao tem foto mas local tem URL Cloudinary, preservar
                   if (lp && lp.foto && lp.foto.startsWith('https://') && (!p.foto || !p.foto.startsWith('https://'))) {
                     p = Object.assign({}, p, {foto: lp.foto, catalogo: lp.catalogo !== undefined ? lp.catalogo : p.catalogo});
                   }
@@ -4674,26 +4683,52 @@ window.addEventListener('firebaseReady', function() {
   if (user && user.nome) {
     setTimeout(async function() {
       if (window._fb) {
-        // Carregar dados do Firebase ao iniciar
-        // Mas preservar dados locais se Firebase retornar vazio
-        var ok = await window._fb.syncFromCloud(KEYS);
-        // Carregar TODOS os módulos extras do Firebase
-        // Usuários
-        var usuariosCloud = await window._fb.loadCollection('usuarios');
-        if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
-          localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+        // Sincronizar módulo por módulo com lógica inteligente:
+        // Só sobrescreve local se Firebase tiver MAIS registros
+        var modulos = Object.keys(KEYS).filter(function(k){ return k !== 'user' && k !== 'rascunho_venda'; });
+        var ok = 0;
+        for (var i = 0; i < modulos.length; i++) {
+          var k = modulos[i];
+          try {
+            var cloudData = await window._fb.loadCollection(k);
+            if (cloudData === null || cloudData === undefined) continue;
+            var localData = JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
+            var cloudLen = Array.isArray(cloudData) ? cloudData.length : Object.keys(cloudData).length;
+            var localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
+            // Só sobrescreve se Firebase tem dados E tem mais que o local
+            if (cloudLen > 0 && cloudLen >= localLen) {
+              localStorage.setItem(KEYS[k], JSON.stringify(cloudData));
+              ok++;
+            } else if (localLen > 0 && cloudLen < localLen) {
+              // Local tem mais dados - enviar para Firebase
+              await window._fb.saveCollection(k, localData);
+              console.log('☁️ Local enviado para Firebase:', k, localLen, '>', cloudLen);
+            }
+          } catch(e) { console.warn('Sync error:', k, e.message); }
         }
-        // Entradas financeiras
-        var entradasCloud = await window._fb.loadCollection('entradas');
-        if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) {
-          localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
-        }
-        // Metas de vendas
-        var metasCloud = await window._fb.loadCollection('metas_vendas');
-        if (metasCloud && typeof metasCloud === 'object') {
-          localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
-        }
-        if (ok > 0) { console.log('☁️ Dados carregados do Firebase:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
+        // Módulos extras
+        try {
+          var usuariosCloud = await window._fb.loadCollection('usuarios');
+          var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
+          if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length >= usuariosLocal.length && usuariosCloud.length > 0) {
+            localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+          } else if (usuariosLocal.length > usuariosCloud.length) {
+            await window._fb.saveCollection('usuarios', usuariosLocal);
+          }
+          var entradasCloud = await window._fb.loadCollection('entradas');
+          var entradasLocal = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
+          if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length >= entradasLocal.length && entradasCloud.length > 0) {
+            localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
+          } else if (entradasLocal.length > 0 && entradasLocal.length > (entradasCloud||[]).length) {
+            await window._fb.saveCollection('entradas', entradasLocal);
+          }
+          var metasCloud = await window._fb.loadCollection('metas_vendas');
+          if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
+            localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+          }
+        } catch(e) { console.warn('Sync extras error:', e.message); }
+        if (ok > 0 && typeof renderDashboard === 'function') renderDashboard();
+        console.log('☁️ Sync automático concluído:', ok, 'módulos');
       }
     }, 1500);
   }
