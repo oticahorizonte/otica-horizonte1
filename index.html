@@ -2025,7 +2025,8 @@ function resetarSistema() {
     window._firebaseReady = true;
     console.log('✅ Firebase conectado!');
     // Processar fila de salvamentos pendentes
-    setTimeout(processarFilaSalvamento, 500);
+    // Processar fila após Firebase conectar (função definida mais abaixo)
+    setTimeout(function(){ if(typeof processarFilaSalvamento==='function') processarFilaSalvamento(); }, 1000);
     window.dispatchEvent(new Event('firebaseReady'));
   } catch(e) {
     console.warn('Firebase init error:', e);
@@ -4593,7 +4594,7 @@ async function syncLocalToCloud() {
   showToast('☁️ Enviando TODOS os dados para a nuvem...','success');
   var ok = 0;
   
-  // Sincronizar todos os módulos do KEYS
+  // Sincronizar todos os módulos do KEYS - com delay para evitar resource-exhausted
   var modulos = ['clientes','receitas','produtos','vendas','os','agendamentos',
                  'composicoes','historico_estoque','despesas'];
   for (var i = 0; i < modulos.length; i++) {
@@ -4601,8 +4602,14 @@ async function syncLocalToCloud() {
     var chave = KEYS[k] || ('otica_' + k);
     var data = JSON.parse(localStorage.getItem(chave) || '[]');
     if (!sanitizarDados(data)) continue;
-    var saved = await window._fb.saveCollection(k, data);
-    if (saved) ok++;
+    try {
+      var saved = await window._fb.saveCollection(k, data);
+      if (saved) ok++;
+    } catch(e) {
+      console.warn('Erro ao salvar módulo:', k, e.message);
+    }
+    // Pequeno delay entre escritas para evitar resource-exhausted
+    await new Promise(function(r){ setTimeout(r, 200); });
   }
   
   // Módulos especiais (não estão no KEYS padrão)
@@ -4643,7 +4650,7 @@ async function syncLocalToCloud() {
   }
   
   // Processar fila pendente também
-  processarFilaSalvamento();
+  if (typeof processarFilaSalvamento === 'function') processarFilaSalvamento();
   
   localStorage.setItem('otica_ultimo_sync', Date.now().toString());
   if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
@@ -4720,7 +4727,7 @@ function salvarFirebase(k, v, tentativas) {
         if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
         if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
       } else if (tentativas > 0) {
-        setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 2000);
+        setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 3000); // Delay maior para evitar resource-exhausted
       } else {
         // Todas tentativas falharam - colocar na fila
         _filaSalvamento[k] = v;
