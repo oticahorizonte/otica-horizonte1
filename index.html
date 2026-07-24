@@ -3948,6 +3948,21 @@ function instalarApp() {
 </div>
 </div>
 
+
+<!-- Modal Histórico Cliente -->
+<div class="modal-overlay" id="modal-historico" style="display:none">
+<div class="modal" style="max-width:700px">
+<div class="modal-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a)">
+<h3 id="modal-hist-title" style="color:#e8c96a">📋 Histórico do Cliente</h3>
+<button class="modal-close" onclick="closeModal('modal-historico')">✕</button>
+</div>
+<div class="modal-body" id="hist-body" style="padding:16px;max-height:70vh;overflow-y:auto"></div>
+<div class="modal-footer" style="padding:12px 16px;border-top:1px solid #e2e8f0;text-align:right">
+<button class="btn btn-outline" onclick="closeModal('modal-historico')">Fechar</button>
+</div>
+</div>
+</div>
+
 <div class="modal-overlay" id="modal-config" style="display:none">
 <div class="modal" style="max-width:480px">
 <div class="modal-header">
@@ -6393,7 +6408,11 @@ function exportarRelatorioPDF() {
     +'<div class="no-print" style="text-align:center;margin-top:20px">'
     +'<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>'
     +'<button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-left:10px">✕ Fechar</button>'
-    +'</div></body></html>';
+    +'</div><div id="app-loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,43,78,0.85);z-index:99998;align-items:center;justify-content:center;flex-direction:column">
+<div style="color:#e8c96a;font-size:18px;font-weight:700;margin-bottom:16px">⏳ Carregando dados...</div>
+<div style="width:48px;height:48px;border:4px solid rgba(232,201,106,0.3);border-top-color:#e8c96a;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+</div>
+</body></html>';
 
 
   var win = window.open('','_blank','width=900,height=700');
@@ -12100,7 +12119,7 @@ function adicionarOculosCompleto() {
 // ── CREDIÁRIO PRÓPRIO ──────────────────────────────────────────────────────
 function onChangePagamento() {
   var pag = document.getElementById('venda-pag').value;
-  var painelCred = document.getElementById('painel-crediario');
+  var painelCred = document.getElementById('venda-crediario-box');
   var selParcelas = document.getElementById('venda-parcelas');
   if (painelCred) painelCred.style.display = pag === 'Crediário Próprio' ? 'block' : 'none';
   // Ocultar select de parcelas padrão quando crediário
@@ -12108,8 +12127,7 @@ function onChangePagamento() {
   if (pag === 'Crediário Próprio') {
     // Definir data padrão da primeira parcela (30 dias)
     var d = new Date(); d.setDate(d.getDate()+30);
-    var el = document.getElementById('cred-primeira-data');
-    if (el && !el.value) el.value = d.toISOString().slice(0,10);
+    // Data da primeira parcela calculada automaticamente em getCrediarioData()
     calcCrediario();
   }
 }
@@ -12135,7 +12153,7 @@ function calcCrediario() {
 
   var valorParc = numParc > 0 ? restante / numParc : 0;
 
-  var resumo = document.getElementById('cred-resumo');
+  var resumo = document.getElementById('cred-resumo') || document.getElementById('venda-crediario-box');
   if (!resumo) return;
 
   if (entrada <= 0) {
