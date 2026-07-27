@@ -3490,7 +3490,7 @@ function instalarApp() {
   </div>
 
   <!-- COLUNA DIREITA: Painel interno + Totais -->
-  <div id="venda-col-dir" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
+  <div id="venda-col-dir" class="aba-oculta" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
     <!-- Crediário Próprio - dentro da coluna direita -->
     <div id="venda-crediario-box" style="display:none;background:#fef3c7;border-top:2px solid #d97706;padding:12px 14px">
       <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
@@ -10870,14 +10870,20 @@ function initVendaModal() {
   // Adicionar listener no select de pagamento
   if (pagSelect) {
     pagSelect.onchange = onChangePagamento;
-  // Mobile: iniciar na aba produtos
+  // Garantir layout correto
+  var colE = document.getElementById('venda-col-esq');
+  var colD = document.getElementById('venda-col-dir');
   if (window.innerWidth <= 768) {
-    setTimeout(function() {
-      if (typeof abaVenda === 'function') abaVenda('produtos');
-    }, 50);
+    // Mobile: mostrar só produtos
+    if (colE) colE.classList.remove('aba-oculta');
+    if (colD) colD.classList.add('aba-oculta');
+    // Resetar botões das abas
+    var btnP = document.getElementById('btn-aba-produtos');
+    var btnPg = document.getElementById('btn-aba-pagamento');
+    if (btnP) { btnP.style.background='rgba(201,168,76,.2)'; btnP.style.borderBottom='3px solid #e8c96a'; btnP.style.color='#e8c96a'; }
+    if (btnPg) { btnPg.style.background='transparent'; btnPg.style.borderBottom='3px solid transparent'; btnPg.style.color='rgba(255,255,255,.5)'; }
   } else {
-    var colE = document.getElementById('venda-col-esq');
-    var colD = document.getElementById('venda-col-dir');
+    // Desktop: mostrar ambas colunas
     if (colE) colE.classList.remove('aba-oculta');
     if (colD) colD.classList.remove('aba-oculta');
   }
