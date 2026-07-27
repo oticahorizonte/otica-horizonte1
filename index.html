@@ -3409,11 +3409,25 @@ function instalarApp() {
 
 
 </div>
+<!-- ABAS MOBILE - ocultas no PC -->
+<div id="venda-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
+  <div style="display:flex">
+    <button id="btn-aba-produtos" onclick="abaVenda('produtos')"
+      style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
+      🔍 Produtos
+    </button>
+    <button id="btn-aba-pagamento" onclick="abaVenda('pagamento')"
+      style="flex:1;padding:11px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer">
+      💰 Pagamento
+    </button>
+  </div>
+</div>
+
 <!-- CORPO: 2 COLUNAS -->
-<div style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
+<div id="venda-grid" style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
-  <div style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
+  <div id="venda-col-esq" style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
 
     <!-- Barra de busca unificada -->
     <div style="padding:12px 16px;background:white;border-bottom:2px solid #e2e8f0;display:flex;gap:8px;align-items:center">
@@ -3460,7 +3474,7 @@ function instalarApp() {
   </div>
 
   <!-- COLUNA DIREITA: Painel interno + Totais -->
-  <div style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
+  <div id="venda-col-dir" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
     <!-- Crediário Próprio - dentro da coluna direita -->
     <div id="venda-crediario-box" style="display:none;background:#fef3c7;border-top:2px solid #d97706;padding:12px 14px">
       <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
@@ -9444,7 +9458,27 @@ function imprimirEtiquetaOS(id) {
 function doPrintEtiqueta() {
   const area = document.getElementById('etiqueta-area');
   const win = window.open('','_blank','width=400,height=500');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Etiqueta OS</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:10px}@media print{.no-print{display:none}}</style></head><body>'+area.innerHTML+'<div class="no-print" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir</button></div></body></html>');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Etiqueta OS</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:10px}@media print{.no-print{display:none}}
+  /* ===== NOVA VENDA MOBILE - ABAS ===== */
+  @media (max-width: 768px) {
+    /* Mostrar abas no mobile */
+    #venda-abas { display: block !important; }
+    /* Grid vira coluna única */
+    #venda-grid {
+      grid-template-columns: 1fr !important;
+      height: calc(100dvh - 100px) !important;
+    }
+    /* Colunas ocupam 100% */
+    #venda-col-esq, #venda-col-dir {
+      width: 100% !important;
+      overflow-y: auto !important;
+    }
+    /* Coluna oculta */
+    #venda-col-esq.aba-oculta, #venda-col-dir.aba-oculta {
+      display: none !important;
+    }
+  }
+</style></head><body>'+area.innerHTML+'<div class="no-print" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir</button></div></body></html>');
   win.document.close();
   setTimeout(()=>win.focus(),300);
 }
@@ -10748,6 +10782,40 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
 var _vendaItens = []; // [{cod, nome, cat, preco, custo, qtd, tipo, grupo}]
 var _vendaGrupoAtual = null; // grupo de oculos completo em montagem
 
+
+// ===== ABAS MOBILE NOVA VENDA =====
+function abaVenda(aba) {
+  var colEsq = document.getElementById('venda-col-esq');
+  var colDir = document.getElementById('venda-col-dir');
+  var btnProd = document.getElementById('btn-aba-produtos');
+  var btnPag = document.getElementById('btn-aba-pagamento');
+  if (!colEsq || !colDir) return;
+
+  if (aba === 'produtos') {
+    colEsq.classList.remove('aba-oculta');
+    colDir.classList.add('aba-oculta');
+    if (btnProd) { btnProd.style.background='rgba(201,168,76,.2)'; btnProd.style.borderBottom='3px solid #e8c96a'; btnProd.style.color='#e8c96a'; }
+    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.borderBottom='3px solid transparent'; btnPag.style.color='rgba(255,255,255,.5)'; }
+  } else {
+    colEsq.classList.add('aba-oculta');
+    colDir.classList.remove('aba-oculta');
+    if (btnProd) { btnProd.style.background='transparent'; btnProd.style.borderBottom='3px solid transparent'; btnProd.style.color='rgba(255,255,255,.5)'; }
+    if (btnPag) { btnPag.style.background='rgba(201,168,76,.2)'; btnPag.style.borderBottom='3px solid #e8c96a'; btnPag.style.color='#e8c96a'; }
+  }
+}
+
+function iniciarAbasMobile() {
+  if (window.innerWidth <= 768) {
+    abaVenda('produtos'); // Iniciar sempre na aba produtos
+  } else {
+    // Desktop: garantir que ambas colunas estão visíveis
+    var colEsq = document.getElementById('venda-col-esq');
+    var colDir = document.getElementById('venda-col-dir');
+    if (colEsq) colEsq.classList.remove('aba-oculta');
+    if (colDir) colDir.classList.remove('aba-oculta');
+  }
+}
+
 function initVendaModal() {
   // Limpar tudo
   _vendaItens = [];
@@ -11141,6 +11209,10 @@ function mostrarOcultarCrediario(pag) {
   var credBox = document.getElementById('venda-crediario-box');
   if (!credBox) return;
   if (pag === 'Crediário Próprio') {
+    // No mobile: ir automaticamente para aba pagamento
+    if (window.innerWidth <= 768 && typeof abaVenda === 'function') {
+      abaVenda('pagamento');
+    }
     credBox.setAttribute('style', 'display:block;background:#fef3c7;border-bottom:2px solid #d97706;padding:10px 20px');
     atualizarPreviewCrediario();
   } else {
@@ -12393,7 +12465,7 @@ function initOSModal() {
 function initOverrideButtons() {
   document.querySelectorAll('[onclick]').forEach(el => {
     const oc = el.getAttribute('onclick');
-    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(initVendaModal,50)");
+    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(function(){initVendaModal();iniciarAbasMobile();},50)");
     if (oc === "openModal('modal-os')") el.setAttribute('onclick', "initOSModal();openModal('modal-os')");
     if (oc === "openModal('modal-cliente')") el.setAttribute('onclick', "clearClienteForm();openModal('modal-cliente')");
     if (oc === "openModal('modal-receita')") el.setAttribute('onclick', "clearReceitaForm();openModal('modal-receita')");
