@@ -935,41 +935,56 @@
     .main { padding: 8px; padding-top: 56px; }
   }
   @media (max-width: 768px) {
-    /* Nova Venda - layout mobile: coluna única */
+    /* Nova Venda - layout mobile: carrinho scroll + painel fixo embaixo */
     #venda-corpo-grid {
       grid-template-columns: 1fr !important;
       grid-template-rows: 1fr auto !important;
       height: calc(100dvh - 58px) !important;
+      overflow: hidden !important;
     }
+    /* Coluna esquerda (busca + itens) - scroll */
+    #venda-corpo-grid > div:first-child {
+      overflow-y: auto !important;
+      min-height: 0 !important;
+    }
+    /* Coluna direita (painel + totais + botões) - fixo embaixo com scroll interno */
     #venda-corpo-grid > div:last-child {
-      max-height: 280px;
-      overflow-y: auto;
+      max-height: 52vh !important;
+      overflow-y: auto !important;
+      border-top: 2px solid rgba(201,168,76,.5) !important;
+      flex-shrink: 0 !important;
     }
-    /* Modais - largura total no mobile */
+    /* Modais - sobem da parte inferior */
     .modal {
       max-width: 100vw !important;
       width: 100vw !important;
       margin: 0 !important;
-      border-radius: 0 !important;
-      max-height: 100dvh !important;
+      border-radius: 16px 16px 0 0 !important;
+      max-height: 92dvh !important;
     }
     .modal-overlay {
       align-items: flex-end !important;
+      padding: 0 !important;
     }
-    /* Dashboard - cards em coluna única */
+    /* Dashboard - 2 colunas */
     .cards-grid {
       grid-template-columns: repeat(2, 1fr) !important;
     }
     /* Tabelas - scroll horizontal */
-    .card-body table {
-      min-width: 500px;
-    }
     .card-body {
-      overflow-x: auto;
+      overflow-x: auto !important;
     }
-    /* Painel financeiro - coluna única */
+    .card-body table {
+      min-width: 480px;
+    }
+    /* Painel financeiro - 2 colunas */
     #dash-fin-cards {
       grid-template-columns: repeat(2, 1fr) !important;
+    }
+    /* Crediário - empilhado no mobile */
+    #venda-crediario-box > div {
+      flex-wrap: wrap !important;
+      gap: 8px !important;
     }
   }
 
