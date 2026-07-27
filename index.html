@@ -11251,6 +11251,9 @@ function ajustarVendaMobile() {
 }
 
 function initVendaModal() {
+  // Resetar indicador de crediário na aba
+  var btnPag = document.getElementById('venda-aba-pagamento');
+  if (btnPag) btnPag.textContent = '💰 Pagamento';
   // Limpar tudo
   _vendaItens = [];
   _vendaGrupoAtual = null;
@@ -11643,10 +11646,23 @@ function mostrarOcultarCrediario(pag) {
   var credBox = document.getElementById('venda-crediario-box');
   if (!credBox) return;
   if (pag === 'Crediário Próprio') {
-    credBox.setAttribute('style', 'display:block;background:#fef3c7;border-bottom:2px solid #d97706;padding:10px 20px');
+    credBox.style.display = 'block';
+    credBox.style.background = '#fef3c7';
+    credBox.style.borderBottom = '2px solid #d97706';
+    credBox.style.padding = '12px 14px';
     atualizarPreviewCrediario();
+    // No mobile: trocar automaticamente para aba pagamento
+    if (window.innerWidth <= 768 && typeof trocarAbaVenda === 'function') {
+      trocarAbaVenda('pagamento');
+    }
+    // Destacar aba pagamento com indicador
+    var btnPag = document.getElementById('venda-aba-pagamento');
+    if (btnPag) btnPag.textContent = '💰 Pagamento 🔴';
   } else {
-    credBox.setAttribute('style', 'display:none');
+    credBox.style.display = 'none';
+    // Remover indicador da aba
+    var btnPag = document.getElementById('venda-aba-pagamento');
+    if (btnPag) btnPag.textContent = '💰 Pagamento';
   }
 }
 
