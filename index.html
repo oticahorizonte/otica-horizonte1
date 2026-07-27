@@ -9474,8 +9474,7 @@ function imprimirEtiquetaOS(id) {
 function doPrintEtiqueta() {
   const area = document.getElementById('etiqueta-area');
   const win = window.open('','_blank','width=400,height=500');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Etiqueta OS</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:10px}@media print{.no-print{display:none}}
-</style></head><body>'+area.innerHTML+'<div class="no-print" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir</button></div></body></html>');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Etiqueta OS</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:10px}@media print{.no-print{display:none}}</style></head><body>'+area.innerHTML+'<div class="no-print" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir</button></div></body></html>');
   win.document.close();
   setTimeout(()=>win.focus(),300);
 }
