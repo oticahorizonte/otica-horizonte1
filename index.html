@@ -898,24 +898,21 @@
     .sidebar.sidebar-visible { transform: translateX(0); }
     .main { margin-left: 0 !important; padding: 12px; padding-top: 60px; }
 
-    /* Modais normais sobem da parte inferior */
+    /* Modais sobem da parte inferior */
     .modal-overlay { align-items: flex-end; padding: 0; }
     .modal {
-      border-radius: 16px 16px 0 0;
+      border-radius: 16px 16px 0 0 !important;
       max-width: 100% !important;
       max-height: 90vh;
       width: 100%;
     }
-    .modal-body { max-height: 65vh; overflow-y: auto; }
+    .modal-body { max-height: 70vh; }
 
-    /* Nova venda EXCEÇÃO - tela cheia */
-    #modal-venda { align-items: stretch !important; }
+    /* Nova venda full screen */
     #modal-venda .modal {
       border-radius: 0 !important;
-      height: 100dvh !important;
-      max-height: 100dvh !important;
-      max-width: 100vw !important;
-      width: 100vw !important;
+      height: 100dvh;
+      max-height: 100dvh;
     }
 
     /* Cards 2 colunas */
@@ -931,103 +928,12 @@
 
     /* Ocultar colunas menos importantes nas tabelas */
     .hide-mobile { display: none !important; }
-
-    /* Tabelas scroll horizontal */
-    .card-body { overflow-x: auto; }
-
-    /* Dashboard financeiro 2 colunas */
-    #dash-fin-cards { grid-template-columns: repeat(2, 1fr) !important; }
   }
 
   @media (max-width: 480px) {
     .cards-grid { grid-template-columns: 1fr; }
     .main { padding: 8px; padding-top: 56px; }
   }
-  @media (max-width: 768px) {
-    /* Nova Venda - abas visíveis no mobile */
-    #venda-abas { display: block !important; }
-    /* Esconder coluna inativa */
-    #venda-corpo-grid > div.venda-aba-oculta {
-      display: none !important;
-    }
-    /* Coluna esquerda - scroll */
-    #venda-corpo-grid > div:first-child {
-      overflow-y: auto !important;
-    }
-    /* Coluna direita - scroll */
-    #venda-corpo-grid > div:last-child {
-      overflow-y: auto !important;
-    }
-    /* Barra superior - compacta no mobile */
-    #modal-venda .modal > div:first-child {
-      padding: 8px 10px !important;
-    }
-    #modal-venda .modal > div:first-child h3 {
-      font-size: 14px !important;
-    }
-    #modal-venda .modal > div:first-child > div:last-child {
-      gap: 3px !important;
-      flex-wrap: wrap !important;
-    }
-    #modal-venda .modal > div:first-child input,
-    #modal-venda .modal > div:first-child select {
-      font-size: 10px !important;
-      min-width: 80px !important;
-    }
-    /* Modais gerais - sobem da parte inferior */
-    .modal {
-      max-width: 100vw !important;
-      width: 100vw !important;
-      margin: 0 !important;
-      border-radius: 16px 16px 0 0 !important;
-      max-height: 92dvh !important;
-    }
-    .modal-overlay {
-      align-items: flex-end !important;
-      padding: 0 !important;
-    }
-    /* Dashboard - 2 colunas */
-    .cards-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-    /* Tabelas - scroll horizontal */
-    .card-body {
-      overflow-x: auto !important;
-    }
-    .card-body table {
-      min-width: 480px;
-    }
-    /* Painel financeiro - 2 colunas */
-    #dash-fin-cards {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-    /* Crediário - compacto no mobile */
-    #venda-crediario-box {
-      padding: 8px 10px !important;
-    }
-    #venda-crediario-box > div {
-      flex-wrap: wrap !important;
-      gap: 6px !important;
-    }
-    #venda-crediario-box input,
-    #venda-crediario-box select {
-      font-size: 11px !important;
-    }
-    /* Painel interno - fonte menor */
-    #venda-painel-interno-body {
-      padding: 0 8px 8px !important;
-    }
-    /* Botões de ação - compactos */
-    #venda-corpo-grid > div:last-child button {
-      padding: 10px 8px !important;
-      font-size: 12px !important;
-    }
-    /* Total - menor */
-    #venda-unif-total {
-      font-size: 20px !important;
-    }
-  }
-
 
   /* Seção ativa com padding inferior */
   .section.active { padding-bottom: 32px; }
@@ -2067,21 +1973,12 @@ function resetarSistema() {
           try {
             var data = await window._fb.loadCollection(k);
             if (data !== null && data !== undefined) {
-              // Verificar se Firebase tem dados antes de sobrescrever local
-              var cloudLen = Array.isArray(data) ? data.length : Object.keys(data).length;
-              var localRaw = localStorage.getItem(keys[k]);
-              var localData = localRaw ? JSON.parse(localRaw) : [];
-              var localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
-              // NUNCA sobrescrever local com dados vazios do Firebase
-              if (cloudLen === 0 && localLen > 0) {
-                console.log('⚠️ Firebase vazio para', k, '- mantendo dados locais');
-                continue;
-              }
               // Para produtos: preservar fotos Cloudinary do localStorage
               if (k === 'produtos' && Array.isArray(data)) {
                 var localProds = JSON.parse(localStorage.getItem(keys[k])||'[]');
                 data = data.map(function(p) {
                   var lp = localProds.find(function(x){ return x.cod===p.cod; });
+                  // Se Firebase nao tem foto mas local tem URL Cloudinary, preservar
                   if (lp && lp.foto && lp.foto.startsWith('https://') && (!p.foto || !p.foto.startsWith('https://'))) {
                     p = Object.assign({}, p, {foto: lp.foto, catalogo: lp.catalogo !== undefined ? lp.catalogo : p.catalogo});
                   }
@@ -2127,9 +2024,6 @@ function resetarSistema() {
 
     window._firebaseReady = true;
     console.log('✅ Firebase conectado!');
-    // Processar fila de salvamentos pendentes
-    // Processar fila após Firebase conectar (função definida mais abaixo)
-    setTimeout(function(){ if(typeof processarFilaSalvamento==='function') processarFilaSalvamento(); }, 1000);
     window.dispatchEvent(new Event('firebaseReady'));
   } catch(e) {
     console.warn('Firebase init error:', e);
@@ -2144,6 +2038,7 @@ function resetarSistema() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
+  initGitHubToken();
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ Service Worker registrado:', reg.scope);
     }).catch(function(e) { console.warn('SW error:', e); });
@@ -3422,7 +3317,7 @@ function instalarApp() {
 <select id="prod-cat" onchange="onChangeProdCat()">
 <option>Armação</option><option>Lente</option><option>Solar</option>
 <option>Acessório</option><option>Contato</option><option>Serviço</option>
-
+<option>Serviço OS</option>
 </select>
 </div>
 <div class="form-group" style="grid-column:1/-1">
@@ -3513,23 +3408,31 @@ function instalarApp() {
 </div>
 
 
-</div>
-<!-- CORPO: 2 COLUNAS -->
-<!-- ABAS DE NAVEGAÇÃO (visível no mobile) -->
-<div id="venda-abas" style="display:none;background:#0d2b4e;border-bottom:1px solid rgba(201,168,76,.3)">
-  <div style="display:flex">
-    <button id="venda-aba-busca" onclick="trocarAbaVenda('busca')" 
-      style="flex:1;padding:10px;background:rgba(201,168,76,.2);border:none;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid #e8c96a">
-      🔍 Produtos
-    </button>
-    <button id="venda-aba-pagamento" onclick="trocarAbaVenda('pagamento')"
-      style="flex:1;padding:10px;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent">
-      💰 Pagamento
-    </button>
+<!-- Box Crediário - aparece abaixo da barra quando selecionado -->
+<div id="venda-crediario-box" style="display:none;background:#fef3c7;border-bottom:2px solid #d97706;padding:10px 20px">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:700;color:#92400e">💳 Crediário:</span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <label style="font-size:11px;color:#92400e">Entrada R</label>
+      <input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()" style="width:90px;padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;font-weight:600"/>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <label style="font-size:11px;color:#92400e">Forma</label>
+      <select id="cred-entrada-pag" style="padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <label style="font-size:11px;color:#92400e">Parcelas</label>
+      <select id="cred-parcelas" onchange="atualizarPreviewCrediario()" style="padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="8">8x</option><option value="10">10x</option><option value="12">12x</option></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <label style="font-size:11px;color:#92400e">Período</label>
+      <select id="cred-periodo" onchange="atualizarPreviewCrediario()" style="padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option></select>
+    </div>
+    <div id="cred-preview" style="font-size:11px;color:#92400e;font-weight:600"></div>
   </div>
 </div>
-
-<div id="venda-corpo-grid" style="display:grid;grid-template-columns:1fr 320px;height:calc(100dvh - 58px);overflow:hidden">
+<!-- CORPO: 2 COLUNAS -->
+<div style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
   <div style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
@@ -3580,39 +3483,6 @@ function instalarApp() {
 
   <!-- COLUNA DIREITA: Painel interno + Totais -->
   <div style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
-
-    <!-- Crediário - dentro da coluna direita -->
-    <div id="venda-crediario-box" style="display:none;background:#fef3c7;border-bottom:2px solid #d97706;padding:12px 14px">
-      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div>
-          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Entrada (R$)</label>
-          <input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()"
-            style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:13px;font-weight:700"/>
-        </div>
-        <div>
-          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Forma entrada</label>
-          <select id="cred-entrada-pag" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px">
-            <option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Parcelas</label>
-          <select id="cred-parcelas" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px">
-            <option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
-            <option value="5">5x</option><option value="6">6x</option><option value="8">8x</option>
-            <option value="10">10x</option><option value="12">12x</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Periodicidade</label>
-          <select id="cred-periodo" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px">
-            <option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option>
-          </select>
-        </div>
-      </div>
-      <div id="cred-preview" style="font-size:11px;color:#92400e;font-weight:600;background:rgba(217,119,6,.1);padding:6px 8px;border-radius:6px"></div>
-    </div>
 
     <!-- Painel Interno (Admin) com toggle -->
     <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1)">
@@ -3830,10 +3700,18 @@ function instalarApp() {
 <label>Tipo de Serviço *</label>
 <select id="os-tipo" onchange="onChangeTipoOS()">
 <option>Óculos de Grau — Montagem</option>
-<option>🔧 Conserto de Armação</option>
-<option>🔍 Troca de Lente</option>
-<option>⚙️ Ajuste/Regulagem</option>
-<option>📦 Outro</option>
+<option>Óculos Solar — Montagem</option>
+<option>Lente de Contato</option>
+<option>Conserto de Armação — Solda</option>
+<option>Conserto de Armação — Parafuso</option>
+<option>Conserto de Armação — Haste</option>
+<option>Conserto de Armação — Plaqueta</option>
+<option>Ajuste de Armação</option>
+<option>Troca de Lente — Arranhada</option>
+<option>Troca de Lente — Quebrada</option>
+<option>Troca de Lente — Graduação</option>
+<option>Adaptação de Lente</option>
+<option>Outros</option>
 </select>
 </div>
 
@@ -4000,74 +3878,6 @@ function instalarApp() {
 </div>
 <!-- Modal Configurações -->
 
-<!-- Modal Agendamento -->
-<div class="modal-overlay" id="modal-agend" style="display:none">
-<div class="modal" style="max-width:560px">
-<div class="modal-header">
-<h3 id="modal-agend-title">📅 Novo Agendamento</h3>
-<button class="modal-close" onclick="closeModal('modal-agend')">✕</button>
-</div>
-<div class="modal-body">
-<input id="agend-idx" type="hidden"/>
-<div class="form-group" style="margin-bottom:12px">
-<label>Cliente *</label>
-<div style="position:relative">
-<input id="agend-cliente-busca" type="text" placeholder="🔍 Buscar cliente por nome, CPF ou telefone..."
-  oninput="filtrarClientesAgend(this.value)"
-  style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:var(--bg-card);color:var(--text-primary)"
-  autocomplete="off"/>
-<input id="agend-cliente" type="hidden"/>
-<div id="agend-cliente-lista" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid #e2e8f0;border-radius:8px;max-height:180px;overflow-y:auto;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15)"></div>
-</div>
-</div>
-<div class="form-grid">
-<div class="form-group">
-<label>Data *</label>
-<input id="agend-data" type="date"/>
-</div>
-<div class="form-group">
-<label>Horário *</label>
-<input id="agend-hora" type="time" value="09:00"/>
-</div>
-<div class="form-group">
-<label>Tipo</label>
-<select id="agend-tipo">
-<option value="Consulta">👁️ Consulta</option>
-<option value="Retorno">🔄 Retorno</option>
-<option value="Entrega">📦 Entrega de Óculos</option>
-<option value="Ajuste">🔧 Ajuste/Manutenção</option>
-<option value="Outro">📋 Outro</option>
-</select>
-</div>
-<div class="form-group">
-<label>Status</label>
-<select id="agend-status">
-<option value="Agendado">📅 Agendado</option>
-<option value="Confirmado">✅ Confirmado</option>
-<option value="Realizado">✔️ Realizado</option>
-<option value="Cancelado">❌ Cancelado</option>
-<option value="Faltou">⚠️ Faltou</option>
-</select>
-</div>
-<div class="form-group" style="grid-column:1/-1">
-<label>Profissional / Responsável</label>
-<input id="agend-prof" placeholder="Ex: Dr. Roberto Lima" type="text"/>
-</div>
-<div class="form-group" style="grid-column:1/-1">
-<label>Observações</label>
-<textarea id="agend-obs" placeholder="Observações sobre o agendamento..." rows="2"
-  style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:var(--bg-card);color:var(--text-primary);resize:vertical"></textarea>
-</div>
-</div>
-<div class="form-actions">
-<button class="btn btn-primary" onclick="saveAgendamento()">💾 Salvar</button>
-<button class="btn btn-outline" onclick="closeModal('modal-agend')">Cancelar</button>
-</div>
-</div>
-</div>
-</div>
-
-
 <!-- Modal Histórico Cliente -->
 <div class="modal-overlay" id="modal-historico" style="display:none">
 <div class="modal" style="max-width:700px">
@@ -4081,7 +3891,6 @@ function instalarApp() {
 </div>
 </div>
 </div>
-
 <div class="modal-overlay" id="modal-config" style="display:none">
 <div class="modal" style="max-width:480px">
 <div class="modal-header">
@@ -4097,7 +3906,6 @@ function instalarApp() {
 <div style="display:flex;gap:10px">
 <button class="btn btn-success" onclick="exportarBackup();closeModal('modal-config')">💾 Exportar Backup</button>
 <button class="btn btn-outline" onclick="importarBackup();closeModal('modal-config')">📂 Restaurar Backup</button>
-<button class="btn btn-outline" onclick="restaurarBackupAuto();closeModal('modal-config')" style="background:rgba(234,179,8,.15);border-color:#ca8a04;color:#ca8a04">🔄 Restaurar Backup Auto</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
 </div>
@@ -4728,141 +4536,54 @@ const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'o
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
 function _fbAutoSync(k, v) {
-  // Substituído por salvarFirebase() direto - sem delay
-  if (k === 'user' || k === 'rascunho_venda') return;
-  salvarFirebase(k, v, 3);
+  if (!window._firebaseReady || !window._fb || k === 'user' || k === 'rascunho_venda') return;
+  clearTimeout(_fbSyncTimer);
+  _fbSyncTimer = setTimeout(function() {
+    window._fb.saveCollection(k, v).then(function(ok) {
+      if (ok) console.log('☁️ Sync:', k);
+    });
+  }, 2000);
 }
 
 async function syncLocalToCloud() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
   showToast('☁️ Enviando TODOS os dados para a nuvem...','success');
-  var ok = 0;
-  
-  // Sincronizar todos os módulos do KEYS - com delay para evitar resource-exhausted
-  var modulos = ['clientes','receitas','produtos','vendas','os','agendamentos',
-                 'composicoes','historico_estoque','despesas'];
-  for (var i = 0; i < modulos.length; i++) {
-    var k = modulos[i];
-    var chave = KEYS[k] || ('otica_' + k);
-    var data = JSON.parse(localStorage.getItem(chave) || '[]');
-    if (!sanitizarDados(data)) continue;
-    try {
-      var saved = await window._fb.saveCollection(k, data);
-      if (saved) ok++;
-    } catch(e) {
-      console.warn('Erro ao salvar módulo:', k, e.message);
-    }
-    // Pequeno delay entre escritas para evitar resource-exhausted
-    await new Promise(function(r){ setTimeout(r, 200); });
-  }
-  
-  // Módulos especiais (não estão no KEYS padrão)
+  var ok = await window._fb.syncToCloud(KEYS);
+  // Tambem salvar usuarios e entradas (nao estao no KEYS)
   var usuarios = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-  if (usuarios.length > 0 && sanitizarDados(usuarios)) {
-    var s = await window._fb.saveCollection('usuarios', usuarios);
-    if (s) ok++;
-  }
-  
+  if (usuarios.length > 0) { await window._fb.saveCollection('usuarios', usuarios); ok++; }
   var entradas = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
-  if (entradas.length > 0 && sanitizarDados(entradas)) {
-    var s2 = await window._fb.saveCollection('entradas', entradas);
-    if (s2) ok++;
-  }
-  
-  var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
-  if (Object.keys(metas).length > 0 && sanitizarDados(metas)) {
-    var s3 = await window._fb.saveCollection('metas_vendas', metas);
-    if (s3) ok++;
-  }
-  
-  var cfg = JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-  if (Object.keys(cfg).length > 0 && sanitizarDados(cfg)) {
-    var s4 = await window._fb.saveCollection('config_comissao', cfg);
-    if (s4) ok++;
-  }
-  
-  // Fotos Cloudinary
+  if (entradas.length > 0) { await window._fb.saveCollection('entradas', entradas); ok++; }
+  // Salvar fotos
   var fotosMap = {};
   var prods = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
-  prods.forEach(function(p){ 
-    if(p.foto && p.foto.startsWith('https://')) 
-      fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; 
-  });
-  if (Object.keys(fotosMap).length > 0) { 
-    var s5 = await window._fb.saveCollection('fotos_produtos', fotosMap); 
-    if (s5) ok++;
-  }
-  
-  // Processar fila pendente também
-  if (typeof processarFilaSalvamento === 'function') processarFilaSalvamento();
-  
+  prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
+  if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
   localStorage.setItem('otica_ultimo_sync', Date.now().toString());
   if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-  showToast('✅ ' + ok + ' módulos sincronizados! Dados salvos na nuvem.','success');
+  showToast('✅ ' + ok + ' módulos sincronizados! Celular e PC atualizados.','success');
 }
 
 async function syncFirebaseToLocal() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
   showToast('☁️ Baixando dados da nuvem...','success');
   var ok = await window._fb.syncFromCloud(KEYS);
-  
-  // Baixar módulos extras que não estão no KEYS
   try {
-    // Usuários
     var usuariosCloud = await window._fb.loadCollection('usuarios');
-    if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
-      localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
-      ok++;
-    }
-    // Entradas financeiras
+    if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) { localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud)); ok++; }
     var entradasCloud = await window._fb.loadCollection('entradas');
-    if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) {
-      localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
-      ok++;
-    }
-    // Metas de vendas
+    if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) { localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud)); ok++; }
     var metasCloud = await window._fb.loadCollection('metas_vendas');
-    if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
-      localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
-      ok++;
-    }
-    // Config comissão
+    if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) { localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud)); ok++; }
     var cfgCloud = await window._fb.loadCollection('config_comissao');
-    if (cfgCloud && typeof cfgCloud === 'object' && Object.keys(cfgCloud).length > 0) {
-      localStorage.setItem('otica_config_comissao', JSON.stringify(cfgCloud));
-      ok++;
-    }
-    // Fotos produtos
-    var fotosCloud = await window._fb.loadCollection('fotos_produtos');
-    if (fotosCloud && typeof fotosCloud === 'object' && !Array.isArray(fotosCloud) && Object.keys(fotosCloud).length > 0) {
-      var prodsLocal = JSON.parse(localStorage.getItem(KEYS['produtos'])||'[]');
-      var atualizado = false;
-      prodsLocal = prodsLocal.map(function(p) {
-        if (fotosCloud[p.cod] && fotosCloud[p.cod].foto) {
-          atualizado = true;
-          return Object.assign({}, p, {foto: fotosCloud[p.cod].foto, catalogo: fotosCloud[p.cod].catalogo});
-        }
-        return p;
-      });
-      if (atualizado) {
-        localStorage.setItem(KEYS['produtos'], JSON.stringify(prodsLocal));
-        ok++;
-      }
-    }
-  } catch(e) { console.warn('Erro ao baixar módulos extras:', e.message); }
-
+    if (cfgCloud && typeof cfgCloud === 'object' && Object.keys(cfgCloud).length > 0) { localStorage.setItem('otica_config_comissao', JSON.stringify(cfgCloud)); ok++; }
+  } catch(e) { console.warn('Erro módulos extras:', e.message); }
   if (ok > 0) {
     showToast('✅ ' + ok + ' módulos sincronizados da nuvem!','success');
     var secAtiva = document.querySelector('.section.active');
-    if (secAtiva) { 
-      var id = secAtiva.id.replace('sec-',''); 
-      if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) 
-        window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); 
-    }
+    if (secAtiva) { var id = secAtiva.id.replace('sec-',''); if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); }
     if (typeof renderDashboard === 'function') renderDashboard();
-  } else { 
-    showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning'); 
-  }
+  } else { showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning'); }
 }
 
 // Ao Firebase ficar pronto, sincronizar automaticamente
@@ -4871,54 +4592,24 @@ window.addEventListener('firebaseReady', function() {
   if (user && user.nome) {
     setTimeout(async function() {
       if (window._fb) {
-        // Sincronizar módulo por módulo com lógica inteligente:
-        // Só sobrescreve local se Firebase tiver MAIS registros
-        var modulos = Object.keys(KEYS).filter(function(k){ return k !== 'user' && k !== 'rascunho_venda'; });
-        var ok = 0;
-        for (var i = 0; i < modulos.length; i++) {
-          var k = modulos[i];
-          try {
-            var cloudData = await window._fb.loadCollection(k);
-            if (cloudData === null || cloudData === undefined) continue;
-            var localData = JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
-            var cloudLen = Array.isArray(cloudData) ? cloudData.length : Object.keys(cloudData).length;
-            var localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
-            // Só sobrescreve se Firebase tem dados E tem mais que o local
-            if (cloudLen > 0 && cloudLen >= localLen) {
-              localStorage.setItem(KEYS[k], JSON.stringify(cloudData));
-              ok++;
-            } else if (localLen > 0 && cloudLen < localLen) {
-              // Local tem mais dados - NÃO enviar automaticamente (evita quota exceeded)
-              // Usuário deve clicar "Enviar Nuvem" manualmente
-              console.log('ℹ️ Local tem mais dados que Firebase:', k, localLen, '>', cloudLen, '- clique Enviar Nuvem');
-            }
-          } catch(e) { console.warn('Sync error:', k, e.message); }
-        }
-        // Módulos extras
-        try {
-          var usuariosCloud = await window._fb.loadCollection('usuarios');
+        // Carregar dados do Firebase ao iniciar
+        // Mas preservar dados locais se Firebase retornar vazio
+        var ok = await window._fb.syncFromCloud(KEYS);
+        // Carregar usuarios do Firebase - so sobrescrever se Firebase tem mais usuarios
+        var usuariosCloud = await window._fb.loadCollection('usuarios');
+        if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
           var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-          if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length >= usuariosLocal.length && usuariosCloud.length > 0) {
+          // So sobrescrever se Firebase tem mais usuarios que o local
+          if (usuariosCloud.length >= usuariosLocal.length) {
             localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
-          } else if (usuariosLocal.length > usuariosCloud.length) {
-            // Não enviar automaticamente - evita quota exceeded
-            console.log('ℹ️ Usuários locais mais recentes - clique Enviar Nuvem');
           }
-          var entradasCloud = await window._fb.loadCollection('entradas');
-          var entradasLocal = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
-          if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length >= entradasLocal.length && entradasCloud.length > 0) {
-            localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
-          } else if (entradasLocal.length > 0 && entradasLocal.length > (entradasCloud||[]).length) {
-            // Não enviar automaticamente - evita quota exceeded
-            console.log('ℹ️ Entradas locais mais recentes - clique Enviar Nuvem');
-          }
-          var metasCloud = await window._fb.loadCollection('metas_vendas');
-          if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
-            localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
-          }
-        } catch(e) { console.warn('Sync extras error:', e.message); }
-        if (ok > 0 && typeof renderDashboard === 'function') renderDashboard();
-        console.log('☁️ Sync automático concluído:', ok, 'módulos');
+        }
+        // Carregar metas
+        var metasCloud = await window._fb.loadCollection('metas_vendas');
+        if (metasCloud && typeof metasCloud === 'object') {
+          localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+        }
+        if (ok > 0) { console.log('☁️ Dados carregados do Firebase:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
       }
     }, 1500);
   }
@@ -4926,62 +4617,30 @@ window.addEventListener('firebaseReady', function() {
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 // Save com sync IMEDIATO para dados críticos
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
-
-// Sanitizar dados antes de salvar - previne XSS
-function sanitizarDados(v) {
-  var str = JSON.stringify(v);
-  var suspeito = ['<script', '<html', '<!doctype', 'shadowbyte', 'skull', 'glitch', 'hacked'];
-  for (var i = 0; i < suspeito.length; i++) {
-    if (str.toLowerCase().includes(suspeito[i])) {
-      console.warn('⚠️ Dado suspeito bloqueado:', suspeito[i]);
-      return false;
+const save = function(k, v) {
+  // 1. Salvar no localStorage imediatamente
+  _saveBase(k, v);
+  // 2. Salvar no Firebase
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas'];
+  if (criticos.indexOf(k) === -1) return;
+  function tentarSalvarFirebase(tentativas) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection(k, v).then(function(ok) {
+        if (ok) {
+          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+          if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
+        } else if (tentativas > 0) {
+          setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
+        }
+      }).catch(function() {
+        if (tentativas > 0) setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
+      });
+    } else if (tentativas > 0) {
+      setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 1000);
     }
   }
-  return true;
-}
-
-// Salvar no Firebase com retry automático
-function salvarFirebase(k, v, tentativas) {
-  tentativas = tentativas || 2; // Reduzido para evitar quota exceeded
-  if (!sanitizarDados(v)) return; // Bloquear dados suspeitos
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection(k, v).then(function(ok) {
-      if (ok) {
-        localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-        delete _filaSalvamento[k]; // Remover da fila se estava
-        if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-        if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
-      } else if (tentativas > 0) {
-        setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 10000); // 10s delay para evitar quota exceeded
-      } else {
-        // Todas tentativas falharam - colocar na fila
-        _filaSalvamento[k] = v;
-        showToast('⚠️ Dado pendente - será enviado quando conectar', 'warning');
-      }
-    }).catch(function() {
-      if (tentativas > 0) setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 2000);
-    });
-  } else if (tentativas > 0) {
-    setTimeout(function() { salvarFirebase(k, v, tentativas-1); }, 1000);
-  }
-}
-
-// Debounce para evitar múltiplas escritas simultâneas
-var _saveDebounce = {};
-const save = function(k, v) {
-  // 1. Sanitizar dados antes de salvar
-  if (!sanitizarDados(v)) { showToast('⚠️ Dado inválido bloqueado!', 'error'); return; }
-  // 2. Salvar no localStorage imediatamente
-  _saveBase(k, v);
-  // 3. Salvar no Firebase com debounce (evita quota exceeded)
-  var ignorar = ['user', 'rascunho_venda', 'historico_estoque', 'composicoes'];
-  if (ignorar.indexOf(k) !== -1) return;
-  // Cancelar save anterior pendente para este módulo
-  if (_saveDebounce[k]) clearTimeout(_saveDebounce[k]);
-  _saveDebounce[k] = setTimeout(function() {
-    delete _saveDebounce[k];
-    salvarFirebase(k, v, 2);
-  }, 1500); // Aguarda 1.5s antes de enviar (agrupa múltiplos saves)
+  tentarSalvarFirebase(5);
 };
 
 // Auto-sync periódico removido — save() já salva imediatamente no Firebase
@@ -5279,41 +4938,28 @@ function finalizarLogin(userObj, usuarios) {
   function aguardarFirebaseESync(tentativas) {
     if (window._firebaseReady && window._fb) {
       var loadingEl = document.getElementById('app-loading-overlay');
-      window._fb.syncFromCloud(KEYS).then(async function(ok) {
-        try {
-          // Carregar TODOS os módulos extras do Firebase
-          var usuariosCloud = await window._fb.loadCollection('usuarios');
+      window._fb.syncFromCloud(KEYS).then(function(ok) {
+        // Carregar usuarios
+        window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
           if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
-            localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+            var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
+            if (usuariosCloud.length >= usuariosLocal.length) {
+              localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+            }
           }
-          var entradasCloud = await window._fb.loadCollection('entradas');
-          if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) {
-            localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
-          }
-          var metasCloud = await window._fb.loadCollection('metas_vendas');
-          if (metasCloud && typeof metasCloud === 'object' && !Array.isArray(metasCloud)) {
-            localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
-          }
-          var cfgCloud = await window._fb.loadCollection('config_comissao');
-          if (cfgCloud && typeof cfgCloud === 'object' && !Array.isArray(cfgCloud)) {
-            localStorage.setItem('otica_config_comissao', JSON.stringify(cfgCloud));
-          }
-          // Fotos Cloudinary
-          var fotosCloud = await window._fb.loadCollection('fotos_produtos');
-          if (fotosCloud && typeof fotosCloud === 'object' && !Array.isArray(fotosCloud)) {
-            var prodsLocal = JSON.parse(localStorage.getItem(KEYS['produtos'])||'[]');
-            prodsLocal = prodsLocal.map(function(p) {
-              if (fotosCloud[p.cod]) p = Object.assign({}, p, {foto: fotosCloud[p.cod].foto, catalogo: fotosCloud[p.cod].catalogo});
-              return p;
-            });
-            localStorage.setItem(KEYS['produtos'], JSON.stringify(prodsLocal));
-          }
-        } catch(e) { console.warn('Erro ao carregar módulos extras:', e.message); }
-        if (loadingEl) loadingEl.style.display = 'none';
-        showSection('dashboard');
-        aplicarControleAcesso();
-        if (typeof renderDashboard === 'function') renderDashboard();
-        showToast('✅ Dados carregados da nuvem!', 'success');
+          // Carregar entradas
+          window._fb.loadCollection('entradas').then(function(entradasCloud) {
+            if (entradasCloud && Array.isArray(entradasCloud)) {
+              localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
+            }
+            if (loadingEl) loadingEl.style.display = 'none';
+            // Renderizar dashboard com dados ja carregados
+            showSection('dashboard');
+            aplicarControleAcesso();
+            // Forcar re-render do modulo ativo
+            if (typeof renderDashboard === 'function') renderDashboard();
+          }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
+        }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
       }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
     } else if (tentativas > 0) {
       setTimeout(function() { aguardarFirebaseESync(tentativas - 1); }, 500);
@@ -5355,21 +5001,6 @@ function finalizarLogin(userObj, usuarios) {
 }
 
 // login-pass listener movido para DOMContentLoaded
-
-function restaurarBackupAuto() {
-  var backup = JSON.parse(localStorage.getItem('otica_backup_auto') || 'null');
-  if (!backup) { showToast('Nenhum backup automático encontrado!', 'warning'); return; }
-  if (!confirm('Restaurar backup de ' + (backup._ts ? new Date(backup._ts).toLocaleString('pt-BR') : 'data desconhecida') + '?')) return;
-  var count = 0;
-  Object.keys(backup).forEach(function(k) {
-    if (k !== '_ts' && k !== '_versao') {
-      localStorage.setItem(k, backup[k]);
-      count++;
-    }
-  });
-  showToast('✅ Backup restaurado! ' + count + ' módulos recuperados.', 'success');
-  setTimeout(function() { location.reload(); }, 1500);
-}
 
 function doLogout() {
   // Limpar dados de sessao
@@ -5796,15 +5427,7 @@ function renderDashboard() {
   var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
   var receitaMes = vendasMes.reduce((s,v)=>s+calcTotal(v),0);
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
-  // Ticket médio por GRUPO de venda (por cliente/data) - não por item
-  var gruposVenda = {};
-  vendasMes.forEach(function(v) {
-    var chave = v.grupoVenda || (v.clienteId + '-' + v.data);
-    if (!gruposVenda[chave]) gruposVenda[chave] = 0;
-    gruposVenda[chave] += calcTotal(v);
-  });
-  var numGrupos = Object.keys(gruposVenda).length;
-  var ticketMedio = numGrupos > 0 ? receitaMes / numGrupos : 0;
+  var ticketMedio = vendasMes.length ? receitaMes/vendasMes.length : 0;
 
   // Calcular saldo do dia
   var hojeStr2 = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
@@ -6604,8 +6227,8 @@ function exportarRelatorioPDF() {
     +'<div class="no-print" style="text-align:center;margin-top:20px">'
     +'<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>'
     +'<button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-left:10px">✕ Fechar</button>'
-    +'</div></body></html>';
-
+    +'</div><div id="app-loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,43,78,0.85);z-index:99998;align-items:center;justify-content:center;flex-direction:column"><div style="color:#e8c96a;font-size:18px;font-weight:700;margin-bottom:16px">⏳ Carregando...</div><div style="width:48px;height:48px;border:4px solid rgba(232,201,106,0.3);border-top-color:#e8c96a;border-radius:50%;animation:spin 0.8s linear infinite"></div></div>
+</body></html>';
 
   var win = window.open('','_blank','width=900,height=700');
   if (win) { win.document.write(html); win.document.close(); setTimeout(function(){ win.focus(); },300); }
@@ -6749,7 +6372,7 @@ function visualizarProduto(cod) {
 function onChangeProdCat() {
   var cat = (document.getElementById('prod-cat')||{}).value||'';
   var isServico = cat === 'Serviço';
-  var isServicoOS = false; // Serviço OS removido
+  var isServicoOS = cat === 'Serviço OS';
   var isAnyServico = isServico || isServicoOS;
   // Campos que nao fazem sentido para servicos
   var camposOcultar = isServicoOS
@@ -7459,7 +7082,7 @@ function viewOS(id) {
         <div style="font-size:12px;display:grid;gap:3px">
           <div><span style="color:#5a6a8a">Previsão:</span> <strong>${fmtDate(o.previsao)||'—'}</strong></div>
           ${o.entrega?`<div><span style="color:#5a6a8a">Entrega:</span> <strong style="color:#16a34a">${fmtDate(o.entrega)}</strong></div>`:''}
-          <div><span style="color:#5a6a8a">${o.tipoOS==='montagem'?'Laboratório':'Técnico'}:</span> <strong>${o.tecnico||'—'}</strong></div>
+          <div><span style="color:#5a6a8a">Técnico:</span> <strong>${o.tecnico||'—'}</strong></div>
           ${o.armacao&&o.armacao!=='—'?`<div><span style="color:#5a6a8a">Armação:</span> <strong>${o.armacao}</strong></div>`:''}
         </div>
       </div>
@@ -7631,31 +7254,28 @@ function toggleOsReceita() {
 function popularTiposOS() {
   var sel = document.getElementById('os-tipo');
   if (!sel) return;
-  // Tipos simplificados - fixos no HTML, não precisa popular dinamicamente
-  // Apenas garantir que o primeiro tipo de conserto seja selecionado por padrão
-  if (sel.value === '' || sel.value === 'Óculos de Grau — Montagem') {
-    // Manter o valor atual
-  }
+  var valorAtual = sel.value;
+  var fixas = ['Óculos de Grau — Montagem','Óculos Solar — Montagem','Lente de Contato',
+    'Conserto de Armação — Solda','Conserto de Armação — Parafuso','Conserto de Armação — Haste',
+    'Conserto de Armação — Plaqueta','Ajuste de Armação','Troca de Lente — Arranhada',
+    'Troca de Lente — Quebrada','Troca de Lente — Graduação','Adaptação de Lente','Outros'];
+  var servicosOS = load('produtos').filter(function(p){ return p.cat==='Serviço OS'; });
+  var todasOpcoes = fixas.concat(servicosOS.map(function(s){ return s.desc; }));
+  sel.innerHTML = todasOpcoes.map(function(o){ return '<option value="'+o+'">'+o+'</option>'; }).join('');
+  if (valorAtual) sel.value = valorAtual;
 }
 
 function onChangeTipoOS() {
   var tipo = (document.getElementById('os-tipo')||{}).value||'';
   var isMontagem = tipo.toLowerCase().includes('montagem');
-  // Receita óptica: só para montagem
   var recBox = document.getElementById('os-receita-box');
   if (recBox) recBox.style.display = isMontagem ? 'block' : 'none';
-  // Seção receita toggle: só para montagem
-  var recToggle = recBox ? recBox.previousElementSibling : null;
-  // Valor: oculto para montagem (já cobrado na venda)
   var valGrp = document.getElementById('os-valor-group');
   if (valGrp) valGrp.style.display = isMontagem ? 'none' : '';
-  // Descrição do serviço: só para conserto
-  var descEl = document.getElementById('os-descricao');
-  var descGrp = descEl ? descEl.closest('.form-group') : null;
+  var descGrp = document.getElementById('os-descricao') ? document.getElementById('os-descricao').closest('.form-group') : null;
   if (descGrp) descGrp.style.display = isMontagem ? 'none' : '';
-  // Label técnico/laboratório
   var tecLabel = document.getElementById('os-tecnico-label');
-  if (tecLabel) tecLabel.textContent = isMontagem ? '🔬 Laboratório' : '🔧 Técnico Responsável';
+  if (tecLabel) tecLabel.textContent = isMontagem ? 'Laboratório' : 'Técnico Responsável';
 }
 
 function editOS(id) {
@@ -7676,7 +7296,7 @@ function editOS(id) {
   document.getElementById('os-tecnico').value = o.tecnico||'';
   // Atualizar label tecnico/laboratorio
   var tecLabel = document.getElementById('os-tecnico-label');
-  if (tecLabel) tecLabel.textContent = isMontagem ? '🔬 Laboratório' : '🔧 Técnico Responsável';
+  if (tecLabel) tecLabel.textContent = isMontagem ? 'Laboratório' : 'Técnico Responsável';
   document.getElementById('os-abertura').value = o.abertura||'';
   document.getElementById('os-previsao').value = o.previsao||'';
   document.getElementById('os-status').value = o.status||'Aberta';
@@ -8163,7 +7783,7 @@ function imprimirOS(id) {
     <div class="box-sub">Abertura: <strong>${fmtDate(o.abertura)}</strong></div>
     <div class="box-sub">Previsão: <strong>${fmtDate(o.previsao)}</strong></div>
     ${o.entrega?`<div class="box-sub">Entrega: <strong style="color:#16a34a">${fmtDate(o.entrega)}</strong></div>`:''}
-    <div class="box-sub">${o.tipoOS==='montagem'?'Laboratório':'Técnico'}: <strong>${o.tecnico||'—'}</strong></div>
+    <div class="box-sub">Técnico: <strong>${o.tecnico||'—'}</strong></div>
     <div class="box-sub">Status: <strong>${o.status}</strong></div>
   </div>
 </div>`;
@@ -8357,67 +7977,16 @@ function checkOSAtrasadas() {
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────────
 function openNovoAgendamento() {
+  populateClienteSelect('agend-cliente');
   document.getElementById('agend-idx').value = '';
   document.getElementById('modal-agend-title').textContent = '📅 Novo Agendamento';
-  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
-  document.getElementById('agend-data').value = hoje;
+  document.getElementById('agend-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   document.getElementById('agend-hora').value = '09:00';
   document.getElementById('agend-tipo').value = 'Consulta';
   document.getElementById('agend-status').value = 'Agendado';
   document.getElementById('agend-prof').value = '';
   document.getElementById('agend-obs').value = '';
-  // Limpar busca de cliente
-  var buscaEl = document.getElementById('agend-cliente-busca');
-  if (buscaEl) buscaEl.value = '';
-  var hiddenEl = document.getElementById('agend-cliente');
-  if (hiddenEl) hiddenEl.value = '';
-  var listaEl = document.getElementById('agend-cliente-lista');
-  if (listaEl) listaEl.style.display = 'none';
   openModal('modal-agend');
-}
-
-
-function filtrarClientesAgend(q) {
-  var lista = document.getElementById('agend-cliente-lista');
-  if (!lista) return;
-  if (!q || q.length < 1) { lista.style.display = 'none'; return; }
-  var clientes = load('clientes').filter(function(c) { return c.ativo !== false; });
-  var ql = q.toLowerCase();
-  var filtrados = clientes.filter(function(c) {
-    return (c.nome || '').toLowerCase().includes(ql) ||
-           (c.cpf || '').includes(q) ||
-           (c.telefone || '').includes(q);
-  }).slice(0, 8);
-  lista.innerHTML = '';
-  if (!filtrados.length) { lista.style.display = 'none'; return; }
-  filtrados.forEach(function(c) {
-    var div = document.createElement('div');
-    div.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;color:var(--text-primary)';
-    div.onmouseover = function() { this.style.background = '#f8fafc'; };
-    div.onmouseout = function() { this.style.background = ''; };
-    div.onclick = function() { selecionarClienteAgend(c.id, c.nome || ''); };
-    var strong = document.createElement('strong');
-    strong.textContent = c.nome || '';
-    div.appendChild(strong);
-    if (c.telefone) {
-      var span = document.createElement('span');
-      span.style.cssText = 'color:#64748b;font-size:11px';
-      span.textContent = ' — ' + c.telefone;
-      div.appendChild(span);
-    }
-    lista.appendChild(div);
-  });
-  lista.style.display = 'block';
-}
-
-
-function selecionarClienteAgend(id, nome) {
-  var hiddenEl = document.getElementById('agend-cliente');
-  var buscaEl = document.getElementById('agend-cliente-busca');
-  var listaEl = document.getElementById('agend-cliente-lista');
-  if (hiddenEl) hiddenEl.value = id;
-  if (buscaEl) buscaEl.value = nome || '';
-  if (listaEl) listaEl.style.display = 'none';
 }
 
 function renderAgendamentos() {
@@ -8511,8 +8080,6 @@ function editAgendamento(id) {
   var cliAgend = clientes.find(function(c){ return c.id===a.clienteId; });
   var buscaAgendEl = document.getElementById('agend-cliente-busca');
   if (buscaAgendEl && cliAgend) buscaAgendEl.value = cliAgend.nome;
-  var listaEl = document.getElementById('agend-cliente-lista');
-  if (listaEl) listaEl.style.display = 'none';
   openModal('modal-agend');
 }
 
@@ -8572,14 +8139,6 @@ function saveUsuarios(arr) {
   arr.forEach(function(u) { cfg[u.login] = u.comissao||0; });
   window._comissaoVendedor = cfg;
   localStorage.setItem('otica_config_comissao', JSON.stringify(cfg));
-  // Salvar config_comissao no Firebase também
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('config_comissao', cfg).catch(function(){});
-  }
-  // Salvar config_comissao no Firebase também
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('config_comissao', cfg).catch(function(){});
-  }
   // Salvar no Firebase com retry
   function tentarSalvarUsuarios(tentativas) {
     if (window._firebaseReady && window._fb) {
@@ -9736,29 +9295,12 @@ function abrirWhatsAppOS(id) {
   if (!tel.startsWith('55')) tel = '55' + tel;
   
   var msg = '';
-  var nomeCliente = cli.nome.split(' ')[0];
-  var previsaoFmt = o.previsao ? new Date(o.previsao+'T12:00:00').toLocaleDateString('pt-BR') : '-';
   if (o.status === 'Aguardando Retirada' || o.status === 'Entregue') {
-    msg = 'Olá ' + nomeCliente + '! 😊\n\n' +
-          'Sua OS *#' + o.id + '* está pronta para retirada! 🎉\n\n' +
-          '🔧 Serviço: ' + o.tipo + '\n\n' +
-          'Estamos aguardando sua visita!\n\n' +
-          '_Ótica Horizonte — Seu olhar, nosso compromisso._ 🕶️';
+    msg = 'Ola ' + cli.nome.split(' ')[0] + '! \n\nSua OS *' + o.id + '* esta pronta para retirada!\n\nServico: ' + o.tipo + '\n\nEstamos aguardando sua visita!\n\n_Otica Horizonte - Seu olhar, nosso compromisso._';
   } else if (o.status === 'Em Producao' || o.status === 'Em Produção') {
-    msg = 'Olá ' + nomeCliente + '! 😊\n\n' +
-          'Sua OS *#' + o.id + '* está em produção. ⚙️\n\n' +
-          '🔧 Serviço: ' + o.tipo + '\n' +
-          '📅 Previsão de entrega: *' + previsaoFmt + '*\n\n' +
-          'Assim que ficar pronta, avisamos!\n\n' +
-          '_Ótica Horizonte — Seu olhar, nosso compromisso._ 🕶️';
+    msg = 'Ola ' + cli.nome.split(' ')[0] + '! \n\nSua OS *' + o.id + '* esta em producao.\n\nServico: ' + o.tipo + '\nPrevisao: ' + (o.previsao ? new Date(o.previsao+'T12:00:00').toLocaleDateString('pt-BR') : '-') + '\n\nAssim que ficar pronta, avisamos!\n\n_Otica Horizonte - Seu olhar, nosso compromisso._';
   } else {
-    msg = 'Olá ' + nomeCliente + '! 😊\n\n' +
-          'Sua OS *#' + o.id + '* foi registrada com sucesso! ✅\n\n' +
-          '🔧 Serviço: ' + o.tipo + '\n' +
-          '📋 Status: ' + o.status + '\n' +
-          '📅 Previsão: *' + previsaoFmt + '*\n\n' +
-          'Qualquer dúvida, estamos à disposição!\n\n' +
-          '_Ótica Horizonte — Seu olhar, nosso compromisso._ 🕶️';
+    msg = 'Ola ' + cli.nome.split(' ')[0] + '! \n\nSua OS *' + o.id + '* foi registrada.\n\nServico: ' + o.tipo + '\nStatus: ' + o.status + '\n\nQualquer duvida, estamos a disposicao!\n\n_Otica Horizonte - Seu olhar, nosso compromisso._';
   }
   
   window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
@@ -11192,65 +10734,7 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
 var _vendaItens = []; // [{cod, nome, cat, preco, custo, qtd, tipo, grupo}]
 var _vendaGrupoAtual = null; // grupo de oculos completo em montagem
 
-function trocarAbaVenda(aba) {
-  var grid = document.getElementById('venda-corpo-grid');
-  if (!grid) return;
-  var colEsq = grid.children[0]; // busca + itens
-  var colDir = grid.children[1]; // painel + totais + botões
-  var btnBusca = document.getElementById('venda-aba-busca');
-  var btnPag = document.getElementById('venda-aba-pagamento');
-  
-  if (aba === 'busca') {
-    if (colEsq) colEsq.classList.remove('venda-aba-oculta');
-    if (colDir) colDir.classList.add('venda-aba-oculta');
-    if (btnBusca) { btnBusca.style.background='rgba(201,168,76,.2)'; btnBusca.style.color='#e8c96a'; btnBusca.style.borderBottom='2px solid #e8c96a'; }
-    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.color='rgba(255,255,255,.6)'; btnPag.style.borderBottom='2px solid transparent'; }
-  } else {
-    if (colEsq) colEsq.classList.add('venda-aba-oculta');
-    if (colDir) colDir.classList.remove('venda-aba-oculta');
-    // Atualizar preview do crediário ao trocar para aba pagamento
-    if (typeof atualizarPreviewCrediario === 'function') atualizarPreviewCrediario();
-    if (btnBusca) { btnBusca.style.background='transparent'; btnBusca.style.color='rgba(255,255,255,.6)'; btnBusca.style.borderBottom='2px solid transparent'; }
-    if (btnPag) { btnPag.style.background='rgba(201,168,76,.2)'; btnPag.style.color='#e8c96a'; btnPag.style.borderBottom='2px solid #e8c96a'; }
-  }
-}
-
-function ajustarVendaMobile() {
-  var isMobile = window.innerWidth <= 768;
-  var grid = document.getElementById('venda-corpo-grid');
-  var abas = document.getElementById('venda-abas');
-  if (!grid) return;
-
-  if (isMobile) {
-    // Mobile: mostrar abas, grid coluna única
-    if (abas) abas.style.display = 'block';
-    grid.style.gridTemplateColumns = '1fr';
-    grid.style.height = 'calc(100dvh - 100px)';
-    grid.style.overflow = 'hidden';
-    var colEsq = grid.children[0];
-    if (colEsq) { colEsq.style.overflowY = 'auto'; colEsq.style.width = '100%'; }
-    var colDir = grid.children[1];
-    if (colDir) { colDir.style.overflowY = 'auto'; colDir.style.width = '100%'; }
-    // Iniciar na aba produtos
-    trocarAbaVenda('busca');
-  } else {
-    // Desktop: esconder abas, grid 2 colunas normais
-    if (abas) abas.style.display = 'none';
-    grid.style.gridTemplateColumns = '1fr 320px';
-    grid.style.height = 'calc(100dvh - 58px)';
-    grid.style.overflow = 'hidden';
-    // Garantir que ambas colunas estão visíveis no desktop
-    var colEsq2 = grid.children[0];
-    if (colEsq2) { colEsq2.style.overflowY = ''; colEsq2.style.width = ''; colEsq2.classList.remove('venda-aba-oculta'); }
-    var colDir2 = grid.children[1];
-    if (colDir2) { colDir2.style.overflowY = ''; colDir2.style.width = ''; colDir2.classList.remove('venda-aba-oculta'); }
-  }
-}
-
 function initVendaModal() {
-  // Resetar indicador de crediário na aba
-  var btnPag = document.getElementById('venda-aba-pagamento');
-  if (btnPag) btnPag.textContent = '💰 Pagamento';
   // Limpar tudo
   _vendaItens = [];
   _vendaGrupoAtual = null;
@@ -11643,23 +11127,10 @@ function mostrarOcultarCrediario(pag) {
   var credBox = document.getElementById('venda-crediario-box');
   if (!credBox) return;
   if (pag === 'Crediário Próprio') {
-    credBox.style.display = 'block';
-    credBox.style.background = '#fef3c7';
-    credBox.style.borderBottom = '2px solid #d97706';
-    credBox.style.padding = '12px 14px';
+    credBox.setAttribute('style', 'display:block;background:#fef3c7;border-bottom:2px solid #d97706;padding:10px 20px');
     atualizarPreviewCrediario();
-    // No mobile: trocar automaticamente para aba pagamento
-    if (window.innerWidth <= 768 && typeof trocarAbaVenda === 'function') {
-      trocarAbaVenda('pagamento');
-    }
-    // Destacar aba pagamento com indicador
-    var btnPag = document.getElementById('venda-aba-pagamento');
-    if (btnPag) btnPag.textContent = '💰 Pagamento 🔴';
   } else {
-    credBox.style.display = 'none';
-    // Remover indicador da aba
-    var btnPag = document.getElementById('venda-aba-pagamento');
-    if (btnPag) btnPag.textContent = '💰 Pagamento';
+    credBox.setAttribute('style', 'display:none');
   }
 }
 
@@ -12040,7 +11511,7 @@ function filtrarEstoqueBusca(tipo) {
   else if (tipo==='len') filtrados = produtos.filter(p=>(p.cat==='Lente'||p.cat==='Contato')&&p.qtd>0&&(!q||(p.desc+p.cod+p.marca).toLowerCase().includes(q)));
   else {
     filtrados = produtos.filter(p=>{
-      // Serviço OS removido
+      if (p.cat==='Serviço OS') return false; // Exclusivo para OS
       return !q||(p.desc+p.cod+p.cat+(p.marca||'')).toLowerCase().includes(q);
     });
     // Ordenar: Servicos primeiro se busca vazia
@@ -12382,7 +11853,7 @@ function adicionarOculosCompleto() {
 // ── CREDIÁRIO PRÓPRIO ──────────────────────────────────────────────────────
 function onChangePagamento() {
   var pag = document.getElementById('venda-pag').value;
-  var painelCred = document.getElementById('venda-crediario-box');
+  var painelCred = document.getElementById('painel-crediario');
   var selParcelas = document.getElementById('venda-parcelas');
   if (painelCred) painelCred.style.display = pag === 'Crediário Próprio' ? 'block' : 'none';
   // Ocultar select de parcelas padrão quando crediário
@@ -12390,7 +11861,8 @@ function onChangePagamento() {
   if (pag === 'Crediário Próprio') {
     // Definir data padrão da primeira parcela (30 dias)
     var d = new Date(); d.setDate(d.getDate()+30);
-    // Data da primeira parcela calculada automaticamente em getCrediarioData()
+    var el = document.getElementById('cred-primeira-data');
+    if (el && !el.value) el.value = d.toISOString().slice(0,10);
     calcCrediario();
   }
 }
@@ -12416,7 +11888,7 @@ function calcCrediario() {
 
   var valorParc = numParc > 0 ? restante / numParc : 0;
 
-  var resumo = document.getElementById('cred-resumo') || document.getElementById('venda-crediario-box');
+  var resumo = document.getElementById('cred-resumo');
   if (!resumo) return;
 
   if (entrada <= 0) {
@@ -12900,34 +12372,14 @@ function initOSModal() {
   document.getElementById('os-previsao').value = plus5;
   document.getElementById('os-idx').value = '';
   document.getElementById('modal-os-title').textContent = '🔧 Nova Ordem de Serviço';
-  // Resetar tipo para conserto (padrão)
-  var tipoEl = document.getElementById('os-tipo');
-  if (tipoEl) tipoEl.value = '🔧 Conserto de Armação';
-  // Limpar campos
-  var descEl = document.getElementById('os-descricao');
-  if (descEl) descEl.value = '';
-  var obsEl = document.getElementById('os-obs');
-  if (obsEl) obsEl.value = '';
-  var armEl = document.getElementById('os-armacao');
-  if (armEl) armEl.value = '';
-  var valEl = document.getElementById('os-valor');
-  if (valEl) valEl.value = '';
-  var tecEl = document.getElementById('os-tecnico');
-  if (tecEl) tecEl.value = '';
-  // Limpar busca de cliente
-  var buscaEl = document.getElementById('os-cliente-busca');
-  if (buscaEl) buscaEl.value = '';
-  var hiddenEl = document.getElementById('os-cliente');
-  if (hiddenEl) hiddenEl.value = '';
-  // Atualizar campos conforme tipo selecionado
-  onChangeTipoOS();
+  popularTiposOS();
 }
 
 // Override openModal buttons — executar após DOM carregar
 function initOverrideButtons() {
   document.querySelectorAll('[onclick]').forEach(el => {
     const oc = el.getAttribute('onclick');
-    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(function(){initVendaModal();ajustarVendaMobile();if(window.innerWidth<=768)trocarAbaVenda('busca');},50)");
+    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(initVendaModal,50)");
     if (oc === "openModal('modal-os')") el.setAttribute('onclick', "initOSModal();openModal('modal-os')");
     if (oc === "openModal('modal-cliente')") el.setAttribute('onclick', "clearClienteForm();openModal('modal-cliente')");
     if (oc === "openModal('modal-receita')") el.setAttribute('onclick', "clearReceitaForm();openModal('modal-receita')");
@@ -13356,30 +12808,15 @@ function registrarMovimentacaoEstoque(cod, qtd, tipo, motivo, ref) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // BACKUP AUTOMÁTICO - salvar cópia dos dados a cada carregamento
+  // Backup automático
   (function() {
     try {
-      var modulos = ['otica_clientes','otica_receitas','otica_produtos','otica_vendas',
-                     'otica_os','otica_agendamentos','otica_despesas','otica_entradas',
-                     'otica_usuarios','otica_metas_vendas'];
-      var backup = {};
-      var temDados = false;
-      modulos.forEach(function(k) {
-        var val = localStorage.getItem(k);
-        if (val && val !== '[]' && val !== '{}' && val !== 'null') {
-          backup[k] = val;
-          temDados = true;
-        }
-      });
-      if (temDados) {
-        backup._ts = new Date().toISOString();
-        backup._versao = localStorage.getItem('otica_versao') || 'desconhecida';
-        localStorage.setItem('otica_backup_auto', JSON.stringify(backup));
-        console.log('✅ Backup automático salvo:', new Date().toLocaleString('pt-BR'));
-      }
-    } catch(e) { console.warn('Backup auto erro:', e.message); }
+      var modulos = ['otica_clientes','otica_receitas','otica_produtos','otica_vendas','otica_os','otica_agendamentos','otica_despesas','otica_entradas','otica_usuarios'];
+      var backup = {}, temDados = false;
+      modulos.forEach(function(k) { var v = localStorage.getItem(k); if (v && v !== '[]' && v !== '{}') { backup[k] = v; temDados = true; } });
+      if (temDados) { backup._ts = new Date().toISOString(); localStorage.setItem('otica_backup_auto', JSON.stringify(backup)); }
+    } catch(e) {}
   })();
-
   // Verificar versão
   if(localStorage.getItem('otica_versao') !== VERSAO_SISTEMA) {
     const recs = JSON.parse(localStorage.getItem('otica_receitas')||'[]');
@@ -13441,7 +12878,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Modal Zoom Foto -->
-<div id="modal-zoom-foto" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;cursor:zoom-out;align-items:center;justify-content:center;flex-direction:column">
+<div id="modal-zoom-foto" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;cursor:zoom-out;display:none;align-items:center;justify-content:center;flex-direction:column">
   <div style="position:relative;max-width:95vw;max-height:90vh">
     <img id="zoom-foto-img" src="" style="max-width:95vw;max-height:85vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5)"/>
     <div id="zoom-foto-desc" style="color:white;text-align:center;margin-top:12px;font-size:14px;font-weight:600;opacity:0.9"></div>
@@ -13462,6 +12899,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 
-<div id="app-loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,43,78,0.85);z-index:99998;align-items:center;justify-content:center;flex-direction:column"><div style="color:#e8c96a;font-size:18px;font-weight:700;margin-bottom:16px">⏳ Carregando dados...</div><div style="width:48px;height:48px;border:4px solid rgba(232,201,106,0.3);border-top-color:#e8c96a;border-radius:50%;animation:spin 0.8s linear infinite"></div></div>
-</body>
+</div></body>
 </html>
