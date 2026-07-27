@@ -938,6 +938,22 @@
   /* Seção ativa com padding inferior */
   .section.active { padding-bottom: 32px; }
 
+
+  /* ===== NOVA VENDA MOBILE - ABAS ===== */
+  @media (max-width: 768px) {
+    #venda-abas { display: block !important; }
+    #venda-grid {
+      grid-template-columns: 1fr !important;
+      height: calc(100dvh - 100px) !important;
+    }
+    #venda-col-esq, #venda-col-dir {
+      width: 100% !important;
+      overflow-y: auto !important;
+    }
+    #venda-col-esq.aba-oculta, #venda-col-dir.aba-oculta {
+      display: none !important;
+    }
+  }
 </style>
 <script>
 // Logo Ótica Horizonte — carregada uma única vez
@@ -9459,25 +9475,6 @@ function doPrintEtiqueta() {
   const area = document.getElementById('etiqueta-area');
   const win = window.open('','_blank','width=400,height=500');
   win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Etiqueta OS</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:monospace;padding:10px}@media print{.no-print{display:none}}
-  /* ===== NOVA VENDA MOBILE - ABAS ===== */
-  @media (max-width: 768px) {
-    /* Mostrar abas no mobile */
-    #venda-abas { display: block !important; }
-    /* Grid vira coluna única */
-    #venda-grid {
-      grid-template-columns: 1fr !important;
-      height: calc(100dvh - 100px) !important;
-    }
-    /* Colunas ocupam 100% */
-    #venda-col-esq, #venda-col-dir {
-      width: 100% !important;
-      overflow-y: auto !important;
-    }
-    /* Coluna oculta */
-    #venda-col-esq.aba-oculta, #venda-col-dir.aba-oculta {
-      display: none !important;
-    }
-  }
 </style></head><body>'+area.innerHTML+'<div class="no-print" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 20px;background:#1a3a5c;color:white;border:none;border-radius:6px;cursor:pointer">Imprimir</button></div></body></html>');
   win.document.close();
   setTimeout(()=>win.focus(),300);
