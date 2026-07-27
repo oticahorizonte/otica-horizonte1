@@ -11218,12 +11218,13 @@ function trocarAbaVenda(aba) {
 function ajustarVendaMobile() {
   var isMobile = window.innerWidth <= 768;
   var grid = document.getElementById('venda-corpo-grid');
+  var abas = document.getElementById('venda-abas');
   if (!grid) return;
+
   if (isMobile) {
-    // Mobile: coluna única, painel embaixo com altura fixa
-    // Mobile: coluna única com abas
+    // Mobile: mostrar abas, grid coluna única
+    if (abas) abas.style.display = 'block';
     grid.style.gridTemplateColumns = '1fr';
-    grid.style.gridTemplateRows = '';
     grid.style.height = 'calc(100dvh - 100px)';
     grid.style.overflow = 'hidden';
     var colEsq = grid.children[0];
@@ -11233,15 +11234,16 @@ function ajustarVendaMobile() {
     // Iniciar na aba produtos
     trocarAbaVenda('busca');
   } else {
-    // Desktop: 2 colunas
+    // Desktop: esconder abas, grid 2 colunas normais
+    if (abas) abas.style.display = 'none';
     grid.style.gridTemplateColumns = '1fr 320px';
-    grid.style.gridTemplateRows = '';
     grid.style.height = 'calc(100dvh - 58px)';
     grid.style.overflow = 'hidden';
+    // Garantir que ambas colunas estão visíveis no desktop
     var colEsq2 = grid.children[0];
-    if (colEsq2) { colEsq2.style.overflowY = ''; colEsq2.style.minHeight = ''; }
+    if (colEsq2) { colEsq2.style.overflowY = ''; colEsq2.style.width = ''; colEsq2.classList.remove('venda-aba-oculta'); }
     var colDir2 = grid.children[1];
-    if (colDir2) { colDir2.style.maxHeight = ''; colDir2.style.overflowY = ''; colDir2.style.borderTop = ''; }
+    if (colDir2) { colDir2.style.overflowY = ''; colDir2.style.width = ''; colDir2.classList.remove('venda-aba-oculta'); }
   }
 }
 
