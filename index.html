@@ -4017,6 +4017,7 @@ function instalarApp() {
 <div style="display:flex;gap:10px">
 <button class="btn btn-success" onclick="exportarBackup();closeModal('modal-config')">💾 Exportar Backup</button>
 <button class="btn btn-outline" onclick="importarBackup();closeModal('modal-config')">📂 Restaurar Backup</button>
+<button class="btn btn-outline" onclick="restaurarBackupAuto();closeModal('modal-config')" style="background:rgba(234,179,8,.15);border-color:#ca8a04;color:#ca8a04">🔄 Restaurar Backup Auto</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
 </div>
@@ -13204,6 +13205,30 @@ function registrarMovimentacaoEstoque(cod, qtd, tipo, motivo, ref) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // BACKUP AUTOMÁTICO - salvar cópia dos dados a cada carregamento
+  (function() {
+    try {
+      var modulos = ['otica_clientes','otica_receitas','otica_produtos','otica_vendas',
+                     'otica_os','otica_agendamentos','otica_despesas','otica_entradas',
+                     'otica_usuarios','otica_metas_vendas'];
+      var backup = {};
+      var temDados = false;
+      modulos.forEach(function(k) {
+        var val = localStorage.getItem(k);
+        if (val && val !== '[]' && val !== '{}' && val !== 'null') {
+          backup[k] = val;
+          temDados = true;
+        }
+      });
+      if (temDados) {
+        backup._ts = new Date().toISOString();
+        backup._versao = localStorage.getItem('otica_versao') || 'desconhecida';
+        localStorage.setItem('otica_backup_auto', JSON.stringify(backup));
+        console.log('✅ Backup automático salvo:', new Date().toLocaleString('pt-BR'));
+      }
+    } catch(e) { console.warn('Backup auto erro:', e.message); }
+  })();
+
   // Verificar versão
   if(localStorage.getItem('otica_versao') !== VERSAO_SISTEMA) {
     const recs = JSON.parse(localStorage.getItem('otica_receitas')||'[]');
