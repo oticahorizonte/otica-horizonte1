@@ -10841,6 +10841,8 @@ function initVendaModal() {
   var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   var dataEl = document.getElementById('venda-data');
   if (dataEl) dataEl.value = ds;
+  // Garantir layout correto
+  if (typeof iniciarAbasMobile === 'function') iniciarAbasMobile();
 
   // Vendedor
   var user = loadUser();
@@ -12461,7 +12463,7 @@ function initOSModal() {
 function initOverrideButtons() {
   document.querySelectorAll('[onclick]').forEach(el => {
     const oc = el.getAttribute('onclick');
-    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(function(){initVendaModal();iniciarAbasMobile();},50)");
+    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "iniciarAbasMobile();openModal('modal-venda');setTimeout(initVendaModal,50)");
     if (oc === "openModal('modal-os')") el.setAttribute('onclick', "initOSModal();openModal('modal-os')");
     if (oc === "openModal('modal-cliente')") el.setAttribute('onclick', "clearClienteForm();openModal('modal-cliente')");
     if (oc === "openModal('modal-receita')") el.setAttribute('onclick', "clearReceitaForm();openModal('modal-receita')");
