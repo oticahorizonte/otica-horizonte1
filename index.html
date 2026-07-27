@@ -934,6 +934,45 @@
     .cards-grid { grid-template-columns: 1fr; }
     .main { padding: 8px; padding-top: 56px; }
   }
+  @media (max-width: 768px) {
+    /* Nova Venda - layout mobile: coluna única */
+    #venda-corpo-grid {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: 1fr auto !important;
+      height: calc(100dvh - 58px) !important;
+    }
+    #venda-corpo-grid > div:last-child {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    /* Modais - largura total no mobile */
+    .modal {
+      max-width: 100vw !important;
+      width: 100vw !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      max-height: 100dvh !important;
+    }
+    .modal-overlay {
+      align-items: flex-end !important;
+    }
+    /* Dashboard - cards em coluna única */
+    .cards-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    /* Tabelas - scroll horizontal */
+    .card-body table {
+      min-width: 500px;
+    }
+    .card-body {
+      overflow-x: auto;
+    }
+    /* Painel financeiro - coluna única */
+    #dash-fin-cards {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
 
   /* Seção ativa com padding inferior */
   .section.active { padding-bottom: 32px; }
@@ -2280,7 +2319,7 @@ function instalarApp() {
 <div class="card-header"><h3>💰 Últimas Vendas</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Status</th></tr></thead><tbody id="dash-vendas"></tbody></table></div>
 </div>
-<div class="card" id="card-dash-os">
+<div class="card" id="card-dash-os" style="grid-column:1/-1">
 <div class="card-header"><h3>🔧 OS em Aberto</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
 </div>
@@ -3443,7 +3482,7 @@ function instalarApp() {
   </div>
 </div>
 <!-- CORPO: 2 COLUNAS -->
-<div style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
+<div id="venda-corpo-grid" style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
   <div style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
@@ -5235,6 +5274,21 @@ function finalizarLogin(userObj, usuarios) {
 }
 
 // login-pass listener movido para DOMContentLoaded
+
+function restaurarBackupAuto() {
+  var backup = JSON.parse(localStorage.getItem('otica_backup_auto') || 'null');
+  if (!backup) { showToast('Nenhum backup automático encontrado!', 'warning'); return; }
+  if (!confirm('Restaurar backup de ' + (backup._ts ? new Date(backup._ts).toLocaleString('pt-BR') : 'data desconhecida') + '?')) return;
+  var count = 0;
+  Object.keys(backup).forEach(function(k) {
+    if (k !== '_ts' && k !== '_versao') {
+      localStorage.setItem(k, backup[k]);
+      count++;
+    }
+  });
+  showToast('✅ Backup restaurado! ' + count + ' módulos recuperados.', 'success');
+  setTimeout(function() { location.reload(); }, 1500);
+}
 
 function doLogout() {
   // Limpar dados de sessao
