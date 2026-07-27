@@ -898,21 +898,24 @@
     .sidebar.sidebar-visible { transform: translateX(0); }
     .main { margin-left: 0 !important; padding: 12px; padding-top: 60px; }
 
-    /* Modais sobem da parte inferior */
+    /* Modais normais sobem da parte inferior */
     .modal-overlay { align-items: flex-end; padding: 0; }
     .modal {
-      border-radius: 16px 16px 0 0 !important;
+      border-radius: 16px 16px 0 0;
       max-width: 100% !important;
       max-height: 90vh;
       width: 100%;
     }
-    .modal-body { max-height: 70vh; }
+    .modal-body { max-height: 65vh; overflow-y: auto; }
 
-    /* Nova venda full screen */
+    /* Nova venda EXCEÇÃO - tela cheia */
+    #modal-venda { align-items: stretch !important; }
     #modal-venda .modal {
       border-radius: 0 !important;
-      height: 100dvh;
-      max-height: 100dvh;
+      height: 100dvh !important;
+      max-height: 100dvh !important;
+      max-width: 100vw !important;
+      width: 100vw !important;
     }
 
     /* Cards 2 colunas */
@@ -928,6 +931,12 @@
 
     /* Ocultar colunas menos importantes nas tabelas */
     .hide-mobile { display: none !important; }
+
+    /* Tabelas scroll horizontal */
+    .card-body { overflow-x: auto; }
+
+    /* Dashboard financeiro 2 colunas */
+    #dash-fin-cards { grid-template-columns: repeat(2, 1fr) !important; }
   }
 
   @media (max-width: 480px) {
@@ -942,14 +951,9 @@
       height: calc(100dvh - 100px) !important;
       overflow: hidden !important;
     }
-    #venda-corpo-grid > div:first-child {
+    #venda-corpo-grid > div {
       overflow-y: auto !important;
       width: 100% !important;
-    }
-    #venda-corpo-grid > div:last-child {
-      overflow-y: auto !important;
-      width: 100% !important;
-      background: #0d2b4e !important;
     }
     /* Esconder coluna inativa */
     #venda-corpo-grid > div.venda-aba-oculta {
