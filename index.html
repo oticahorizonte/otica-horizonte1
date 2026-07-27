@@ -11127,6 +11127,43 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
 var _vendaItens = []; // [{cod, nome, cat, preco, custo, qtd, tipo, grupo}]
 var _vendaGrupoAtual = null; // grupo de oculos completo em montagem
 
+function ajustarVendaMobile() {
+  var isMobile = window.innerWidth <= 768;
+  var grid = document.getElementById('venda-corpo-grid');
+  if (!grid) return;
+  if (isMobile) {
+    // Mobile: coluna única, painel embaixo com altura fixa
+    grid.style.gridTemplateColumns = '1fr';
+    grid.style.gridTemplateRows = '1fr auto';
+    grid.style.height = 'calc(100dvh - 58px)';
+    grid.style.overflow = 'hidden';
+    // Coluna esquerda (busca + itens)
+    var colEsq = grid.children[0];
+    if (colEsq) {
+      colEsq.style.overflowY = 'auto';
+      colEsq.style.minHeight = '0';
+    }
+    // Coluna direita (painel + totais + botões)
+    var colDir = grid.children[1];
+    if (colDir) {
+      colDir.style.maxHeight = '50vh';
+      colDir.style.overflowY = 'auto';
+      colDir.style.borderTop = '2px solid rgba(201,168,76,.5)';
+      colDir.style.flexShrink = '0';
+    }
+  } else {
+    // Desktop: 2 colunas
+    grid.style.gridTemplateColumns = '1fr 360px';
+    grid.style.gridTemplateRows = '';
+    grid.style.height = 'calc(100dvh - 58px)';
+    grid.style.overflow = 'hidden';
+    var colEsq2 = grid.children[0];
+    if (colEsq2) { colEsq2.style.overflowY = ''; colEsq2.style.minHeight = ''; }
+    var colDir2 = grid.children[1];
+    if (colDir2) { colDir2.style.maxHeight = ''; colDir2.style.overflowY = ''; colDir2.style.borderTop = ''; }
+  }
+}
+
 function initVendaModal() {
   // Limpar tudo
   _vendaItens = [];
@@ -12791,7 +12828,7 @@ function initOSModal() {
 function initOverrideButtons() {
   document.querySelectorAll('[onclick]').forEach(el => {
     const oc = el.getAttribute('onclick');
-    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(initVendaModal,50)");
+    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(function(){initVendaModal();ajustarVendaMobile();},50)");
     if (oc === "openModal('modal-os')") el.setAttribute('onclick', "initOSModal();openModal('modal-os')");
     if (oc === "openModal('modal-cliente')") el.setAttribute('onclick', "clearClienteForm();openModal('modal-cliente')");
     if (oc === "openModal('modal-receita')") el.setAttribute('onclick', "clearReceitaForm();openModal('modal-receita')");
