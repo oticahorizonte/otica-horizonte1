@@ -4685,11 +4685,64 @@ async function syncFirebaseToLocal() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
   showToast('☁️ Baixando dados da nuvem...','success');
   var ok = await window._fb.syncFromCloud(KEYS);
+  
+  // Baixar módulos extras que não estão no KEYS
+  try {
+    // Usuários
+    var usuariosCloud = await window._fb.loadCollection('usuarios');
+    if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
+      localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
+      ok++;
+    }
+    // Entradas financeiras
+    var entradasCloud = await window._fb.loadCollection('entradas');
+    if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) {
+      localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
+      ok++;
+    }
+    // Metas de vendas
+    var metasCloud = await window._fb.loadCollection('metas_vendas');
+    if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
+      localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+      ok++;
+    }
+    // Config comissão
+    var cfgCloud = await window._fb.loadCollection('config_comissao');
+    if (cfgCloud && typeof cfgCloud === 'object' && Object.keys(cfgCloud).length > 0) {
+      localStorage.setItem('otica_config_comissao', JSON.stringify(cfgCloud));
+      ok++;
+    }
+    // Fotos produtos
+    var fotosCloud = await window._fb.loadCollection('fotos_produtos');
+    if (fotosCloud && typeof fotosCloud === 'object' && !Array.isArray(fotosCloud) && Object.keys(fotosCloud).length > 0) {
+      var prodsLocal = JSON.parse(localStorage.getItem(KEYS['produtos'])||'[]');
+      var atualizado = false;
+      prodsLocal = prodsLocal.map(function(p) {
+        if (fotosCloud[p.cod] && fotosCloud[p.cod].foto) {
+          atualizado = true;
+          return Object.assign({}, p, {foto: fotosCloud[p.cod].foto, catalogo: fotosCloud[p.cod].catalogo});
+        }
+        return p;
+      });
+      if (atualizado) {
+        localStorage.setItem(KEYS['produtos'], JSON.stringify(prodsLocal));
+        ok++;
+      }
+    }
+  } catch(e) { console.warn('Erro ao baixar módulos extras:', e.message); }
+
   if (ok > 0) {
     showToast('✅ ' + ok + ' módulos sincronizados da nuvem!','success');
     var secAtiva = document.querySelector('.section.active');
-    if (secAtiva) { var id = secAtiva.id.replace('sec-',''); if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); }
-  } else { showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning'); }
+    if (secAtiva) { 
+      var id = secAtiva.id.replace('sec-',''); 
+      if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) 
+        window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); 
+    }
+    if (typeof renderDashboard === 'function') renderDashboard();
+  } else { 
+    showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning'); 
+  }
 }
 
 // Ao Firebase ficar pronto, sincronizar automaticamente
