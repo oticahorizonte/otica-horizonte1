@@ -10870,6 +10870,17 @@ function initVendaModal() {
   // Adicionar listener no select de pagamento
   if (pagSelect) {
     pagSelect.onchange = onChangePagamento;
+  // Mobile: iniciar na aba produtos
+  if (window.innerWidth <= 768) {
+    setTimeout(function() {
+      if (typeof abaVenda === 'function') abaVenda('produtos');
+    }, 50);
+  } else {
+    var colE = document.getElementById('venda-col-esq');
+    var colD = document.getElementById('venda-col-dir');
+    if (colE) colE.classList.remove('aba-oculta');
+    if (colD) colD.classList.remove('aba-oculta');
+  }
   }
 
   // Focar na busca
