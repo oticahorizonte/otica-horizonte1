@@ -3515,28 +3515,6 @@ function instalarApp() {
 </div>
 
 
-<!-- Box Crediário - aparece abaixo da barra quando selecionado -->
-<div id="venda-crediario-box" style="display:none;background:#fef3c7;border-bottom:2px solid #d97706;padding:10px 20px">
-  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <span style="font-size:12px;font-weight:700;color:#92400e">💳 Crediário:</span>
-    <div style="display:flex;align-items:center;gap:6px">
-      <label style="font-size:11px;color:#92400e">Entrada R</label>
-      <input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()" style="width:90px;padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;font-weight:600"/>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <label style="font-size:11px;color:#92400e">Forma</label>
-      <select id="cred-entrada-pag" style="padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option></select>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <label style="font-size:11px;color:#92400e">Parcelas</label>
-      <select id="cred-parcelas" onchange="atualizarPreviewCrediario()" style="padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="8">8x</option><option value="10">10x</option><option value="12">12x</option></select>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <label style="font-size:11px;color:#92400e">Período</label>
-      <select id="cred-periodo" onchange="atualizarPreviewCrediario()" style="padding:5px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px"><option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option></select>
-    </div>
-    <div id="cred-preview" style="font-size:11px;color:#92400e;font-weight:600"></div>
-  </div>
 </div>
 <!-- CORPO: 2 COLUNAS -->
 <!-- ABAS DE NAVEGAÇÃO (visível no mobile) -->
@@ -3604,6 +3582,39 @@ function instalarApp() {
 
   <!-- COLUNA DIREITA: Painel interno + Totais -->
   <div style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
+
+    <!-- Crediário - dentro da coluna direita -->
+    <div id="venda-crediario-box" style="display:none;background:#fef3c7;border-bottom:2px solid #d97706;padding:12px 14px">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">💳 Crediário Próprio</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Entrada (R$)</label>
+          <input id="cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()"
+            style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:13px;font-weight:700"/>
+        </div>
+        <div>
+          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Forma entrada</label>
+          <select id="cred-entrada-pag" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px">
+            <option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Parcelas</label>
+          <select id="cred-parcelas" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px">
+            <option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
+            <option value="5">5x</option><option value="6">6x</option><option value="8">8x</option>
+            <option value="10">10x</option><option value="12">12x</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Periodicidade</label>
+          <select id="cred-periodo" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px">
+            <option value="mensal">Mensal</option><option value="quinzenal">Quinzenal</option><option value="semanal">Semanal</option>
+          </select>
+        </div>
+      </div>
+      <div id="cred-preview" style="font-size:11px;color:#92400e;font-weight:600;background:rgba(217,119,6,.1);padding:6px 8px;border-radius:6px"></div>
+    </div>
 
     <!-- Painel Interno (Admin) com toggle -->
     <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1)">
@@ -11199,6 +11210,8 @@ function trocarAbaVenda(aba) {
   } else {
     if (colEsq) colEsq.classList.add('venda-aba-oculta');
     if (colDir) colDir.classList.remove('venda-aba-oculta');
+    // Atualizar preview do crediário ao trocar para aba pagamento
+    if (typeof atualizarPreviewCrediario === 'function') atualizarPreviewCrediario();
     if (btnBusca) { btnBusca.style.background='transparent'; btnBusca.style.color='rgba(255,255,255,.6)'; btnBusca.style.borderBottom='2px solid transparent'; }
     if (btnPag) { btnPag.style.background='rgba(201,168,76,.2)'; btnPag.style.color='#e8c96a'; btnPag.style.borderBottom='2px solid #e8c96a'; }
   }
