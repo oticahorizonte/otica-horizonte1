@@ -944,17 +944,8 @@
     .main { padding: 8px; padding-top: 56px; }
   }
   @media (max-width: 768px) {
-    /* Nova Venda - abas no mobile */
+    /* Nova Venda - abas visíveis no mobile */
     #venda-abas { display: block !important; }
-    #venda-corpo-grid {
-      grid-template-columns: 1fr !important;
-      height: calc(100dvh - 100px) !important;
-      overflow: hidden !important;
-    }
-    #venda-corpo-grid > div {
-      overflow-y: auto !important;
-      width: 100% !important;
-    }
     /* Esconder coluna inativa */
     #venda-corpo-grid > div.venda-aba-oculta {
       display: none !important;
