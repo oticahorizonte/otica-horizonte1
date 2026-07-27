@@ -935,11 +935,22 @@
     .main { padding: 8px; padding-top: 56px; }
   }
   @media (max-width: 768px) {
-    /* Nova Venda - 2 colunas no mobile: 55% | 45% */
+    /* Nova Venda - abas no mobile */
+    #venda-abas { display: block !important; }
     #venda-corpo-grid {
-      grid-template-columns: 55% 45% !important;
-      height: calc(100dvh - 58px) !important;
+      grid-template-columns: 1fr !important;
+      height: calc(100dvh - 100px) !important;
       overflow: hidden !important;
+    }
+    #venda-corpo-grid > div:first-child {
+      overflow-y: auto !important;
+    }
+    #venda-corpo-grid > div:last-child {
+      overflow-y: auto !important;
+    }
+    /* Esconder coluna inativa */
+    #venda-corpo-grid > div.venda-aba-oculta {
+      display: none !important;
     }
     /* Coluna esquerda - scroll */
     #venda-corpo-grid > div:first-child {
@@ -3528,6 +3539,20 @@ function instalarApp() {
   </div>
 </div>
 <!-- CORPO: 2 COLUNAS -->
+<!-- ABAS DE NAVEGAÇÃO (visível no mobile) -->
+<div id="venda-abas" style="display:none;background:#0d2b4e;border-bottom:1px solid rgba(201,168,76,.3)">
+  <div style="display:flex">
+    <button id="venda-aba-busca" onclick="trocarAbaVenda('busca')" 
+      style="flex:1;padding:10px;background:rgba(201,168,76,.2);border:none;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid #e8c96a">
+      🔍 Produtos
+    </button>
+    <button id="venda-aba-pagamento" onclick="trocarAbaVenda('pagamento')"
+      style="flex:1;padding:10px;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent">
+      💰 Pagamento
+    </button>
+  </div>
+</div>
+
 <div id="venda-corpo-grid" style="display:grid;grid-template-columns:1fr 320px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
@@ -11158,6 +11183,27 @@ function selecionarClienteBusca(inputId, listaId, hiddenId, clienteId, clienteNo
 var _vendaItens = []; // [{cod, nome, cat, preco, custo, qtd, tipo, grupo}]
 var _vendaGrupoAtual = null; // grupo de oculos completo em montagem
 
+function trocarAbaVenda(aba) {
+  var grid = document.getElementById('venda-corpo-grid');
+  if (!grid) return;
+  var colEsq = grid.children[0]; // busca + itens
+  var colDir = grid.children[1]; // painel + totais + botões
+  var btnBusca = document.getElementById('venda-aba-busca');
+  var btnPag = document.getElementById('venda-aba-pagamento');
+  
+  if (aba === 'busca') {
+    if (colEsq) colEsq.classList.remove('venda-aba-oculta');
+    if (colDir) colDir.classList.add('venda-aba-oculta');
+    if (btnBusca) { btnBusca.style.background='rgba(201,168,76,.2)'; btnBusca.style.color='#e8c96a'; btnBusca.style.borderBottom='2px solid #e8c96a'; }
+    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.color='rgba(255,255,255,.6)'; btnPag.style.borderBottom='2px solid transparent'; }
+  } else {
+    if (colEsq) colEsq.classList.add('venda-aba-oculta');
+    if (colDir) colDir.classList.remove('venda-aba-oculta');
+    if (btnBusca) { btnBusca.style.background='transparent'; btnBusca.style.color='rgba(255,255,255,.6)'; btnBusca.style.borderBottom='2px solid transparent'; }
+    if (btnPag) { btnPag.style.background='rgba(201,168,76,.2)'; btnPag.style.color='#e8c96a'; btnPag.style.borderBottom='2px solid #e8c96a'; }
+  }
+}
+
 function ajustarVendaMobile() {
   var isMobile = window.innerWidth <= 768;
   var grid = document.getElementById('venda-corpo-grid');
@@ -12850,7 +12896,7 @@ function initOSModal() {
 function initOverrideButtons() {
   document.querySelectorAll('[onclick]').forEach(el => {
     const oc = el.getAttribute('onclick');
-    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(function(){initVendaModal();ajustarVendaMobile();},50)");
+    if (oc === "openModal('modal-venda')") el.setAttribute('onclick', "openModal('modal-venda');setTimeout(function(){initVendaModal();ajustarVendaMobile();if(window.innerWidth<=768)trocarAbaVenda('busca');},50)");
     if (oc === "openModal('modal-os')") el.setAttribute('onclick', "initOSModal();openModal('modal-os')");
     if (oc === "openModal('modal-cliente')") el.setAttribute('onclick', "clearClienteForm();openModal('modal-cliente')");
     if (oc === "openModal('modal-receita')") el.setAttribute('onclick', "clearReceitaForm();openModal('modal-receita')");
