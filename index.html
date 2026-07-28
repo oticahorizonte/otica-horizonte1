@@ -3386,12 +3386,12 @@ function instalarApp() {
   <h3 style="color:#e8c96a;font-size:20px;margin:0;font-weight:800;letter-spacing:.5px">💰 Nova Venda</h3>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <!-- Cliente -->
-    <div style="position:relative;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
+    <div style="position:relative;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:7px 12px">
       <span style="color:#c9a84c;font-size:11px">👤</span>
       <input id="venda-cliente-busca" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off"
         oninput="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
         onfocus="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
-        style="background:transparent;border:none;color:#fff;font-size:14px;font-weight:700;outline:none;min-width:170px"/>
+        style="background:transparent;border:none;color:#fff;font-size:14px;font-weight:700;outline:none;min-width:220px;max-width:280px"/>
       <div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);padding:0;min-width:260px;margin-top:4px"></div>
       <select id="venda-cliente" style="display:none"></select>
     </div>
@@ -5500,14 +5500,14 @@ function renderDashboard() {
   var hoje = new Date();
   var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
   var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
-  var receitaMes = vendasMes.reduce((s,v)=>s+calcTotal(v),0);
+  var receitaMes = vendasMes.reduce((s,v)=>s+calcReceitaCaixa(v),0);
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
   var ticketMedio = vendasMes.length ? receitaMes/vendasMes.length : 0;
 
   // Calcular saldo do dia
   var hojeStr2 = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
   var vendasHoje2 = vendas.filter(function(v){ return (v.data||'').startsWith(hojeStr2); });
-  var receitaHoje = vendasHoje2.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var receitaHoje = vendasHoje2.reduce(function(s,v){ return s+calcReceitaCaixa(v); },0);
   var despesasHoje2 = load('despesas').filter(function(d){ return (d.data||'').startsWith(hojeStr2); });
   var saidaHoje = despesasHoje2.reduce(function(s,d){ return s+(d.valor||0); },0);
   var entradasHoje2 = load('entradas').filter(function(e){ return (e.data||'').startsWith(hojeStr2); });
@@ -6593,6 +6593,23 @@ function calcTotal(v) {
   return itemTotal - (v.descGlobal||0);
 }
 
+// Receita real no caixa: para crediário, conta só a entrada no dia da venda
+// Para outros pagamentos, conta o valor total
+function calcReceitaCaixa(v) {
+  var total = calcTotal(v);
+  // Se é crediário e tem dados de crediário, contar só a entrada
+  if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.entrada > 0) {
+    // Só contar a entrada proporcional ao item
+    // A entrada já está distribuída proporcionalmente nos itens do grupo
+    if (v.crediario.entradaParc) {
+      // entradaParc = proporção da entrada para este item
+      return v.crediario.entradaParc || 0;
+    }
+    return v.crediario.entrada || 0;
+  }
+  return total;
+}
+
 // onProdutoVenda — versão atualizada abaixo
 
 
@@ -6633,7 +6650,7 @@ function renderVendasHoje() {
   if (!el) return;
   var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var vendasHoje = load('vendas').filter(function(v){ return (v.data||'').startsWith(hoje); });
-  var receitaHoje = vendasHoje.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var receitaHoje = vendasHoje.reduce(function(s,v){ return s+calcReceitaCaixa(v); },0);
   // Agrupar por grupoVenda para contar vendas unicas
   var grupos = new Set(vendasHoje.map(function(v){ return v.grupoVenda||v.id; }));
   var nVendasHoje = grupos.size;
