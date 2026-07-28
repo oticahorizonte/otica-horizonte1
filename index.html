@@ -3510,9 +3510,10 @@ function instalarApp() {
         <div>
           <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Nº Parcelas</label>
           <select id="cred-parcelas" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
-            <option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
-            <option value="5">5x</option><option value="6">6x</option><option value="8">8x</option>
-            <option value="10">10x</option><option value="12">12x</option>
+            <option value="1">À Vista</option>
+            <option value="2">2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
           </select>
         </div>
         <div>
@@ -5107,11 +5108,9 @@ function showSection(id) {
   if (renders[id]) { try { renders[id](); } catch(e) { console.error('Erro ao renderizar '+id+':', e); showToast('Erro ao carregar: '+e.message,'error'); } }
   // Abrir modal Nova Venda automaticamente ao entrar em Vendas
   if (id === 'vendas') {
-    setTimeout(function() {
-      iniciarAbasMobile();
-      openModal('modal-venda');
-      setTimeout(initVendaModal, 50);
-    }, 100);
+    iniciarAbasMobile();
+    openModal('modal-venda');
+    initVendaModal();
   }
   } catch(e) { console.error('Erro showSection:', e); showToast('Erro de navegação: '+e.message,'error'); }
 }
