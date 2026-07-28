@@ -3617,7 +3617,7 @@ function instalarApp() {
 <h3>🖨️ Recibo de Venda</h3>
 <div style="display:flex;gap:8px">
 <button class="btn btn-success" onclick="doPrintRecibo()">🖨️ Imprimir</button>
-<button class="modal-close" onclick="closeModal('modal-recibo')">✕</button>
+<button class="modal-close" onclick="fecharReciboENovaVenda()">✕</button>
 </div>
 </div>
 <div class="modal-body" style="padding:0">
@@ -9166,6 +9166,17 @@ function imprimirRecibo(id) {
   openModal('modal-recibo');
 }
 
+function fecharReciboENovaVenda() {
+  closeModal('modal-recibo');
+  // Limpar carrinho e reabrir modal para nova venda
+  _vendaItens = [];
+  _vendaGrupoAtual = null;
+  localStorage.removeItem('otica_rascunho_venda');
+  iniciarAbasMobile();
+  openModal('modal-venda');
+  initVendaModal();
+}
+
 function doPrintRecibo() {
   const area = document.getElementById('recibo-print-area');
   const win = window.open('', '_blank', 'width=700,height=900');
@@ -11549,15 +11560,13 @@ function registrarVendaUnif() {
   _vendaGrupoAtual = null;
   localStorage.removeItem('otica_rascunho_venda');
 
-  closeModal('modal-venda');
   renderVendas();
-
   showToast('✅ Venda registrada! Total: R$ '+totalGeral.toFixed(2).replace('.',','), 'success');
   
-  // Imprimir recibo - modal reabre limpo quando recibo for fechado
+  // Abrir recibo - ao fechar o recibo, carrinho limpa automaticamente
   setTimeout(function() {
     if (vendasCriadas.length > 0) imprimirRecibo(vendasCriadas[0]);
-  }, 400);
+  }, 300);
 }
 
 function fecharModalVenda() {
