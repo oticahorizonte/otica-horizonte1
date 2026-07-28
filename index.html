@@ -9166,6 +9166,18 @@ function doPrintRecibo() {
 </div></body></html>`);
   win.document.close();
   setTimeout(()=>win.focus(),300);
+  var _checkRecibo = setInterval(function() {
+    if (win.closed) {
+      clearInterval(_checkRecibo);
+      closeModal('modal-recibo');
+      _vendaItens = [];
+      _vendaGrupoAtual = null;
+      localStorage.removeItem('otica_rascunho_venda');
+      iniciarAbasMobile();
+      openModal('modal-venda');
+      initVendaModal();
+    }
+  }, 500);
 }
 
 // ── SEED AGENDAMENTOS ────────────────────────────────────────────
