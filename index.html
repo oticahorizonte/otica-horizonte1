@@ -9168,13 +9168,28 @@ function imprimirRecibo(id) {
 
 function fecharReciboENovaVenda() {
   closeModal('modal-recibo');
-  // Limpar carrinho e reabrir modal para nova venda
+  // Limpar carrinho completamente
   _vendaItens = [];
   _vendaGrupoAtual = null;
+  window._pendingOculos = null;
   localStorage.removeItem('otica_rascunho_venda');
-  iniciarAbasMobile();
-  openModal('modal-venda');
-  initVendaModal();
+  // Limpar tabela visual do carrinho
+  var tbody = document.getElementById('venda-unif-itens');
+  if (tbody) tbody.innerHTML = '<tr id="venda-unif-empty"><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div></td></tr>';
+  // Limpar campos do cliente e busca
+  var clienteBusca = document.getElementById('venda-cliente-busca');
+  if (clienteBusca) clienteBusca.value = '';
+  var clienteSelect = document.getElementById('venda-cliente');
+  if (clienteSelect) clienteSelect.value = '';
+  // Limpar desconto
+  var descReais = document.getElementById('venda-unif-desc-reais');
+  if (descReais) descReais.value = '';
+  var descPct = document.getElementById('venda-unif-desc-pct');
+  if (descPct) descPct.value = '';
+  // Atualizar totais
+  if (typeof calcVendaTotais === 'function') calcVendaTotais();
+  // Ir para aba produtos no mobile
+  if (typeof iniciarAbasMobile === 'function') iniciarAbasMobile();
 }
 
 function doPrintRecibo() {
