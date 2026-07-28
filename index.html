@@ -2375,8 +2375,7 @@ function instalarApp() {
 <div class="topbar">
 <h1>💰 Vendas &amp; Caixa</h1>
 <div class="topbar-actions">
-<button class="btn btn-primary" onclick="iniciarAbasMobile();openModal('modal-venda');setTimeout(initVendaModal,50)">➕ Nova Venda</button>
-<button class="btn btn-outline" onclick="toggleRegistroVendas()" id="btn-ver-registro" data-tip="Ver/ocultar registro de vendas">📋 Ver Registro</button>
+<button class="btn btn-primary" onclick="ocultarRegistroVendas();iniciarAbasMobile();openModal('modal-venda');initVendaModal()">➕ Nova Venda</button>
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
@@ -3420,7 +3419,7 @@ function instalarApp() {
     <select id="venda-status" style="background:#0d2b4e;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:12px;border-radius:8px;padding:5px 8px;outline:none;cursor:pointer;font-weight:600">
       <option>Pago</option><option>Pendente</option><option>Cancelado</option>
     </select>
-    <button onclick="fecharModalVenda()" style="color:white;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+    <button onclick="verRegistroVendas()" style="color:#e8c96a;background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0">📋 Ver Registro</button>
   </div>
 </div>
 
@@ -6599,24 +6598,32 @@ function calcTotal(v) {
 
 
 
-function toggleRegistroVendas() {
+function ocultarRegistroVendas() {
   var card = document.getElementById('card-registro-vendas');
   var cardsVendas = document.getElementById('vendas-cards');
   var cardHoje = document.getElementById('vendas-hoje-card');
-  var btn = document.getElementById('btn-ver-registro');
-  
-  var visivel = card && card.style.display !== 'none';
-  
-  if (card) card.style.display = visivel ? 'none' : '';
-  if (cardsVendas) cardsVendas.style.display = visivel ? 'none' : '';
-  if (cardHoje) cardHoje.style.display = visivel ? 'none' : '';
-  if (btn) btn.textContent = visivel ? '📋 Ver Registro' : '📋 Ocultar Registro';
-  
-  if (!visivel) {
-    // Renderizar ao mostrar
-    if (typeof renderVendas === 'function') renderVendas();
-    if (typeof renderVendasHoje === 'function') renderVendasHoje();
-  }
+  if (card) card.style.display = 'none';
+  if (cardsVendas) cardsVendas.style.display = 'none';
+  if (cardHoje) cardHoje.style.display = 'none';
+}
+
+function verRegistroVendas() {
+  // Fechar modal de venda
+  closeModal('modal-venda');
+  // Mostrar registro
+  var card = document.getElementById('card-registro-vendas');
+  var cardsVendas = document.getElementById('vendas-cards');
+  var cardHoje = document.getElementById('vendas-hoje-card');
+  if (card) card.style.display = '';
+  if (cardsVendas) cardsVendas.style.display = '';
+  if (cardHoje) cardHoje.style.display = '';
+  // Renderizar dados
+  if (typeof renderVendas === 'function') renderVendas();
+  if (typeof renderVendasHoje === 'function') renderVendasHoje();
+}
+
+function toggleRegistroVendas() {
+  verRegistroVendas();
 }
 
 function renderVendasHoje() {
