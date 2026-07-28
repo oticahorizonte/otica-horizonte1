@@ -2375,7 +2375,6 @@ function instalarApp() {
 <div class="topbar">
 <h1>💰 Vendas &amp; Caixa</h1>
 <div class="topbar-actions">
-<button class="btn btn-primary" onclick="ocultarRegistroVendas();iniciarAbasMobile();openModal('modal-venda');initVendaModal()">➕ Nova Venda</button>
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
@@ -2384,6 +2383,7 @@ function instalarApp() {
 <div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
 <div class="card-header">
 <h3>📋 Registro de Vendas</h3>
+<button class="btn btn-primary btn-sm" onclick="ocultarRegistroVendas();iniciarAbasMobile();openModal('modal-venda');initVendaModal()" style="font-size:12px;padding:6px 12px">➕ Nova Venda</button>
 <div class="search-bar" style="margin:0">
 <input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
 </div>
