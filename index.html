@@ -9186,6 +9186,22 @@ function fecharReciboENovaVenda() {
   if (descReais) descReais.value = '';
   var descPct = document.getElementById('venda-unif-desc-pct');
   if (descPct) descPct.value = '';
+  // Limpar crediário
+  var credEntrada = document.getElementById('cred-entrada');
+  if (credEntrada) credEntrada.value = '';
+  var credParcelas = document.getElementById('cred-parcelas');
+  if (credParcelas) credParcelas.value = '1';
+  var credPeriodo = document.getElementById('cred-periodo');
+  if (credPeriodo) credPeriodo.value = 'mensal';
+  var credPreview = document.getElementById('cred-preview');
+  if (credPreview) credPreview.textContent = '';
+  var credBox = document.getElementById('venda-crediario-box');
+  if (credBox) credBox.style.display = 'none';
+  // Resetar pagamento para PIX
+  var pagSelect = document.getElementById('venda-pag');
+  if (pagSelect) pagSelect.value = 'PIX';
+  var parcelasSelect = document.getElementById('venda-parcelas');
+  if (parcelasSelect) parcelasSelect.value = '1';
   // Atualizar totais
   if (typeof calcVendaTotais === 'function') calcVendaTotais();
   // Ir para aba produtos no mobile
