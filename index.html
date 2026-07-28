@@ -3382,16 +3382,16 @@ function instalarApp() {
 <div class="modal" style="max-width:100vw;width:100vw;height:100dvh;max-height:100dvh;padding:0;overflow:hidden;border-radius:0;margin:0">
 
 <!-- BARRA SUPERIOR -->
-<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:2px solid #c9a84c">
-  <h3 style="color:#e8c96a;font-size:18px;margin:0;font-weight:800">💰 Nova Venda</h3>
-  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:3px solid #c9a84c">
+  <h3 style="color:#e8c96a;font-size:20px;margin:0;font-weight:800;letter-spacing:.5px">💰 Nova Venda</h3>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <!-- Cliente -->
     <div style="position:relative;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
       <span style="color:#c9a84c;font-size:11px">👤</span>
       <input id="venda-cliente-busca" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off"
         oninput="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
         onfocus="filtrarClienteBusca('venda-cliente-busca','venda-cliente-lista','venda-cliente')"
-        style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:700;outline:none;min-width:160px"/>
+        style="background:transparent;border:none;color:#fff;font-size:14px;font-weight:700;outline:none;min-width:170px"/>
       <div id="venda-cliente-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);padding:0;min-width:260px;margin-top:4px"></div>
       <select id="venda-cliente" style="display:none"></select>
     </div>
@@ -3403,7 +3403,7 @@ function instalarApp() {
     <!-- Pagamento -->
     <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:5px 10px">
       <span style="color:#c9a84c;font-size:11px">💳</span>
-      <select id="venda-pag" onchange="onChangePagamento()" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px">
+      <select id="venda-pag" onchange="onChangePagamento()" style="background:#0d2b4e;border:none;color:#fff;font-size:13px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px">
         <option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option><option>Crediário Próprio</option>
       </select>
       <select id="venda-parcelas" style="background:#0d2b4e;border:none;color:#fff;font-size:11px;outline:none;cursor:pointer;border-radius:4px;padding:2px 4px;margin-left:4px">
@@ -3416,10 +3416,10 @@ function instalarApp() {
       <input id="venda-vendedor" placeholder="Vendedor" style="background:transparent;border:none;color:#fff;font-size:12px;font-weight:600;outline:none;width:100px" type="text"/>
     </div>
     <!-- Status -->
-    <select id="venda-status" style="background:#0d2b4e;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:12px;border-radius:8px;padding:5px 8px;outline:none;cursor:pointer;font-weight:600">
+    <select id="venda-status" style="background:#0d2b4e;border:1px solid rgba(201,168,76,.3);color:#fff;font-size:13px;border-radius:8px;padding:7px 10px;outline:none;cursor:pointer;font-weight:600">
       <option>Pago</option><option>Pendente</option><option>Cancelado</option>
     </select>
-    <button onclick="verRegistroVendas()" style="color:#e8c96a;background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0">📋 Ver Registro</button>
+    <button onclick="verRegistroVendas()" style="color:#e8c96a;background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0">📋 Ver Registro</button>
   </div>
 </div>
 
@@ -3513,6 +3513,8 @@ function instalarApp() {
             <option value="2">2x</option>
             <option value="3">3x</option>
             <option value="4">4x</option>
+            <option value="5">5x</option>
+            <option value="6">6x</option>
           </select>
         </div>
         <div>
@@ -11525,15 +11527,9 @@ function registrarVendaUnif() {
 
   showToast('✅ Venda registrada! Total: R$ '+totalGeral.toFixed(2).replace('.',','), 'success');
   
-  // Imprimir recibo e depois reabrir modal limpo para nova venda
+  // Imprimir recibo - modal reabre limpo quando recibo for fechado
   setTimeout(function() {
     if (vendasCriadas.length > 0) imprimirRecibo(vendasCriadas[0]);
-    // Reabrir modal limpo após impressão
-    setTimeout(function() {
-      iniciarAbasMobile();
-      openModal('modal-venda');
-      initVendaModal();
-    }, 500);
   }, 400);
 }
 
