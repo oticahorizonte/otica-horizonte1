@@ -3533,9 +3533,9 @@ function instalarApp() {
     <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1)">
       <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="togglePainelInternoVenda()">
         <span style="font-size:10px;font-weight:700;color:#e8c96a;text-transform:uppercase">📊 Painel Interno</span>
-        <span id="venda-painel-toggle-icon" style="color:#e8c96a;font-size:12px">▼</span>
+        <span id="venda-painel-toggle-icon" style="color:#e8c96a;font-size:12px">▶</span>
       </div>
-      <div id="venda-painel-interno-body" style="padding:0 14px 12px">
+      <div id="venda-painel-interno-body" style="padding:0 14px 12px;display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
           <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px">
             <div style="color:rgba(255,255,255,.6)">Custo Total</div>
@@ -6744,7 +6744,7 @@ function renderVendas() {
   });
 
   // Calcular totais para cards
-  const totalLiq = todasVendas.reduce((s,v)=>s+calcTotal(v),0);
+  const totalLiq = calcReceitaGrupos(todasVendas); // Crediário: só entrada
   const totalDesc = todasVendas.reduce((s,v)=>{
     const bruto=(v.preco||0)*(v.qtd||1);
     return s+bruto*(v.desc||0)/100+(v.descGlobal||0);
@@ -12226,14 +12226,21 @@ function renderContasCrediario() {
   var vendas = load('vendas');
   var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var parcelas = [];
+  var gruposCredVistos = {};
   vendas.forEach(function(v) {
     if (v.crediario && v.crediario.parcelas) {
+      // Mostrar parcelas apenas UMA VEZ por grupo de venda
+      var gk = v.grupoVenda || v.id;
+      if (gruposCredVistos[gk]) return; // já processou este grupo
+      gruposCredVistos[gk] = true;
+      // Usar o primeiro item do grupo para representar as parcelas
       v.crediario.parcelas.forEach(function(p, i) {
         parcelas.push({
           vendaId: v.id, clienteId: v.clienteId, clienteNome: clMap[v.clienteId]||'—',
           parcIdx: i, total: v.crediario.parcelas.length,
           data: p.data, valor: p.valor, status: p.status||'Pendente',
-          vencido: p.status==='Pendente' && p.data < hoje
+          vencido: p.status==='Pendente' && p.data < hoje,
+          grupoVenda: gk
         });
       });
     }
