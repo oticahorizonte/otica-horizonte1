@@ -2375,13 +2375,14 @@ function instalarApp() {
 <div class="topbar">
 <h1>💰 Vendas &amp; Caixa</h1>
 <div class="topbar-actions">
-<button class="btn btn-primary" onclick="openModal('modal-venda');setTimeout(initVendaModal,50)">➕ Nova Venda</button>
+<button class="btn btn-primary" onclick="iniciarAbasMobile();openModal('modal-venda');setTimeout(initVendaModal,50)">➕ Nova Venda</button>
+<button class="btn btn-outline" onclick="toggleRegistroVendas()" id="btn-ver-registro" data-tip="Ver/ocultar registro de vendas">📋 Ver Registro</button>
 </div>
 </div>
-<div class="cards-grid" id="vendas-cards"></div>
+<div class="cards-grid" id="vendas-cards" style="display:none"></div>
 <!-- Card vendas de hoje -->
-<div id="vendas-hoje-card" style="margin-bottom:16px"></div>
-<div class="card" style="margin-bottom:16px">
+<div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
+<div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
 <div class="card-header">
 <h3>📋 Registro de Vendas</h3>
 <div class="search-bar" style="margin:0">
@@ -5104,6 +5105,14 @@ function showSection(id) {
 
   const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes,despesas:renderFinanceiro,usuarios:renderUsuarios};
   if (renders[id]) { try { renders[id](); } catch(e) { console.error('Erro ao renderizar '+id+':', e); showToast('Erro ao carregar: '+e.message,'error'); } }
+  // Abrir modal Nova Venda automaticamente ao entrar em Vendas
+  if (id === 'vendas') {
+    setTimeout(function() {
+      iniciarAbasMobile();
+      openModal('modal-venda');
+      setTimeout(initVendaModal, 50);
+    }, 100);
+  }
   } catch(e) { console.error('Erro showSection:', e); showToast('Erro de navegação: '+e.message,'error'); }
 }
 
@@ -6590,6 +6599,26 @@ function calcTotal(v) {
 // calcVenda — versão atualizada abaixo
 
 
+
+function toggleRegistroVendas() {
+  var card = document.getElementById('card-registro-vendas');
+  var cardsVendas = document.getElementById('vendas-cards');
+  var cardHoje = document.getElementById('vendas-hoje-card');
+  var btn = document.getElementById('btn-ver-registro');
+  
+  var visivel = card && card.style.display !== 'none';
+  
+  if (card) card.style.display = visivel ? 'none' : '';
+  if (cardsVendas) cardsVendas.style.display = visivel ? 'none' : '';
+  if (cardHoje) cardHoje.style.display = visivel ? 'none' : '';
+  if (btn) btn.textContent = visivel ? '📋 Ver Registro' : '📋 Ocultar Registro';
+  
+  if (!visivel) {
+    // Renderizar ao mostrar
+    if (typeof renderVendas === 'function') renderVendas();
+    if (typeof renderVendasHoje === 'function') renderVendasHoje();
+  }
+}
 
 function renderVendasHoje() {
   var el = document.getElementById('vendas-hoje-card');
