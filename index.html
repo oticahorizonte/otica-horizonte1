@@ -5619,7 +5619,7 @@ function renderPainelFinanceiroAdmin() {
   el.style.display='block';
 
   var vendas = getFiltroVendasAdmin();
-  var receita = vendas.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var receita = vendas.reduce(function(s,v){ return s+calcReceitaCaixa(v); },0);
   // Incluir entradas manuais (aportes, etc.)
   var filtro2 = document.getElementById('dash-fin-filtro')?.value || 'mes';
   var hoje3 = new Date();
@@ -6597,12 +6597,12 @@ function calcReceitaCaixa(v) {
   var total = calcTotal(v);
   // Se é crediário e tem dados de crediário, contar só a entrada
   if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.entrada > 0) {
-    // Só contar a entrada proporcional ao item
-    // A entrada já está distribuída proporcionalmente nos itens do grupo
-    if (v.crediario.entradaParc) {
-      // entradaParc = proporção da entrada para este item
+    // Verificar se entradaParc existe (entrada proporcional ao item)
+    if (v.crediario.entradaParc !== undefined && v.crediario.entradaParc !== null) {
       return v.crediario.entradaParc || 0;
     }
+    // Fallback: retornar a entrada total (para vendas antigas sem entradaParc)
+    return v.crediario.entrada || 0;
     return v.crediario.entrada || 0;
   }
   return total;
@@ -7615,7 +7615,7 @@ function renderRelatorios() {
   var clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
   var prodMap = Object.fromEntries(produtos.map(p=>[p.cod,p.desc]));
 
-  var totalVendas = vendas.reduce((s,v)=>s+calcTotal(v),0);
+  var totalVendas = vendas.reduce((s,v)=>s+calcReceitaCaixa(v),0);
   var totalOS = os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
   var totalDesc = vendas.reduce((s,v)=>{const b=(v.preco||0)*(v.qtd||1);return s+b*(v.desc||0)/100+(v.descGlobal||0);},0);
   var baixoEstoque = produtos.filter(p=>p.qtd<=p.min).length;
@@ -7762,7 +7762,7 @@ function renderRelatorios() {
     vendas.forEach(function(v) {
       var gk = v.grupoVenda || v.id;
       if (!grupos[gk]) grupos[gk] = {id: v.id, data: v.data, clienteId: v.clienteId, vendedor: v.vendedor, receita:0, custo:0, comissao:0};
-      grupos[gk].receita += calcTotal(v);
+      grupos[gk].receita += calcReceitaCaixa(v);
       // custo dos itens
       if (v.itens && v.itens.length > 0) {
         v.itens.forEach(function(it){ grupos[gk].custo += (it.custo||0)*(it.qtd||1); });
@@ -8461,7 +8461,7 @@ function renderSaldoDia() {
   
   // Entradas do dia: vendas + OS conserto + entradas manuais
   var vendasHoje = load('vendas').filter(function(v){ return (v.data||'').startsWith(hoje); });
-  var receitaVendas = vendasHoje.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var receitaVendas = vendasHoje.reduce(function(s,v){ return s+calcReceitaCaixa(v); },0);
   var osHoje = load('os').filter(function(o){ return (o.abertura||'').startsWith(hoje) && o.tipoOS!=='montagem'; });
   var receitaOS = osHoje.reduce(function(s,o){ return s+(o.valor||0); },0);
   var entradasHoje = load('entradas').filter(function(e){ return (e.data||'').startsWith(hoje); });
