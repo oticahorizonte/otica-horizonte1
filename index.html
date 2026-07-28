@@ -6594,18 +6594,18 @@ function calcTotal(v) {
 // Receita real no caixa: para crediário, conta só a entrada no dia da venda
 // Para outros pagamentos, conta o valor total
 function calcReceitaCaixa(v) {
-  var total = calcTotal(v);
-  // Se é crediário e tem dados de crediário, contar só a entrada
-  if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.entrada > 0) {
-    // Verificar se entradaParc existe (entrada proporcional ao item)
-    if (v.crediario.entradaParc !== undefined && v.crediario.entradaParc !== null) {
-      return v.crediario.entradaParc || 0;
+  // Para crediário: conta apenas a entrada no caixa do dia
+  // Para outros pagamentos: conta o valor total
+  if (v.pag === 'Crediário Próprio' && v.crediario) {
+    var entrada = v.crediario.entrada || 0;
+    // Se À Vista (parcelas=1), conta tudo
+    if (v.crediario.parcelas && v.crediario.parcelas.length <= 1) {
+      return calcTotal(v);
     }
-    // Fallback: retornar a entrada total (para vendas antigas sem entradaParc)
-    return v.crediario.entrada || 0;
-    return v.crediario.entrada || 0;
+    // Parcelado: conta só a entrada
+    return entrada;
   }
-  return total;
+  return calcTotal(v);
 }
 
 // onProdutoVenda — versão atualizada abaixo
