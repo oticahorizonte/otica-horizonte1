@@ -11524,10 +11524,17 @@ function registrarVendaUnif() {
   renderVendas();
 
   showToast('✅ Venda registrada! Total: R$ '+totalGeral.toFixed(2).replace('.',','), 'success');
+  
+  // Imprimir recibo e depois reabrir modal limpo para nova venda
   setTimeout(function() {
     if (vendasCriadas.length > 0) imprimirRecibo(vendasCriadas[0]);
+    // Reabrir modal limpo após impressão
+    setTimeout(function() {
+      iniciarAbasMobile();
+      openModal('modal-venda');
+      initVendaModal();
+    }, 500);
   }, 400);
-  showSection('vendas');
 }
 
 function fecharModalVenda() {
