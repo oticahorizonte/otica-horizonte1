@@ -6734,13 +6734,10 @@ function renderVendas() {
     const dataB = b[1][0].data || '';
     if (dataB > dataA) return 1;
     if (dataB < dataA) return -1;
-    // Mesmo dia: ordenar pelo ID da venda (maior ID = mais recente)
-    const idA = a[1][0].id || '';
-    const idB = b[1][0].id || '';
-    // Extrair número do ID (ex: V-0012 → 12)
-    const numA = parseInt(idA.replace(/\D/g,''))||0;
-    const numB = parseInt(idB.replace(/\D/g,''))||0;
-    return numB - numA;
+    // Mesmo dia: ordenar pelo MAIOR ID do grupo (mais recente)
+    const maxIdA = Math.max(...a[1].map(v => parseInt((v.id||'').replace(/\D/g,''))||0));
+    const maxIdB = Math.max(...b[1].map(v => parseInt((v.id||'').replace(/\D/g,''))||0));
+    return maxIdB - maxIdA;
   });
 
   // Calcular totais para cards
@@ -6767,7 +6764,13 @@ function renderVendas() {
 
   // ── Renderizar tabela agrupada ───────────────────────────────
   const tbHtml = gruposOrdenados.length ? gruposOrdenados.map(([chave, itens]) => {
-    const primeiro = itens[0];
+    // Ordenar itens por ID para pegar o primeiro (menor ID = início da venda)
+    const itensOrdenados = [...itens].sort((a,b) => {
+      const na = parseInt((a.id||'').replace(/\D/g,''))||0;
+      const nb = parseInt((b.id||'').replace(/\D/g,''))||0;
+      return na - nb;
+    });
+    const primeiro = itensOrdenados[0];
     const totalGrupo = itens.reduce((s,v)=>s+calcTotal(v),0);
     const temMultiplos = itens.length > 1;
     const grupoId = 'g-' + chave.replace(/[^a-zA-Z0-9]/g,'_');
