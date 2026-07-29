@@ -5603,7 +5603,8 @@ function renderDashboard() {
 function getFiltroVendasAdmin(filtro) {
   filtro = filtro || document.getElementById('dash-fin-filtro')?.value || 'mes';
   var hoje = new Date();
-  var vendas = load('vendas');
+  // Apenas vendas pagas (não pendentes, não canceladas)
+  var vendas = load('vendas').filter(function(v){ return v.status !== 'Pendente' && v.status !== 'Cancelado'; });
   if (filtro === 'hoje') {
     var d = hoje.toISOString().slice(0,10);
     return vendas.filter(v=>(v.data||'').startsWith(d));
