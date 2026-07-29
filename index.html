@@ -6383,11 +6383,11 @@ function renderProdutos() {
     return `<tr>
       <td><strong>${p.cod}</strong></td><td>${p.foto?`<img src="${p.foto}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle"/>`:''}${p.desc}</td>
       <td><span class="badge badge-info">${p.cat}</span></td>
-      <td>${p.marca}</td>
+      <td class=\"hide-mobile\">${p.marca}</td>
       <td class="${p.qtd<=p.min?'text-danger fw-bold':'fw-bold'}">${p.qtd}</td>
-      <td>${p.min}</td>
+      <td class=\"hide-mobile\">${p.min}</td>
       ${isAdmin()?`<td>${fmtMoney(p.custo)}</td>`:''}
-      <td>${fmtMoney(p.venda)}</td>
+      <td class=\"hide-mobile\">${fmtMoney(p.venda)}</td>
       ${isAdmin()?`<td>${fmtPct(margem)}</td>`:''}
       <td>${status==='Serviço'?'<span class="badge badge-info">🔧 Serviço</span>':statusBadge(status)}</td>
       <td><div class="flex gap-2">
