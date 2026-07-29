@@ -12654,13 +12654,56 @@ function renderCarrinho() {
 function initOSModal() {
   if(!document.getElementById('os-cliente')) return;
   populateClienteSelect('os-cliente');
-  const today = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
-  const plus5 = new Date(Date.now()+5*86400000).toISOString().slice(0,10);
+  var d = new Date();
+  var today = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var plus5 = new Date(Date.now()+5*86400000);
+  var plus5str = plus5.getFullYear()+'-'+String(plus5.getMonth()+1).padStart(2,'0')+'-'+String(plus5.getDate()).padStart(2,'0');
+  
+  // Limpar TODOS os campos
   document.getElementById('os-abertura').value = today;
-  document.getElementById('os-previsao').value = plus5;
+  document.getElementById('os-previsao').value = plus5str;
   document.getElementById('os-idx').value = '';
   document.getElementById('modal-os-title').textContent = '🔧 Nova Ordem de Serviço';
-  popularTiposOS();
+  
+  // Limpar campos de cliente
+  var clienteBusca = document.getElementById('os-cliente-busca');
+  if (clienteBusca) clienteBusca.value = '';
+  var clienteHidden = document.getElementById('os-cliente');
+  if (clienteHidden) clienteHidden.value = '';
+  var clienteLista = document.getElementById('os-cliente-lista');
+  if (clienteLista) clienteLista.style.display = 'none';
+  
+  // Resetar tipo para conserto (padrão)
+  var tipoEl = document.getElementById('os-tipo');
+  if (tipoEl) tipoEl.value = '🔧 Conserto de Armação';
+  
+  // Limpar campos de texto
+  var campos = ['os-armacao', 'os-tecnico', 'os-descricao', 'os-obs'];
+  campos.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  
+  // Limpar valor
+  var valEl = document.getElementById('os-valor');
+  if (valEl) valEl.value = '';
+  
+  // Resetar status
+  var statusEl = document.getElementById('os-status');
+  if (statusEl) statusEl.value = 'Aberta';
+  
+  // Limpar campos de grau
+  var grauCampos = ['os-longe-od-esf','os-longe-od-cil','os-longe-od-eixo',
+                    'os-longe-oe-esf','os-longe-oe-cil','os-longe-oe-eixo',
+                    'os-perto-od-esf','os-perto-od-cil','os-perto-od-eixo',
+                    'os-perto-oe-esf','os-perto-oe-cil','os-perto-oe-eixo','os-adicao'];
+  grauCampos.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  
+  // Aplicar layout correto para conserto
+  onChangeTipoOS();
 }
 
 // Override openModal buttons — executar após DOM carregar
