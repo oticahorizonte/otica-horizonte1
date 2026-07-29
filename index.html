@@ -2387,7 +2387,7 @@ function instalarApp() {
 <div class="search-bar" style="margin:0">
 <input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
 </div>
-<button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher registro" style="white-space:nowrap">▲ Recolher</button>
+<button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher/expandir registro">▲ Recolher</button>
 </div>
 </div>
 <div class="card-body" style="padding:0">
@@ -6638,21 +6638,37 @@ function ocultarRegistroVendas() {
 function verRegistroVendas() {
   // Fechar modal de venda
   closeModal('modal-venda');
-  // Mostrar registro
+  // Mostrar apenas o registro e cards de resumo
   var card = document.getElementById('card-registro-vendas');
   var cardsVendas = document.getElementById('vendas-cards');
   var cardHoje = document.getElementById('vendas-hoje-card');
-  if (card) card.style.display = '';
+  if (card) { card.style.display = ''; }
   if (cardsVendas) cardsVendas.style.display = '';
   if (cardHoje) cardHoje.style.display = '';
-
+  // Atualizar botão
+  var btn = document.querySelector('[onclick="toggleRegistroVendas()"]');
+  if (btn) btn.innerHTML = '▲ Recolher';
   // Renderizar dados
   if (typeof renderVendas === 'function') renderVendas();
   if (typeof renderVendasHoje === 'function') renderVendasHoje();
 }
 
 function toggleRegistroVendas() {
-  verRegistroVendas();
+  var card = document.getElementById('card-registro-vendas');
+  if (!card) return;
+  var visivel = card.style.display !== 'none';
+  if (visivel) {
+    // Recolher apenas o registro de vendas
+    card.style.display = 'none';
+    var btn = document.querySelector('[onclick="toggleRegistroVendas()"]');
+    if (btn) btn.innerHTML = '▼ Ver Registro';
+  } else {
+    // Mostrar registro de vendas
+    card.style.display = '';
+    if (typeof renderVendas === 'function') renderVendas();
+    var btn = document.querySelector('[onclick="toggleRegistroVendas()"]');
+    if (btn) btn.innerHTML = '▲ Recolher';
+  }
 }
 
 function renderVendasHoje() {
