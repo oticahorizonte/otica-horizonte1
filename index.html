@@ -11682,6 +11682,17 @@ function registrarVendaUnif() {
   save('vendas', arr);
   save('produtos', prods);
 
+  // Marcar orçamento pendente como fechado (se veio de um orçamento)
+  if (window._orcamentoFechando) {
+    var compsArr = load('composicoes');
+    var orcIdx = compsArr.findIndex(function(c){ return c.id === window._orcamentoFechando; });
+    if (orcIdx >= 0) {
+      compsArr[orcIdx].status = 'fechado';
+      save('composicoes', compsArr);
+    }
+    window._orcamentoFechando = null;
+  }
+
   // Atualizar cliente
   var ci = clis.findIndex(function(c){ return c.id===clienteId; });
   if (ci >= 0) {
