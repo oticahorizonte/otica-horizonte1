@@ -2378,7 +2378,6 @@ function instalarApp() {
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
-<div class="cards-grid" id="vendas-cred-cards" style="display:none;margin-bottom:12px"></div>
 <div class="card" id="card-contas-crediario" style="margin-bottom:12px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-crediario-body-wrap','crediario-icon')">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
@@ -2401,7 +2400,7 @@ function instalarApp() {
 <div class="search-bar" style="margin:0">
 <input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
 </div>
-<button class="btn btn-outline btn-sm" onclick="toggleRegistroVendas()" data-tip="Recolher registro">▲ Recolher</button>
+<button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher registro" style="white-space:nowrap">▲ Recolher</button>
 </div>
 </div>
 <div class="card-body" style="padding:0">
@@ -6635,8 +6634,7 @@ function ocultarRegistroVendas() {
   if (card) card.style.display = 'none';
   if (cardsVendas) cardsVendas.style.display = 'none';
   if (cardHoje) cardHoje.style.display = 'none';
-  var credCards2 = document.getElementById('vendas-cred-cards');
-  if (credCards2) credCards2.style.display = 'none';
+
 }
 
 function verRegistroVendas() {
@@ -6649,8 +6647,7 @@ function verRegistroVendas() {
   if (card) card.style.display = '';
   if (cardsVendas) cardsVendas.style.display = '';
   if (cardHoje) cardHoje.style.display = '';
-  var credCards2 = document.getElementById('vendas-cred-cards');
-  if (credCards2) credCards2.style.display = '';
+
   // Renderizar dados
   if (typeof renderVendas === 'function') renderVendas();
   if (typeof renderVendasHoje === 'function') renderVendasHoje();
@@ -12268,9 +12265,6 @@ function renderContasCrediario() {
     <div class="stat-card orange"><div class="label">Vencidas</div><div class="value">${fmtMoney(totalVenc)}</div><div class="sub">${countVenc} parcelas</div></div>
     <div class="stat-card green"><div class="label">Pagas</div><div class="value">${fmtMoney(parcelas.filter(p=>p.status==='Pago').reduce((s,p)=>s+p.valor,0))}</div><div class="sub">${parcelas.filter(p=>p.status==='Pago').length} parcelas</div></div>
   `;
-  // Sincronizar cards com o container junto aos cards de vendas
-  var credCards2 = document.getElementById('vendas-cred-cards');
-  if (credCards2 && cardsEl) credCards2.innerHTML = cardsEl.innerHTML;
 
   body.innerHTML = parcelas.length ? parcelas.map(function(p) {
     var corStatus = p.status==='Pago'?'badge-success':p.vencido?'badge-danger':'badge-warning';
