@@ -6052,16 +6052,13 @@ function delCliente(id) {
   // Verificar vinculos
   var vendas = load('vendas').filter(v=>v.clienteId===id);
   var os = load('os').filter(o=>o.clienteId===id);
-  if (vendas.length > 0 || os.length > 0) {
-    confirmar('Excluir cliente?\nEle possui ' + vendas.length + ' venda(s) e ' + os.length + ' OS.', function() {
-
-  } else {
-    confirmar('Excluir cliente ' + c.nome + '?', function() {
-  });
-  }
-  save('clientes', load('clientes').filter(c=>c.id!==id));
-  renderClientes();
-  showToast('Cliente excluído!','warning');
+  var msg = vendas.length > 0 || os.length > 0
+    ? 'Excluir cliente?\nEle possui ' + vendas.length + ' venda(s) e ' + os.length + ' OS.'
+    : 'Excluir cliente ' + c.nome + '?';
+  confirmar(msg, function() {
+    save('clientes', load('clientes').filter(c=>c.id!==id));
+    renderClientes();
+    showToast('Cliente excluído!','warning');
   });
 }
 
