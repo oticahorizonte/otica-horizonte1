@@ -2378,22 +2378,6 @@ function instalarApp() {
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
-<!-- Card vendas de hoje -->
-<div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
-<div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
-<div class="card-header">
-<h3>📋 Registro de Vendas</h3>
-
-<div class="search-bar" style="margin:0">
-<input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
-</div>
-</div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
-<tbody id="tb-vendas"></tbody></table>
-</div>
-</div>
-<!-- ── Crediário — Contas a Receber ── -->
 <div class="card" id="card-contas-crediario" style="margin-bottom:12px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-crediario-body-wrap','crediario-icon')">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
@@ -2407,6 +2391,25 @@ function instalarApp() {
 </div>
 </div>
 </div>
+<!-- Card vendas de hoje -->
+<div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
+<div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
+<div class="card-header">
+<h3>📋 Registro de Vendas</h3>
+<div style="display:flex;align-items:center;gap:8px">
+<div class="search-bar" style="margin:0">
+<input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
+</div>
+<button onclick="toggleRegistroVendas()" style="background:rgba(13,43,78,.1);border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:#64748b;white-space:nowrap" data-tip="Recolher registro">▲ Recolher</button>
+</div>
+</div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
+<tbody id="tb-vendas"></tbody></table>
+</div>
+</div>
+<!-- ── Crediário — Contas a Receber ── -->
+
 <!-- ── Contas a Receber (vendas pendentes) ── -->
 <div class="card" id="card-contas-receber" style="margin-bottom:12px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#dc2626,#f87171);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-receber-body','receber-icon')">
