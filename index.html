@@ -13037,17 +13037,18 @@ function processarBackup(input) {
       }
       var msgConf = 'ATENCAO: Isso vai SUBSTITUIR todos os dados atuais pelos dados do backup.' + '\n\nBackup de: ' + new Date(dados.data).toLocaleString('pt-BR') + '\n\nDeseja continuar?';
       confirmar(msgConf, function() {
-      // Restaurar dados
-      if (dados.clientes)     save('clientes',     dados.clientes);
-      if (dados.receitas)     save('receitas',     dados.receitas);
-      if (dados.produtos)     save('produtos',     dados.produtos);
-      if (dados.vendas)       save('vendas',       dados.vendas);
-      if (dados.os)           save('os',           dados.os);
-      if (dados.agendamentos) save('agendamentos', dados.agendamentos);
-      if (dados.composicoes)  save('composicoes',  dados.composicoes);
-      if (dados.despesas)     save('despesas',     dados.despesas);
-      showToast('✅ Backup restaurado com sucesso! Recarregando...');
-      setTimeout(function() { location.reload(); }, 1500);
+        // Restaurar dados
+        if (dados.clientes)     save('clientes',     dados.clientes);
+        if (dados.receitas)     save('receitas',     dados.receitas);
+        if (dados.produtos)     save('produtos',     dados.produtos);
+        if (dados.vendas)       save('vendas',       dados.vendas);
+        if (dados.os)           save('os',           dados.os);
+        if (dados.agendamentos) save('agendamentos', dados.agendamentos);
+        if (dados.composicoes)  save('composicoes',  dados.composicoes);
+        if (dados.despesas)     save('despesas',     dados.despesas);
+        showToast('✅ Backup restaurado com sucesso! Recarregando...');
+        setTimeout(function() { location.reload(); }, 1500);
+      });
     } catch(err) {
       showToast('❌ Erro ao ler o arquivo: ' + err.message, 'error');
     }
