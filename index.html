@@ -2381,14 +2381,14 @@ function instalarApp() {
 <!-- Card vendas de hoje -->
 <div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
 <div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
-<div class="card-header">
+<div class="card-header" style="cursor:pointer" onclick="toggleRegistroVendas()">
 <h3>📋 Registro de Vendas</h3>
-<div style="display:flex;align-items:center;gap:8px">
+<div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">
 <div class="search-bar" style="margin:0">
 <input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
 </div>
-<button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher/expandir registro">▲ Recolher</button>
 </div>
+<span id="registro-icon">▼</span>
 </div>
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
@@ -6657,20 +6657,17 @@ function verRegistroVendas() {
 }
 
 function toggleRegistroVendas() {
-  var card = document.getElementById('card-registro-vendas');
-  if (!card) return;
-  var visivel = card.style.display !== 'none';
+  var bodyWrap = document.getElementById('registro-vendas-body');
+  var icon = document.getElementById('registro-icon');
+  if (!bodyWrap) return;
+  var visivel = bodyWrap.style.display !== 'none';
   if (visivel) {
-    // Recolher apenas o registro de vendas
-    card.style.display = 'none';
-    var btn = document.querySelector('[onclick="toggleRegistroVendas()"]');
-    if (btn) btn.innerHTML = '▼ Ver Registro';
+    bodyWrap.style.display = 'none';
+    if (icon) icon.textContent = '▶';
   } else {
-    // Mostrar registro de vendas
-    card.style.display = '';
+    bodyWrap.style.display = '';
     if (typeof renderVendas === 'function') renderVendas();
-    var btn = document.querySelector('[onclick="toggleRegistroVendas()"]');
-    if (btn) btn.innerHTML = '▲ Recolher';
+    if (icon) icon.textContent = '▼';
   }
 }
 
