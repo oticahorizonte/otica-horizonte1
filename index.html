@@ -2381,14 +2381,14 @@ function instalarApp() {
 <!-- Card vendas de hoje -->
 <div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
 <div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
-<div class="card-header" style="cursor:pointer" onclick="toggleRegistroVendas()">
+<div class="card-header">
 <h3>📋 Registro de Vendas</h3>
-<div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">
-<div class="search-bar" style="margin:0">
+<div style="display:flex;align-items:center;gap:8px">
+<div class="search-bar" style="margin:0" onclick="event.stopPropagation()">
 <input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
 </div>
+<span id="registro-icon" onclick="toggleRegistroVendas()" style="cursor:pointer;color:#64748b;font-size:18px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc" data-tip="Recolher/expandir">▼</span>
 </div>
-<span id="registro-icon">▼</span>
 </div>
 <div id="registro-vendas-body">
 <div class="card-body" style="padding:0">
