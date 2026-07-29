@@ -6741,6 +6741,8 @@ function renderVendas() {
   var meuNomeVendas = userVendas ? (userVendas.nome||'').toLowerCase() : '';
   var adminVendasReg = isAdmin();
   const todasVendas = load('vendas').filter(v => {
+    // Apenas vendas PAGAS na lista de vendas (pendentes ficam em Vendas Pendentes)
+    if (v.status === 'Pendente' || v.status === 'Cancelado') return false;
     // Vendedor vê apenas suas próprias vendas
     if (!adminVendasReg && (v.vendedor||'').toLowerCase() !== meuNomeVendas) return false;
     return !q || (v.id||'').toLowerCase().includes(q.toLowerCase()) ||
