@@ -2390,6 +2390,14 @@ function instalarApp() {
 <button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher registro" style="white-space:nowrap">▲ Recolher</button>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
+<tbody id="tb-vendas"></tbody></table>
+</div>
+</div>
 <div class="card" id="card-contas-crediario" style="margin-bottom:12px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-crediario-body-wrap','crediario-icon')">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
@@ -2400,14 +2408,7 @@ function instalarApp() {
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Venda</th><th>Cliente</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="contas-crediario-body"></tbody></table>
-</div>
-</div>
-</div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
-<tbody id="tb-vendas"></tbody></table>
-</div>
-</div>
+
 <!-- ── Crediário — Contas a Receber ── -->
 
 <!-- ── Contas a Receber (vendas pendentes) ── -->
