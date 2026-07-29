@@ -2378,6 +2378,18 @@ function instalarApp() {
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
+<!-- Card vendas de hoje -->
+<div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
+<div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
+<div class="card-header">
+<h3>📋 Registro de Vendas</h3>
+<div style="display:flex;align-items:center;gap:8px">
+<div class="search-bar" style="margin:0">
+<input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
+</div>
+<button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher registro" style="white-space:nowrap">▲ Recolher</button>
+</div>
+</div>
 <div class="card" id="card-contas-crediario" style="margin-bottom:12px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-crediario-body-wrap','crediario-icon')">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
@@ -2389,18 +2401,6 @@ function instalarApp() {
 <table><thead><tr><th>Venda</th><th>Cliente</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="contas-crediario-body"></tbody></table>
 </div>
-</div>
-</div>
-<!-- Card vendas de hoje -->
-<div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
-<div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
-<div class="card-header">
-<h3>📋 Registro de Vendas</h3>
-<div style="display:flex;align-items:center;gap:8px">
-<div class="search-bar" style="margin:0">
-<input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
-</div>
-<button class="btn btn-sm btn-outline" onclick="toggleRegistroVendas()" data-tip="Recolher registro" style="white-space:nowrap">▲ Recolher</button>
 </div>
 </div>
 <div class="card-body" style="padding:0">
