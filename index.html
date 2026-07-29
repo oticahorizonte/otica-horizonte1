@@ -7373,7 +7373,7 @@ function viewOS(id) {
       // Editar (admin)
       if (isAdmin()) btnsHtml += '<button class="btn btn-warning" onclick="closeModal(\'modal-view-os\');editOS(\''+o.id+'\')" style="margin-left:8px">Editar</button>';
       // Converter em Venda (apenas conserto, admin)
-      if (o.tipoOS!=='montagem' && isAdmin()) btnsHtml += '<button class="btn btn-outline" onclick="closeModal(\'modal-view-os\');converterOSemVenda(\''+o.id+'\')" style="margin-left:8px">Converter em Venda</button>';
+      if (o.tipoOS!=='montagem' && isAdmin() && !o.vendaRef) btnsHtml += '<button class="btn btn-outline" onclick="closeModal(\'modal-view-os\');converterOSemVenda(\''+o.id+'\')" style="margin-left:8px">Converter em Venda</button>';
       btnsHtml += '<button class="btn btn-outline" onclick="closeModal(\'modal-view-os\')" style="margin-left:8px">Fechar</button>';
       btnsEl.innerHTML = btnsHtml;
     }
