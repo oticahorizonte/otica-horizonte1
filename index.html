@@ -12268,6 +12268,9 @@ function renderContasCrediario() {
     <div class="stat-card orange"><div class="label">Vencidas</div><div class="value">${fmtMoney(totalVenc)}</div><div class="sub">${countVenc} parcelas</div></div>
     <div class="stat-card green"><div class="label">Pagas</div><div class="value">${fmtMoney(parcelas.filter(p=>p.status==='Pago').reduce((s,p)=>s+p.valor,0))}</div><div class="sub">${parcelas.filter(p=>p.status==='Pago').length} parcelas</div></div>
   `;
+  // Sincronizar cards com o container junto aos cards de vendas
+  var credCards2 = document.getElementById('vendas-cred-cards');
+  if (credCards2 && cardsEl) credCards2.innerHTML = cardsEl.innerHTML;
 
   body.innerHTML = parcelas.length ? parcelas.map(function(p) {
     var corStatus = p.status==='Pago'?'badge-success':p.vencido?'badge-danger':'badge-warning';
