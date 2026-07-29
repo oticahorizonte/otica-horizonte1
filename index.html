@@ -944,32 +944,13 @@
 
 
   /* ===== PRODUTOS & ESTOQUE - RESPONSIVO ===== */
-  #sec-produtos .topbar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  #sec-produtos .topbar-actions {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  #sec-produtos .topbar-actions .btn {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
   #sec-produtos .card-body {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
   }
   #tb-produtos-table {
-    min-width: 650px;
+    min-width: 700px;
     width: 100%;
-  }
-  /* Em telas menores que 1024px, ocultar colunas menos importantes */
-  @media (max-width: 1024px) {
-    #tb-produtos-table th.hide-tablet,
-    #tb-produtos-table td.hide-tablet {
-      display: none !important;
-    }
   }
 
   /* ===== NOVA VENDA MOBILE - ABAS ===== */
@@ -2370,10 +2351,10 @@ function instalarApp() {
 <section class="section" id="sec-produtos" style="overflow-x:hidden">
 <div class="topbar">
 <h1>📦 Produtos &amp; Estoque</h1>
-<div class="topbar-actions" style="flex-wrap:wrap;gap:6px">
+<div class="topbar-actions">
 <button class="btn btn-outline" id="btn-historico-estoque" onclick="toggleHistoricoEstoque()">📋 Histórico</button>
-<button class="btn btn-warning" onclick="checkEstoque()">⚠️ Verificar</button>
-<button class="btn btn-primary" id="btn-novo-produto" onclick="openModal('modal-produto')">➕ Novo</button>
+<button class="btn btn-warning" onclick="checkEstoque()">⚠️ Verificar Estoque</button>
+<button class="btn btn-primary" id="btn-novo-produto" onclick="openModal('modal-produto')">➕ Novo Produto</button>
 <button class="btn btn-outline" onclick="forceSyncFotos()" data-tip="Enviar produtos com fotos para a nuvem" style="font-size:12px">🔄 Sync Fotos</button>
 </div>
 </div>
