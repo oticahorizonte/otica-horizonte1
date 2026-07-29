@@ -3880,12 +3880,12 @@ function instalarApp() {
 
 <!-- Modal View OS -->
 <div class="modal-overlay" id="modal-view-os" style="display:none">
-<div class="modal" style="max-width:800px;width:95vw">
+<div class="modal" style="max-width:800px;width:95vw;max-height:92vh;display:flex;flex-direction:column">
 <div class="modal-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a)">
 <h3 style="color:#e8c96a">Detalhes da OS</h3>
 <button class="modal-close" onclick="closeModal('modal-view-os')">x</button>
 </div>
-<div class="modal-body" style="padding:0;max-height:75vh;overflow-y:auto"><div id="modal-view-os-body"></div></div>
+<div class="modal-body" style="padding:0;max-height:82vh;overflow-y:auto"><div id="modal-view-os-body"></div></div>
 <div class="modal-footer" style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap" id="modal-view-os-btns"></div>
 </div>
 </div>
@@ -7262,7 +7262,7 @@ function viewOS(id) {
   if (isMontagem) {
     // ── OS DE MONTAGEM — Receita Óptica ──
     html += `
-    <div style="background:#0d2b4e;border-radius:12px;padding:14px;margin-bottom:12px">
+    <div style="background:#0d2b4e;border-radius:12px;padding:10px;margin-bottom:8px">
       <div style="font-size:10px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">👁️ Receita Óptica</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;color:white">
         <thead>
