@@ -13122,14 +13122,15 @@ function renderContasReceber() {
 
 function marcarContaPaga(chave) {
   confirmar('Marcar como PAGA?\nEsta ação registrará o pagamento.', function() {
-  var vendas = load('vendas');
-  vendas.forEach(function(v) {
-    var vChave = v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data);
-    if (vChave === chave) v.status = 'Pago';
+    var vendas = load('vendas');
+    vendas.forEach(function(v) {
+      var vChave = v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data);
+      if (vChave === chave) v.status = 'Pago';
+    });
+    save('vendas', vendas);
+    renderVendas();
+    showToast('✅ Conta marcada como paga!');
   });
-  save('vendas', vendas);
-  renderVendas();
-  showToast('✅ Conta marcada como paga!');
 }
 
 
