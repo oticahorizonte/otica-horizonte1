@@ -2378,6 +2378,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
+<div class="cards-grid" id="vendas-cred-cards" style="display:none;margin-bottom:12px"></div>
 <div class="card" id="card-contas-crediario" style="margin-bottom:12px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('contas-crediario-body-wrap','crediario-icon')">
 <h3 style="color:#e8c96a">💳 Crediário — Parcelas a Receber</h3>
@@ -2400,7 +2401,7 @@ function instalarApp() {
 <div class="search-bar" style="margin:0">
 <input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text"/>
 </div>
-<button onclick="toggleRegistroVendas()" style="background:rgba(13,43,78,.1);border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:#64748b;white-space:nowrap" data-tip="Recolher registro">▲ Recolher</button>
+<button class="btn btn-outline btn-sm" onclick="toggleRegistroVendas()" data-tip="Recolher registro">▲ Recolher</button>
 </div>
 </div>
 <div class="card-body" style="padding:0">
@@ -6634,6 +6635,8 @@ function ocultarRegistroVendas() {
   if (card) card.style.display = 'none';
   if (cardsVendas) cardsVendas.style.display = 'none';
   if (cardHoje) cardHoje.style.display = 'none';
+  var credCards2 = document.getElementById('vendas-cred-cards');
+  if (credCards2) credCards2.style.display = 'none';
 }
 
 function verRegistroVendas() {
@@ -6646,6 +6649,8 @@ function verRegistroVendas() {
   if (card) card.style.display = '';
   if (cardsVendas) cardsVendas.style.display = '';
   if (cardHoje) cardHoje.style.display = '';
+  var credCards2 = document.getElementById('vendas-cred-cards');
+  if (credCards2) credCards2.style.display = '';
   // Renderizar dados
   if (typeof renderVendas === 'function') renderVendas();
   if (typeof renderVendasHoje === 'function') renderVendasHoje();
