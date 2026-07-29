@@ -3339,7 +3339,6 @@ function instalarApp() {
 <select id="prod-cat" onchange="onChangeProdCat()">
 <option>Armação</option><option>Lente</option><option>Solar</option>
 <option>Acessório</option><option>Contato</option><option>Serviço</option>
-<option>Serviço OS</option>
 </select>
 </div>
 <div class="form-group" style="grid-column:1/-1">
@@ -6370,7 +6369,14 @@ function renderProdutos() {
     p.cat.toLowerCase().includes(q.toLowerCase()) ||
     (p.marca||'').toLowerCase().includes(q.toLowerCase()) ||
     (p.modelo||'').toLowerCase().includes(q.toLowerCase())
-  );
+  ).sort(function(a, b) {
+    // Serviços sempre primeiro
+    var aServ = a.cat === 'Serviço' ? 0 : 1;
+    var bServ = b.cat === 'Serviço' ? 0 : 1;
+    if (aServ !== bServ) return aServ - bServ;
+    // Depois ordenar por categoria
+    return (a.cat||'').localeCompare(b.cat||'');
+  });
   document.getElementById('tb-produtos').innerHTML = data.length ? data.map((p,i) => {
     const margem = p.venda>0 ? (p.venda-p.custo)/p.venda*100 : 0;
     const status = (p.cat === 'Serviço') ? 'Serviço' : (p.qtd <= p.min ? 'Repor' : 'OK');
