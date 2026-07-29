@@ -928,6 +928,10 @@
 
     /* Ocultar colunas menos importantes nas tabelas */
     .hide-mobile { display: none !important; }
+
+    /* Tabelas com scroll horizontal */
+    .card-body { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    table { min-width: 500px; }
   }
 
   @media (max-width: 480px) {
@@ -2364,8 +2368,8 @@ function instalarApp() {
 <input id="search-produtos" oninput="renderProdutos()" placeholder="🔍 Buscar por código, descrição ou categoria..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0;overflow-x:auto">
-<table id="tb-produtos-table" style="min-width:600px"><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="col-custo-prod hide-mobile">Custo</th><th class="hide-mobile">Venda</th><th class="col-margem-prod hide-mobile">Margem</th><th class="hide-mobile">Status</th><th>Ações</th></tr></thead>
+<div class="card-body" style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
+<table id="tb-produtos-table" style="min-width:700px;width:100%"><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="col-custo-prod hide-mobile">Custo</th><th class="hide-mobile">Venda</th><th class="col-margem-prod hide-mobile">Margem</th><th class="hide-mobile">Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
