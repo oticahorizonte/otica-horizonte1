@@ -1916,7 +1916,7 @@ function getInitialData() {
 }
 
 function resetarSistema() {
-  if(confirm('Isso vai limpar todos os dados em cache e recarregar o sistema. Continuar?')) {
+  confirmar('Limpar cache e recarregar?\nTodos os dados em cache serão removidos.', function() {
     localStorage.clear();
     location.reload();
   }
@@ -4556,7 +4556,7 @@ function instalarApp() {
 
 // ── Reset do sistema ─────────────────────────────────────────────
 function resetarSistema() {
-  if(confirm('Isso vai limpar todos os dados e carregar os dados iniciais. Continuar?')) {
+  confirmar('Resetar todos os dados?\nEsta ação não pode ser desfeita!', function() {
     localStorage.clear();
     // Carregar dados iniciais
     var init = getInitialData();
@@ -6053,9 +6053,10 @@ function delCliente(id) {
   var vendas = load('vendas').filter(v=>v.clienteId===id);
   var os = load('os').filter(o=>o.clienteId===id);
   if (vendas.length > 0 || os.length > 0) {
-    if (!confirm('Este cliente possui '+vendas.length+' venda(s) e '+os.length+' OS. Deseja excluir mesmo assim?')) return;
+    confirmar('Excluir cliente?\nEle possui ' + vendas.length + ' venda(s) e ' + os.length + ' OS.', function() {
+
   } else {
-    if (!confirm('Excluir cliente '+c.nome+'?')) return;
+    confirmar('Excluir cliente ' + c.nome + '?', function() {
   }
   save('clientes', load('clientes').filter(c=>c.id!==id));
   renderClientes();
@@ -6638,7 +6639,7 @@ function openEntradaEstoque() {
 }
 
 function delProduto(cod) {
-  if (!confirm(`Excluir produto ${cod}?`)) return;
+  confirmar('Excluir produto ' + cod + '?', function() {
   save('produtos', load('produtos').filter(p=>p.cod!==cod));
   renderProdutos();
   showToast('Produto excluído!','warning');
@@ -7169,7 +7170,7 @@ function saveVenda() {
 
 function fecharModalVenda() {
   if (_carrinho && _carrinho.length > 0) {
-    if (!confirm('Tem itens no carrinho! Deseja sair sem registrar a venda?')) {
+    confirmar('Sair sem registrar?\nOs itens do carrinho serão perdidos.', function() {
       return;
     }
   }
@@ -7445,7 +7446,7 @@ function atualizarStatusOS(id) {
       var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
       var nomeCliente = clMap[arr[i].clienteId] || '—';
       setTimeout(function() {
-        if (confirm('OS '+id+' pronta! Enviar WhatsApp para '+nomeCliente+'?')) {
+        confirmar('OS ' + id + ' pronta!\nEnviar WhatsApp para ' + nomeCliente + '?', function() {
           copiarMsgWhatsApp(id);
         }
       }, 300);
@@ -7649,7 +7650,7 @@ function delOS(id) {
   if (o.tipoOS === 'montagem' && o.vendaRef) {
     msg = 'Esta OS de Montagem está vinculada à venda ' + o.vendaRef + '.\nExcluir a OS não cancela a venda.\n\nDeseja excluir mesmo assim?';
   }
-  if (!confirm(msg)) return;
+  confirmar(msg, function() {
   save('os', load('os').filter(o=>o.id!==id));
   renderOS();
   showToast('OS excluída!','warning');
@@ -8470,7 +8471,7 @@ function delUsuario(id) {
   // Nao permitir excluir o proprio usuario logado
   var userAtual = loadUser();
   if (userAtual && userAtual.login === u.login) { showToast('Você não pode excluir seu próprio usuário!','error'); return; }
-  if (!confirm('Excluir usuário '+u.nome+'?')) return;
+  confirmar('Excluir usuário ' + u.nome + '?', function() {
   saveUsuarios(getUsuarios().filter(x=>x.id!==id));
   renderUsuarios();
   showToast('Usuário excluído!','warning');
@@ -10239,7 +10240,7 @@ function confirmarConverterOSVenda() {
       '\n\n📋 A OS será enviada ao laboratório para montagem.' +
       '\n\nDeseja ir para as Ordens de Serviço?';
 
-    if (confirm(msg)) {
+    confirmar(msg, function() {
       showSection('os');
     }
   }, 300);
@@ -11381,7 +11382,7 @@ function removerItemVendaUnif(idx) {
   var item = _vendaItens[idx];
   // Se remover armação de um grupo, remover todo o grupo
   if (item.grupo && item.isArmacao) {
-    if (confirm('Remover o óculos completo inteiro (armação + lente + exame)?')) {
+    confirmar('Remover óculos completo?\nArmação + lente + exame serão removidos.', function() {
       _vendaItens = _vendaItens.filter(function(i){ return i.grupo !== item.grupo; });
     } else return;
   } else {
@@ -11693,7 +11694,8 @@ function registrarVendaUnif() {
 
 function fecharModalVenda() {
   if (_vendaItens && _vendaItens.length > 0) {
-    if (!confirm('Tem itens no carrinho! Deseja sair sem registrar a venda?')) return;
+    confirmar('Sair sem registrar?\nOs itens do carrinho serão perdidos.', function() { return; });
+  if (false)
   }
   _vendaItens = [];
   _vendaGrupoAtual = null;
@@ -12957,7 +12959,7 @@ function editarOrcamentoPendente(id) {
 }
 
 function excluirOrcamentoPendente(id) {
-  if (!confirm('Excluir este orçamento?')) return;
+  confirmar('Excluir este orçamento?', function() {
   save('composicoes', load('composicoes').filter(c=>c.id!==id));
   renderOrcamentosPendentes();
   showToast('Orçamento excluído!', 'warning');
@@ -13016,7 +13018,7 @@ function processarBackup(input) {
         return;
       }
       var msgConf = 'ATENCAO: Isso vai SUBSTITUIR todos os dados atuais pelos dados do backup.' + '\n\nBackup de: ' + new Date(dados.data).toLocaleString('pt-BR') + '\n\nDeseja continuar?';
-      if (!confirm(msgConf)) return;
+      confirmar(msgConf, function() {
       // Restaurar dados
       if (dados.clientes)     save('clientes',     dados.clientes);
       if (dados.receitas)     save('receitas',     dados.receitas);
@@ -13100,7 +13102,7 @@ function renderContasReceber() {
 }
 
 function marcarContaPaga(chave) {
-  if (!confirm('Marcar esta conta como PAGA?')) return;
+  confirmar('Marcar como PAGA?\nEsta ação registrará o pagamento.', function() {
   var vendas = load('vendas');
   vendas.forEach(function(v) {
     var vChave = v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data);
