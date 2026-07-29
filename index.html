@@ -6209,10 +6209,11 @@ function saveReceita() {
 }
 
 function delReceita(id) {
-  if (!confirm('Excluir esta receita?')) return;
+  confirmar('Excluir esta receita?', function() {
   save('receitas', load('receitas').filter(r=>r.id!==id));
   renderReceitas();
   showToast('Receita excluída!','warning');
+  });
 }
 
 // ── PRODUTOS ─────────────────────────────────────────────────────
@@ -8302,10 +8303,11 @@ function confirmarAgend(id) {
 }
 
 function delAgendamento(id) {
-  if (!confirm('Excluir este agendamento?')) return;
+  confirmar('Excluir agendamento?', function() {
   save('agendamentos', load('agendamentos').filter(a=>a.id!==id));
   renderAgendamentos();
   showToast('Agendamento excluído!','warning');
+  });
 }
 
 // ── COMISSÕES ────────────────────────────────────────────────────
