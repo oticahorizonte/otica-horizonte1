@@ -8711,10 +8711,11 @@ function saveEntrada() {
 
 function delEntrada(id) {
   confirmar('Excluir esta entrada?', function() {
-  save('entradas', load('entradas').filter(function(x){ return x.id!==id; }));
-  renderEntradas();
-  renderFluxoCaixa();
-  showToast('Entrada excluída!','warning');
+    save('entradas', load('entradas').filter(function(x){ return x.id!==id; }));
+    renderEntradas();
+    renderFluxoCaixa();
+    showToast('Entrada excluída!','warning');
+  });
 }
 
 
