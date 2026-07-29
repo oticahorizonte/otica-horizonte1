@@ -11393,7 +11393,10 @@ function removerItemVendaUnif(idx) {
   if (item.grupo && item.isArmacao) {
     confirmar('Remover óculos completo?\nArmação + lente + exame serão removidos.', function() {
       _vendaItens = _vendaItens.filter(function(i){ return i.grupo !== item.grupo; });
-    } else return;
+      renderVendaItens();
+      calcVendaTotais();
+    });
+    return;
   } else {
     _vendaItens.splice(idx, 1);
   }
