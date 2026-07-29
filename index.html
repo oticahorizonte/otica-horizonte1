@@ -11706,8 +11706,13 @@ function registrarVendaUnif() {
 
 function fecharModalVenda() {
   if (_vendaItens && _vendaItens.length > 0) {
-    confirmar('Sair sem registrar?\nOs itens do carrinho serão perdidos.', function() { return; });
-  if (false)
+    confirmar('Sair sem registrar?\nOs itens do carrinho serão perdidos.', function() {
+      _vendaItens = [];
+      _vendaGrupoAtual = null;
+      localStorage.removeItem('otica_rascunho_venda');
+      closeModal('modal-venda');
+    });
+    return;
   }
   _vendaItens = [];
   _vendaGrupoAtual = null;
