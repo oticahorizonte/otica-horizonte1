@@ -3767,14 +3767,10 @@ function instalarApp() {
 <label>Tipo de Serviço *</label>
 <select id="os-tipo" onchange="onChangeTipoOS()">
 <option>Óculos de Grau — Montagem</option>
-<option>Óculos Solar — Montagem</option>
-<option>Lente de Contato</option>
-<option>Conserto de Armação — Solda</option>
-<option>Conserto de Armação — Parafuso</option>
-<option>Conserto de Armação — Haste</option>
-<option>Conserto de Armação — Plaqueta</option>
-<option>Ajuste de Armação</option>
-<option>Troca de Lente — Arranhada</option>
+<option>🔧 Conserto de Armação</option>
+<option>🔍 Troca de Lente</option>
+<option>⚙️ Ajuste/Regulagem</option>
+<option>📦 Outros</option>
 <option>Troca de Lente — Quebrada</option>
 <option>Troca de Lente — Graduação</option>
 <option>Adaptação de Lente</option>
@@ -7423,17 +7419,8 @@ function toggleOsReceita() {
 
 
 function popularTiposOS() {
-  var sel = document.getElementById('os-tipo');
-  if (!sel) return;
-  var valorAtual = sel.value;
-  var fixas = ['Óculos de Grau — Montagem','Óculos Solar — Montagem','Lente de Contato',
-    'Conserto de Armação — Solda','Conserto de Armação — Parafuso','Conserto de Armação — Haste',
-    'Conserto de Armação — Plaqueta','Ajuste de Armação','Troca de Lente — Arranhada',
-    'Troca de Lente — Quebrada','Troca de Lente — Graduação','Adaptação de Lente','Outros'];
-  var servicosOS = load('produtos').filter(function(p){ return p.cat==='Serviço OS'; });
-  var todasOpcoes = fixas.concat(servicosOS.map(function(s){ return s.desc; }));
-  sel.innerHTML = todasOpcoes.map(function(o){ return '<option value="'+o+'">'+o+'</option>'; }).join('');
-  if (valorAtual) sel.value = valorAtual;
+  // Tipos fixos simplificados - não precisa popular dinamicamente
+  // O select já tem as opções corretas no HTML
 }
 
 function onChangeTipoOS() {
