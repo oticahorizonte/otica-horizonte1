@@ -5508,14 +5508,14 @@ function renderDashboard() {
   // Usar data local (nao UTC) para evitar erro de mes
   var hoje = new Date();
   var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
-  var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
+  var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual) && v.status !== 'Pendente' && v.status !== 'Cancelado');
   var receitaMes = calcReceitaGrupos(vendasMes);
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
   var ticketMedio = vendasMes.length ? receitaMes/vendasMes.length : 0;
 
   // Calcular saldo do dia
   var hojeStr2 = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
-  var vendasHoje2 = vendas.filter(function(v){ return (v.data||'').startsWith(hojeStr2); });
+  var vendasHoje2 = vendas.filter(function(v){ return (v.data||'').startsWith(hojeStr2) && v.status !== 'Pendente' && v.status !== 'Cancelado'; });
   var receitaHoje = calcReceitaGrupos(vendasHoje2);
   var despesasHoje2 = load('despesas').filter(function(d){ return (d.data||'').startsWith(hojeStr2); });
   var saidaHoje = despesasHoje2.reduce(function(s,d){ return s+(d.valor||0); },0);
@@ -6621,7 +6621,9 @@ function calcReceitaCaixa(v) {
 function calcReceitaGrupos(vendas) {
   var total = 0;
   var gruposContados = {};
-  vendas.forEach(function(v) {
+  // Filtrar apenas vendas pagas (não pendentes, não canceladas)
+  var vendasPagas = vendas.filter(function(v) { return v.status !== 'Pendente' && v.status !== 'Cancelado'; });
+  vendasPagas.forEach(function(v) {
     if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.parcelas && v.crediario.parcelas.length > 1) {
       var gk = v.grupoVenda || v.id;
       if (!gruposContados[gk]) {
@@ -6689,7 +6691,7 @@ function renderVendasHoje() {
   var el = document.getElementById('vendas-hoje-card');
   if (!el) return;
   var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
-  var vendasHoje = load('vendas').filter(function(v){ return (v.data||'').startsWith(hoje); });
+  var vendasHoje = load('vendas').filter(function(v){ return (v.data||'').startsWith(hoje) && v.status !== 'Pendente' && v.status !== 'Cancelado'; });
   var receitaHoje = calcReceitaGrupos(vendasHoje);
   // Agrupar por grupoVenda para contar vendas unicas
   var grupos = new Set(vendasHoje.map(function(v){ return v.grupoVenda||v.id; }));
