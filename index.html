@@ -3880,12 +3880,12 @@ function instalarApp() {
 
 <!-- Modal View OS -->
 <div class="modal-overlay" id="modal-view-os" style="display:none">
-<div class="modal" style="max-width:700px">
+<div class="modal" style="max-width:800px;width:95vw">
 <div class="modal-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a)">
 <h3 style="color:#e8c96a">Detalhes da OS</h3>
 <button class="modal-close" onclick="closeModal('modal-view-os')">x</button>
 </div>
-<div class="modal-body" style="padding:0"><div id="modal-view-os-body"></div></div>
+<div class="modal-body" style="padding:0;max-height:75vh;overflow-y:auto"><div id="modal-view-os-body"></div></div>
 <div class="modal-footer" style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap" id="modal-view-os-btns"></div>
 </div>
 </div>
@@ -7253,7 +7253,7 @@ function viewOS(id) {
         <div style="font-size:12px;display:grid;gap:3px">
           <div><span style="color:#5a6a8a">Previsão:</span> <strong>${fmtDate(o.previsao)||'—'}</strong></div>
           ${o.entrega?`<div><span style="color:#5a6a8a">Entrega:</span> <strong style="color:#16a34a">${fmtDate(o.entrega)}</strong></div>`:''}
-          <div><span style="color:#5a6a8a">Técnico:</span> <strong>${o.tecnico||'—'}</strong></div>
+          <div><span style="color:#5a6a8a">${o.tipoOS==='montagem'?'Laboratório':'Técnico'}:</span> <strong>${o.tecnico||'—'}</strong></div>
           ${o.armacao&&o.armacao!=='—'?`<div><span style="color:#5a6a8a">Armação:</span> <strong>${o.armacao}</strong></div>`:''}
         </div>
       </div>
@@ -7954,7 +7954,7 @@ function imprimirOS(id) {
     <div class="box-sub">Abertura: <strong>${fmtDate(o.abertura)}</strong></div>
     <div class="box-sub">Previsão: <strong>${fmtDate(o.previsao)}</strong></div>
     ${o.entrega?`<div class="box-sub">Entrega: <strong style="color:#16a34a">${fmtDate(o.entrega)}</strong></div>`:''}
-    <div class="box-sub">Técnico: <strong>${o.tecnico||'—'}</strong></div>
+    <div class="box-sub">${o.tipoOS==='montagem'?'Laboratório':'Técnico'}: <strong>${o.tecnico||'—'}</strong></div>
     <div class="box-sub">Status: <strong>${o.status}</strong></div>
   </div>
 </div>`;
