@@ -943,6 +943,35 @@
   .section.active { padding-bottom: 32px; }
 
 
+  /* ===== PRODUTOS & ESTOQUE - RESPONSIVO ===== */
+  #sec-produtos .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #sec-produtos .topbar-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #sec-produtos .topbar-actions .btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  #sec-produtos .card-body {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  #tb-produtos-table {
+    min-width: 650px;
+    width: 100%;
+  }
+  /* Em telas menores que 1024px, ocultar colunas menos importantes */
+  @media (max-width: 1024px) {
+    #tb-produtos-table th.hide-tablet,
+    #tb-produtos-table td.hide-tablet {
+      display: none !important;
+    }
+  }
+
   /* ===== NOVA VENDA MOBILE - ABAS ===== */
   @media (max-width: 768px) {
     #venda-abas { display: block !important; }
@@ -2338,7 +2367,7 @@ function instalarApp() {
 </div>
 </section>
 <!-- ── PRODUTOS ── -->
-<section class="section" id="sec-produtos">
+<section class="section" id="sec-produtos" style="overflow-x:hidden">
 <div class="topbar">
 <h1>📦 Produtos &amp; Estoque</h1>
 <div class="topbar-actions" style="flex-wrap:wrap;gap:6px">
