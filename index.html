@@ -7452,9 +7452,8 @@ function atualizarStatusOS(id) {
       setTimeout(function() {
         confirmar('OS ' + id + ' pronta!\nEnviar WhatsApp para ' + nomeCliente + '?', function() {
           copiarMsgWhatsApp(id);
-        }
+        });
       }, 300);
-  });
     }
     closeModal('modal-view-os');
     renderOS();
