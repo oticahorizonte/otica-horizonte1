@@ -2337,10 +2337,10 @@ function instalarApp() {
 <section class="section" id="sec-produtos">
 <div class="topbar">
 <h1>📦 Produtos &amp; Estoque</h1>
-<div class="topbar-actions">
+<div class="topbar-actions" style="flex-wrap:wrap;gap:6px">
 <button class="btn btn-outline" id="btn-historico-estoque" onclick="toggleHistoricoEstoque()">📋 Histórico</button>
-<button class="btn btn-warning" onclick="checkEstoque()">⚠️ Verificar Estoque</button>
-<button class="btn btn-primary" id="btn-novo-produto" onclick="openModal('modal-produto')">➕ Novo Produto</button>
+<button class="btn btn-warning" onclick="checkEstoque()">⚠️ Verificar</button>
+<button class="btn btn-primary" id="btn-novo-produto" onclick="openModal('modal-produto')">➕ Novo</button>
 <button class="btn btn-outline" onclick="forceSyncFotos()" data-tip="Enviar produtos com fotos para a nuvem" style="font-size:12px">🔄 Sync Fotos</button>
 </div>
 </div>
@@ -2364,8 +2364,8 @@ function instalarApp() {
 <input id="search-produtos" oninput="renderProdutos()" placeholder="🔍 Buscar por código, descrição ou categoria..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
-<table id="tb-produtos-table"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th class="col-custo-prod">Custo</th><th>Venda</th><th class="col-margem-prod">Margem</th><th>Status</th><th>Ações</th></tr></thead>
+<div class="card-body" style="padding:0;overflow-x:auto">
+<table id="tb-produtos-table" style="min-width:600px"><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="col-custo-prod hide-mobile">Custo</th><th class="hide-mobile">Venda</th><th class="col-margem-prod hide-mobile">Margem</th><th class="hide-mobile">Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
