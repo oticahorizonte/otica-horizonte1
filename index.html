@@ -8709,7 +8709,7 @@ function saveEntrada() {
 }
 
 function delEntrada(id) {
-  if (!confirm('Excluir esta entrada?')) return;
+  confirmar('Excluir esta entrada?', function() {
   save('entradas', load('entradas').filter(function(x){ return x.id!==id; }));
   renderEntradas();
   renderFluxoCaixa();
@@ -8908,10 +8908,11 @@ function saveDespesa() {
 }
 
 function delDespesa(id) {
-  if (!confirm('Excluir esta despesa?')) return;
+  confirmar('Excluir esta despesa?', function() {
   save('despesas', load('despesas').filter(x=>x.id!==id));
   renderDespesas();
   showToast('Despesa excluída!','warning');
+  });
 }
 
 // ── CONVERTER OS DE CONSERTO EM VENDA ─────────────────────────────────────
@@ -10807,7 +10808,7 @@ function imprimirOrcamentoById(id) {
 }
 
 function delComposicao(id) {
-  if (!confirm('Excluir este orçamento?')) return;
+  confirmar('Excluir este orçamento?', function() {
   save('composicoes', load('composicoes').filter(c=>c.id!==id));
   renderComposicoes();
   showToast('Orçamento excluído!', 'warning');
@@ -10927,7 +10928,7 @@ function toggleGrupo(grupoId) {
 }
 
 function delVendaGrupo(chave) {
-  if (!confirm('Excluir esta venda (todos os itens)?')) return;
+  confirmar('Excluir esta venda?\nTodos os itens serão removidos.', function() {
   const vendas = load('vendas');
   const novas = vendas.filter(v => (v.grupoVenda || v.id) !== chave);
   save('vendas', novas);
