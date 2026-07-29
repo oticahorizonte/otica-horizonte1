@@ -7171,14 +7171,17 @@ function saveVenda() {
 function fecharModalVenda() {
   if (_carrinho && _carrinho.length > 0) {
     confirmar('Sair sem registrar?\nOs itens do carrinho serão perdidos.', function() {
-      return;
-    }
-  });
+      limparRascunhoVenda();
+      _carrinho = [];
+      _carrinhoInterno = [];
+      closeModal('modal-venda');
+    });
+  } else {
+    limparRascunhoVenda();
+    _carrinho = [];
+    _carrinhoInterno = [];
+    closeModal('modal-venda');
   }
-  limparRascunhoVenda();
-  _carrinho = [];
-  _carrinhoInterno = [];
-  closeModal('modal-venda');
 }
 
 function delVenda(id) {
