@@ -12937,9 +12937,15 @@ function initOSModal() {
   var clienteLista = document.getElementById('os-cliente-lista');
   if (clienteLista) clienteLista.style.display = 'none';
   
-  // Resetar tipo para conserto (padrão)
+  // Resetar tipo para conserto (padrão) e garantir que não está disabled
   var tipoEl = document.getElementById('os-tipo');
-  if (tipoEl) tipoEl.value = '🔧 Conserto de Armação';
+  if (tipoEl) {
+    tipoEl.disabled = false; // IMPORTANTE: resetar disabled da edição anterior
+    tipoEl.value = '🔧 Conserto de Armação';
+  }
+  // Resetar disabled do cliente também
+  var clienteEl = document.getElementById('os-cliente');
+  if (clienteEl) clienteEl.disabled = false;
   
   // Limpar campos de texto
   var campos = ['os-armacao', 'os-tecnico', 'os-descricao', 'os-obs'];
