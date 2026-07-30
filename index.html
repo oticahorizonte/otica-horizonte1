@@ -3427,6 +3427,20 @@ function instalarApp() {
 </div>
 
 
+<!-- ABAS MOBILE - ocultas no PC -->
+<div id="venda-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
+  <div style="display:flex">
+    <button id="btn-aba-produtos" onclick="abaVenda('produtos')"
+      style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
+      🔍 Produtos
+    </button>
+    <button id="btn-aba-pagamento" onclick="abaVenda('pagamento')"
+      style="flex:1;padding:11px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer">
+      💰 Pagamento
+    </button>
+  </div>
+</div>
+
 <!-- CORPO: 2 COLUNAS -->
 <div id="venda-grid" style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
