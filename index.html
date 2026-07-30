@@ -10832,16 +10832,67 @@ function imprimirOrcamentoById(id) {
   const c = load('composicoes').find(x=>x.id===id);
   if (!c) return;
   const clMap = Object.fromEntries(load('clientes').map(cl=>[cl.id,cl.nome]));
-  abrirModalOrcamento({
-    armVenda: c.armVenda||0,
-    lenVenda: c.lenVenda||0,
-    exame: c.exame||0,
-    descPct: c.descPct||0,
-    descValor: c.descValor||0,
-    totalCli: c.totalCli||0,
-    cliente: clMap[c.clienteId]||'—',
-    desc: c.desc||'Orçamento'
-  });
+  const nomeCliente = clMap[c.clienteId] || '—';
+  const itens = c.carrinho || c.itens || [];
+  const descReais = c.descValor || c.desconto || 0;
+  const total = c.totalCli || c.total || 0;
+  const subtotal = total + descReais;
+  const now = new Date().toLocaleString('pt-BR');
+  const dataOrc = c.data ? new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR') : now;
+
+  // Montar linhas dos itens
+  var itensHtml = itens.map(function(item) {
+    var nome = item.descricaoCompleta || item.nome || item.cod || '—';
+    var valorItem = (item.preco||0) * (item.qtd||1);
+    return '<tr style="border-bottom:1px solid #e2e8f0">' +
+      '<td style="padding:8px 12px;font-size:13px">' + nome + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;font-size:13px">' + (item.qtd||1) + '</td>' +
+      '<td style="padding:8px 12px;text-align:right;font-size:13px">' + fmtMoney(item.preco||0) + '</td>' +
+      '<td style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700">' + fmtMoney(valorItem) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
+    '<title>Orçamento - Ótica Horizonte</title>' +
+    '<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}' +
+    'body{font-family:"Segoe UI",sans-serif;color:#1e293b;padding:20px;max-width:600px;margin:0 auto}' +
+    'table{width:100%;border-collapse:collapse}' +
+    '@media print{.no-print{display:none!important}@page{size:A5;margin:8mm}}</style></head><body>' +
+    // Cabeçalho
+    '<div style="display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:3px solid #1e3a5f;margin-bottom:16px">' +
+    '<div><div style="font-size:20px;font-weight:800;color:#1e3a5f">Ótica Horizonte</div>' +
+    '<div style="font-size:11px;color:#64748b">CNPJ: 64.448.745/0001-09</div>' +
+    '<div style="font-size:11px;color:#64748b">Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10</div>' +
+    '<div style="font-size:11px;color:#64748b">Tel: (92) 99289-0085 / (92) 99445-1770</div></div></div>' +
+    // Título
+    '<div style="background:#f0f4ff;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between">' +
+    '<div><div style="font-size:16px;font-weight:800;color:#1e3a5f">📋 ORÇAMENTO</div>' +
+    '<div style="font-size:12px;color:#64748b">Data: ' + dataOrc + '</div></div>' +
+    '<div style="text-align:right"><div style="font-size:12px;color:#64748b">Cliente:</div>' +
+    '<div style="font-size:14px;font-weight:700;color:#1e3a5f">' + nomeCliente + '</div></div></div>' +
+    // Tabela de itens
+    '<table style="margin-bottom:16px"><thead>' +
+    '<tr style="background:#1e3a5f;color:white">' +
+    '<th style="padding:8px 12px;text-align:left;font-size:12px">Produto/Serviço</th>' +
+    '<th style="padding:8px 12px;text-align:center;font-size:12px">Qtd</th>' +
+    '<th style="padding:8px 12px;text-align:right;font-size:12px">Unit.</th>' +
+    '<th style="padding:8px 12px;text-align:right;font-size:12px">Total</th>' +
+    '</tr></thead><tbody>' + itensHtml + '</tbody></table>' +
+    // Totais
+    '<div style="border-top:2px solid #e2e8f0;padding-top:12px;text-align:right">' +
+    (descReais > 0 ? '<div style="font-size:13px;color:#64748b;margin-bottom:4px">Subtotal: ' + fmtMoney(subtotal) + '</div>' +
+    '<div style="font-size:13px;color:#dc2626;margin-bottom:4px">Desconto: - ' + fmtMoney(descReais) + '</div>' : '') +
+    '<div style="font-size:20px;font-weight:800;color:#16a34a">TOTAL: ' + fmtMoney(total) + '</div></div>' +
+    // Rodapé
+    '<div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center">' +
+    '🛡️ Orçamento válido por 30 dias. Ótica Horizonte — Seu olhar, nosso compromisso.</div>' +
+    '<div class="no-print" style="text-align:center;margin-top:20px">' +
+    '<button onclick="window.print()" style="padding:12px 32px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-right:10px">🖨️ Imprimir / Salvar PDF</button>' +
+    '<button onclick="window.close()" style="padding:12px 24px;background:#64748b;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer">✕ Fechar</button>' +
+    '</div></body></html>';
+
+  var win = window.open('', '_blank', 'width=700,height=900');
+  if (win) { win.document.write(html); win.document.close(); setTimeout(function(){ win.focus(); }, 300); }
 }
 
 function delComposicao(id) {
@@ -11539,15 +11590,21 @@ function salvarOrcamentoVendaUnif() {
   // Gerar descricao resumida dos itens
   var descItens = _vendaItens.map(function(i){ return i.nome; }).join(' + ');
   if (descItens.length > 60) descItens = descItens.substring(0,57)+'...';
+  var pag = (document.getElementById('venda-pag')||{}).value || 'PIX';
+  var vendedor = (document.getElementById('venda-vendedor')||{}).value || '';
   var obj = {
     id: nextId(arr),
     data: (document.getElementById('venda-data')||{}).value || '',
     clienteId: clienteId,
     itens: _vendaItens,
+    carrinho: JSON.parse(JSON.stringify(_vendaItens)), // cópia completa dos itens
     desconto: descReais,
+    descValor: descReais,
     total: total,
     totalCli: total,
     desc: descItens,
+    pag: pag,
+    vendedor: vendedor,
     status: 'aberto'
   };
   arr.push(obj);
