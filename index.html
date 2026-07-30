@@ -8760,16 +8760,17 @@ function filtrarClientesAgend(q) {
     return (c.nome||'').toLowerCase().includes(q.toLowerCase()) ||
            (c.tel||'').includes(q) || (c.cpf||'').includes(q);
   });
+  lista.innerHTML = '';
   if (filtrados.length === 0) { lista.style.display = 'none'; return; }
-  lista.innerHTML = filtrados.slice(0,8).map(function(c){
-    var nome = (c.nome||'-').replace(/"/g,'&quot;');
-    var id = c.id || '';
-    return '<div onclick="selecionarClienteAgend(' + JSON.stringify(id) + ',' + JSON.stringify(c.nome||'') + ')" ' +
-      'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px" ' +
-      'onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">' +
-      '<strong>' + nome + '</strong>' +
-      '<span style="color:#64748b;font-size:11px;margin-left:8px">' + (c.tel||'') + '</span></div>';
-  }).join('');
+  filtrados.slice(0,8).forEach(function(c) {
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px';
+    div.innerHTML = '<strong>' + (c.nome||'-') + '</strong><span style="color:#64748b;font-size:11px;margin-left:8px">' + (c.tel||'') + '</span>';
+    div.addEventListener('mouseover', function(){ this.style.background='#f8fafc'; });
+    div.addEventListener('mouseout', function(){ this.style.background=''; });
+    div.addEventListener('click', function(){ selecionarClienteAgend(c.id, c.nome||''); });
+    lista.appendChild(div);
+  });
   lista.style.display = 'block';
 }
 
