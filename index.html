@@ -6678,6 +6678,25 @@ function calcReceitaCaixa(v) {
 }
 
 // Receita real: entrada UMA VEZ por grupo de crediário parcelado
+// Calcula valor a receber de vendas PENDENTES
+// Para crediário: retorna a entrada; para outros: retorna o total
+function calcValorPendente(vendas) {
+  var total = 0;
+  var gruposContados = {};
+  vendas.forEach(function(v) {
+    if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.parcelas && v.crediario.parcelas.length > 1) {
+      var gk = v.grupoVenda || v.id;
+      if (!gruposContados[gk]) {
+        gruposContados[gk] = true;
+        total += v.crediario.entrada || 0;
+      }
+    } else {
+      total += calcTotal(v);
+    }
+  });
+  return total;
+}
+
 function calcReceitaGrupos(vendas) {
   var total = 0;
   var gruposContados = {};
@@ -13113,7 +13132,7 @@ function renderContasReceber() {
     grupos[chave].itens.push(v);
   });
 
-  var totalPendente = calcReceitaGrupos(vendas); // Para crediário: só a entrada
+  var totalPendente = calcValorPendente(vendas); // Para crediário: entrada; outros: total
   if (totalEl) totalEl.textContent = 'Total: ' + fmtMoney(totalPendente);
 
   var gruposArr = Object.entries(grupos);
@@ -13124,7 +13143,7 @@ function renderContasReceber() {
 
   var rows = gruposArr.map(function(entry) {
     var chave = entry[0], g = entry[1];
-    var total = calcReceitaGrupos(g.itens); // Para crediário: só a entrada
+    var total = calcValorPendente(g.itens); // Para crediário: entrada; outros: total
     var parcInfo = g.parcelas && g.parcelas > 1 ? ' (' + g.parcelas + 'x)' : '';
     var tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid #fee2e2';
