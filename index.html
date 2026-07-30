@@ -6801,7 +6801,74 @@ function exportarRelatorioPDF() {
     +'<div class="no-print" style="text-align:center;margin-top:20px">'
     +'<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>'
     +'<button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-left:10px">✕ Fechar</button>'
-    +'</div></body></html>';
+    +'</div>
+<!-- ═══ MODAL AGENDAMENTO ═══ -->
+<div class="modal-overlay" id="modal-agend" style="display:none">
+<div class="modal" style="max-width:560px;width:95%">
+<div class="modal-header">
+  <h2 id="modal-agend-title">📅 Novo Agendamento</h2>
+  <button class="modal-close" onclick="closeModal('modal-agend')">✕</button>
+</div>
+<div class="modal-body">
+  <input type="hidden" id="agend-idx"/>
+  <div class="form-group">
+    <label>👤 Cliente</label>
+    <div style="position:relative">
+      <input type="text" id="agend-cliente-busca" placeholder="Buscar cliente..." autocomplete="off"
+        oninput="filtrarClientesAgend(this.value)"
+        style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;box-sizing:border-box"/>
+      <div id="agend-cliente-lista" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:2px solid var(--border);border-radius:0 0 10px 10px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.15)"></div>
+    </div>
+    <input type="hidden" id="agend-cliente"/>
+    <input type="hidden" id="agend-cliente-nome"/>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="form-group">
+      <label>📅 Data</label>
+      <input type="date" id="agend-data"/>
+    </div>
+    <div class="form-group">
+      <label>🕐 Horário</label>
+      <input type="time" id="agend-hora" value="09:00"/>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="form-group">
+      <label>📋 Tipo</label>
+      <select id="agend-tipo">
+        <option>Consulta</option>
+        <option>Retorno</option>
+        <option>Entrega</option>
+        <option>Ajuste</option>
+        <option>Outros</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>🔄 Status</label>
+      <select id="agend-status">
+        <option>Agendado</option>
+        <option>Confirmado</option>
+        <option>Realizado</option>
+        <option>Cancelado</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>👨‍⚕️ Profissional</label>
+    <input type="text" id="agend-prof" placeholder="Nome do profissional (opcional)"/>
+  </div>
+  <div class="form-group">
+    <label>📝 Observações</label>
+    <textarea id="agend-obs" rows="3" placeholder="Observações sobre o agendamento..."></textarea>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-outline" onclick="closeModal('modal-agend')">Cancelar</button>
+  <button class="btn btn-primary" onclick="salvarAgendamento()">💾 Salvar</button>
+</div>
+</div>
+</div>
+</body></html>';
 
 
   var win = window.open('','_blank','width=900,height=700');
@@ -8738,15 +8805,32 @@ function checkOSAtrasadas() {
 
 // ── AGENDAMENTOS ─────────────────────────────────────────────────
 function openNovoAgendamento() {
-  populateClienteSelect('agend-cliente');
-  document.getElementById('agend-idx').value = '';
-  document.getElementById('modal-agend-title').textContent = '📅 Novo Agendamento';
-  document.getElementById('agend-data').value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
-  document.getElementById('agend-hora').value = '09:00';
-  document.getElementById('agend-tipo').value = 'Consulta';
-  document.getElementById('agend-status').value = 'Agendado';
-  document.getElementById('agend-prof').value = '';
-  document.getElementById('agend-obs').value = '';
+  var idx = document.getElementById('agend-idx');
+  var title = document.getElementById('modal-agend-title');
+  var data = document.getElementById('agend-data');
+  var hora = document.getElementById('agend-hora');
+  var tipo = document.getElementById('agend-tipo');
+  var status = document.getElementById('agend-status');
+  var prof = document.getElementById('agend-prof');
+  var obs = document.getElementById('agend-obs');
+  var busca = document.getElementById('agend-cliente-busca');
+  var cli = document.getElementById('agend-cliente');
+  var cliNome = document.getElementById('agend-cliente-nome');
+  var lista = document.getElementById('agend-cliente-lista');
+  if (!idx) { showToast('Modal de agendamento não encontrado', 'error'); return; }
+  idx.value = '';
+  title.textContent = '📅 Novo Agendamento';
+  var hoje = new Date();
+  data.value = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  hora.value = '09:00';
+  tipo.value = 'Consulta';
+  status.value = 'Agendado';
+  prof.value = '';
+  obs.value = '';
+  busca.value = '';
+  cli.value = '';
+  cliNome.value = '';
+  lista.style.display = 'none';
   openModal('modal-agend');
 }
 
