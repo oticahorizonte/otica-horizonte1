@@ -5880,7 +5880,7 @@ function renderDashboard() {
   atualizarBadges();
   renderMetaOtica();
   renderMetasIndividuais();
-  renderGraficoMisto();
+  renderGraficoMisto(load('vendas') || []);
   renderCrediarioDash();
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const clientes = load('clientes').filter(c=>c.status!=='Inativo'), produtos = load('produtos'), vendas = load('vendas'), os = load('os');
