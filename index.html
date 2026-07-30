@@ -13113,7 +13113,7 @@ function renderContasReceber() {
     grupos[chave].itens.push(v);
   });
 
-  var totalPendente = vendas.reduce(function(s,v){ return s+calcTotal(v); }, 0);
+  var totalPendente = calcReceitaGrupos(vendas); // Para crediário: só a entrada
   if (totalEl) totalEl.textContent = 'Total: ' + fmtMoney(totalPendente);
 
   var gruposArr = Object.entries(grupos);
