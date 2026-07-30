@@ -8470,6 +8470,10 @@ function editUsuario(id) {
   document.getElementById('usuario-login').value = u.login||'';
   document.getElementById('usuario-senha').value = u.senha||'';
   document.getElementById('usuario-nivel').value = u.nivel||'Vendedor';
+  // Ocultar comissão para admins
+  var comissaoGroup = document.getElementById('usuario-comissao') ? 
+    document.getElementById('usuario-comissao').closest('.form-group') : null;
+  if (comissaoGroup) comissaoGroup.style.display = (u.nivel==='Admin') ? 'none' : '';
   document.getElementById('usuario-comissao').value = u.comissao||0;
   document.getElementById('usuario-status').value = u.status||'Ativo';
   var wppInput = document.getElementById('usuario-whatsapp');
@@ -8521,14 +8525,19 @@ function delUsuario(id) {
   var idNum = parseInt(id)||id;
   var u = getUsuarios().find(x=>x.id===idNum||x.id===id||String(x.id)===String(id));
   if (!u) return;
-  if (u.login==='admin') { showToast('Não é possível excluir o administrador!','error'); return; }
+  if (u.login==='admin') { showToast('Não é possível excluir o administrador padrão!','error'); return; }
   // Nao permitir excluir o proprio usuario logado
   var userAtual = loadUser();
   if (userAtual && userAtual.login === u.login) { showToast('Você não pode excluir seu próprio usuário!','error'); return; }
+  // Verificar se é o último admin
+  if (u.nivel === 'Admin') {
+    var todosAdmins = getUsuarios().filter(function(x){ return x.nivel === 'Admin' && x.login !== 'admin'; });
+    if (todosAdmins.length <= 1) { showToast('Não é possível excluir o único administrador!','error'); return; }
+  }
   confirmar('Excluir usuário ' + u.nome + '?', function() {
-  saveUsuarios(getUsuarios().filter(x=>x.id!==id));
-  renderUsuarios();
-  showToast('Usuário excluído!','warning');
+    saveUsuarios(getUsuarios().filter(x=>x.id!==id));
+    renderUsuarios();
+    showToast('Usuário excluído!','warning');
   });
 }
 
@@ -9127,7 +9136,11 @@ function renderComissoes() {
       +'</tr>';
   }).join('') || '<tr><td colspan="6" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda registrada</td></tr>';
 
-  document.getElementById('tb-comissoes-det').innerHTML = [...vendas].reverse().map(v => `
+  // Filtrar vendas de admins nas vendas detalhadas
+  var vendasSemAdmin = vendas.filter(function(v) {
+    return adminsNomes.indexOf((v.vendedor||'').toLowerCase()) === -1;
+  });
+  document.getElementById('tb-comissoes-det').innerHTML = [...vendasSemAdmin].reverse().map(v => `
     <tr>
       <td><strong>${v.id}</strong></td>
       <td>${fmtDate(v.data)}</td>
