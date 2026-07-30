@@ -8750,6 +8750,107 @@ function openNovoAgendamento() {
   openModal('modal-agend');
 }
 
+
+// ===== AGENDAMENTOS =====
+function filtrarClientesAgend(q) {
+  var lista = document.getElementById('agend-cliente-lista');
+  if (!lista) return;
+  var clientes = load('clientes').filter(function(c){ return c.status !== 'Inativo'; });
+  var filtrados = q.length < 1 ? [] : clientes.filter(function(c){
+    return (c.nome||'').toLowerCase().includes(q.toLowerCase()) ||
+           (c.tel||'').includes(q) || (c.cpf||'').includes(q);
+  });
+  if (filtrados.length === 0) { lista.style.display = 'none'; return; }
+  lista.innerHTML = filtrados.slice(0,8).map(function(c){
+    return '<div onclick="selecionarClienteAgend('' + c.id + '','' + (c.nome||'').replace(/'/g,"\'") + '')" ' +
+      'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px" ' +
+      'onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">' +
+      '<strong>' + (c.nome||'-') + '</strong>' +
+      '<span style="color:#64748b;font-size:11px;margin-left:8px">' + (c.tel||'') + '</span></div>';
+  }).join('');
+  lista.style.display = 'block';
+}
+
+function selecionarClienteAgend(id, nome) {
+  document.getElementById('agend-cliente').value = id;
+  document.getElementById('agend-cliente-nome').value = nome;
+  document.getElementById('agend-cliente-busca').value = nome;
+  document.getElementById('agend-cliente-lista').style.display = 'none';
+}
+
+function salvarAgendamento() {
+  var idx = document.getElementById('agend-idx').value;
+  var clienteId = document.getElementById('agend-cliente').value;
+  var clienteNome = document.getElementById('agend-cliente-nome').value ||
+                    document.getElementById('agend-cliente-busca').value;
+  var data = document.getElementById('agend-data').value;
+  var hora = document.getElementById('agend-hora').value;
+  var tipo = document.getElementById('agend-tipo').value;
+  var status = document.getElementById('agend-status').value;
+  var prof = document.getElementById('agend-prof').value;
+  var obs = document.getElementById('agend-obs').value;
+
+  if (!clienteNome) { showToast('Selecione um cliente', 'error'); return; }
+  if (!data) { showToast('Informe a data', 'error'); return; }
+
+  var agendamentos = load('agendamentos');
+  var agend = {
+    id: idx || Date.now().toString(),
+    clienteId: clienteId,
+    clienteNome: clienteNome,
+    data: data,
+    hora: hora,
+    tipo: tipo,
+    status: status,
+    prof: prof,
+    obs: obs
+  };
+
+  if (idx) {
+    var i = agendamentos.findIndex(function(a){ return a.id === idx; });
+    if (i !== -1) agendamentos[i] = agend;
+    else agendamentos.push(agend);
+  } else {
+    agendamentos.push(agend);
+  }
+
+  save('agendamentos', agendamentos);
+  closeModal('modal-agend');
+  renderAgendamentos();
+  renderCalendario();
+  showToast('✅ Agendamento salvo!', 'success');
+}
+
+function editarAgendamento(id) {
+  var agendamentos = load('agendamentos');
+  var agend = agendamentos.find(function(a){ return a.id === id; });
+  if (!agend) return;
+
+  document.getElementById('agend-idx').value = agend.id;
+  document.getElementById('modal-agend-title').textContent = '✏️ Editar Agendamento';
+  document.getElementById('agend-data').value = agend.data || '';
+  document.getElementById('agend-hora').value = agend.hora || '09:00';
+  document.getElementById('agend-tipo').value = agend.tipo || 'Consulta';
+  document.getElementById('agend-status').value = agend.status || 'Agendado';
+  document.getElementById('agend-prof').value = agend.prof || '';
+  document.getElementById('agend-obs').value = agend.obs || '';
+  document.getElementById('agend-cliente-busca').value = agend.clienteNome || '';
+  document.getElementById('agend-cliente').value = agend.clienteId || '';
+  document.getElementById('agend-cliente-nome').value = agend.clienteNome || '';
+  document.getElementById('agend-cliente-lista').style.display = 'none';
+  openModal('modal-agend');
+}
+
+function excluirAgendamento(id) {
+  confirmar('Excluir este agendamento?', function() {
+    var agendamentos = load('agendamentos').filter(function(a){ return a.id !== id; });
+    save('agendamentos', agendamentos);
+    renderAgendamentos();
+    renderCalendario();
+    showToast('Agendamento excluído', 'success');
+  });
+}
+
 function renderAgendamentos() {
   if(!document.getElementById('tb-agend')) return;
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
