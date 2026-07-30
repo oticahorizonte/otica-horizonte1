@@ -2310,12 +2310,6 @@ function instalarApp() {
 </div>
 <!-- Gráficos -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
-<div class="card">
-<div class="card-header"><h3>🏆 Top Produtos</h3></div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Produto</th><th>Qtd</th></tr></thead>
-<tbody id="chart-top-produtos"></tbody></table>
-</div>
 </div>
 <div class="card">
 <div class="card-header"><h3>💳 Pagamentos</h3></div>
@@ -5732,7 +5726,7 @@ function renderMetasIndividuais() {
   
   // Quem mostrar: admin vê todos, vendedor vê só o próprio
   var usuariosParaMeta = adminDash 
-    ? usuarios.filter(u => u.status === 'Ativo')
+    ? usuarios.filter(u => u.status === 'Ativo' && u.login !== 'admin')
     : usuarios.filter(u => u.login === user.login);
 
   var body = document.getElementById('dash-metas-ind-body');
@@ -9978,11 +9972,30 @@ function renderGraficos() {
   const pagCount = {};
   let totalPag = 0;
   vendas.forEach(v=>{ pagCount[v.pag]=(pagCount[v.pag]||0)+calcTotal(v); totalPag+=calcTotal(v); });
-  const pagEl = document.getElementById('chart-pagamentos');
+  var pagEl = document.getElementById('chart-pagamentos');
   if (pagEl) {
-    pagEl.innerHTML = Object.entries(pagCount).sort((a,b)=>b[1]-a[1]).map(([pag,val])=>`
-      <tr><td style="padding:8px;font-size:12px">${pag}</td><td style="padding:8px;text-align:center;font-weight:700">${totalPag>0?(val/totalPag*100).toFixed(0)+'%':'0%'}</td></tr>`).join('') ||
-      '<tr><td colspan="2" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+    var pagValores = {};
+    var totalPagVal = 0;
+    vendas.filter(function(v){return v.status!=='Pendente'&&v.status!=='Cancelado';}).forEach(function(v){
+      var pag = v.pag || 'Não informado';
+      pagValores[pag] = (pagValores[pag]||0) + calcTotal(v);
+      totalPagVal += calcTotal(v);
+    });
+    var pagIcons = {'PIX':'💠','Dinheiro':'💵','Cartão Crédito':'💳','Cartão Débito':'💳','Crediário Próprio':'📋'};
+    pagEl.innerHTML = Object.entries(pagValores).sort(function(a,b){return b[1]-a[1];}).map(function(entry) {
+      var pag = entry[0], val = entry[1];
+      var pct = totalPagVal > 0 ? (val/totalPagVal*100) : 0;
+      var icon = pagIcons[pag] || '💰';
+      return '<div style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px">' +
+          '<span style="font-weight:600;color:#0d2b4e">' + icon + ' ' + pag + '</span>' +
+          '<span style="color:#0d2b4e;font-weight:700">' + fmtMoney(val) + ' <span style="color:#64748b;font-weight:400">(' + pct.toFixed(1) + '%)</span></span>' +
+        '</div>' +
+        '<div style="background:#e2e8f0;border-radius:6px;height:8px;overflow:hidden">' +
+          '<div style="height:100%;border-radius:6px;background:linear-gradient(90deg,#0d2b4e,#c9a84c);width:' + pct.toFixed(1) + '%"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('') || '<div style="color:#94a3b8;font-size:12px;padding:8px">Sem dados</div>';
   }
 
   // Aniversariantes do mês
