@@ -8123,7 +8123,7 @@ function delOS(id) {
 
 // ── RELATÓRIOS ───────────────────────────────────────────────────
 function renderRelatorios() {
-  if(!document.getElementById('rel-cards') && !document.getElementById('rel-resumo-body')) return;
+  if(!document.getElementById('rel-resumo-body')) return;
 
   var periodo = document.getElementById('rel-periodo')?.value || 'mes';
   var hoje = new Date();
@@ -8256,9 +8256,11 @@ function renderRelatorios() {
 
   // ── TOP CLIENTES ──
   var cliMap={};
+  var cliNomeMap=Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
   vendas.forEach(v=>{
     var cid=v.cliente||'';if(!cid)return;
-    cliMap[cid]=cliMap[cid]||{nome:v.clienteNome||cid,compras:0,total:0,ultima:''};
+    var nome=v.clienteNome||cliNomeMap[cid]||cid;
+    cliMap[cid]=cliMap[cid]||{nome:nome,compras:0,total:0,ultima:''};
     cliMap[cid].compras++;cliMap[cid].total+=calcTotal(v);
     if((v.data||'')>cliMap[cid].ultima)cliMap[cid].ultima=v.data||'';
   });
@@ -8289,7 +8291,7 @@ function renderRelatorios() {
   var cliCompEl=document.getElementById('rel-clientes-completo');
   if(cliCompEl){
     var cliVendas={};
-    todasVendas.forEach(v=>{var cid=v.cliente||'';if(!cid)return;cliVendas[cid]=cliVendas[cid]||{compras:0,total:0,ultima:''};cliVendas[cid].compras++;cliVendas[cid].total+=calcTotal(v);if((v.data||'')>cliVendas[cid].ultima)cliVendas[cid].ultima=v.data||'';});
+    todasVendas.forEach(v=>{var cid=v.cliente||v.clienteNome||'';if(!cid)return;cliVendas[cid]=cliVendas[cid]||{compras:0,total:0,ultima:''};cliVendas[cid].compras++;cliVendas[cid].total+=calcTotal(v);if((v.data||'')>cliVendas[cid].ultima)cliVendas[cid].ultima=v.data||'';});
     var cliList=clientes.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
     cliCompEl.innerHTML=cliList.map(c=>{
       var cv=cliVendas[c.id]||{compras:0,total:0,ultima:''};
@@ -8639,6 +8641,80 @@ function toggleDark() {
   localStorage.setItem('otica_dark', isDark ? '1' : '0');
   document.getElementById('dark-toggle').textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
 }
+
+// ===== IMPRESSÃO DE RELATÓRIOS =====
+function imprimirSecao(secaoId, titulo) {
+  var el = document.getElementById(secaoId);
+  if (!el) { showToast('Seção não encontrada', 'error'); return; }
+  var periodoLabel = document.getElementById('rel-print-periodo-label') ? document.getElementById('rel-print-periodo-label').textContent : '';
+  var dataEmissao = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  var printWin = window.open('', '_blank', 'width=900,height=700');
+  if (!printWin) { showToast('Permita pop-ups para imprimir', 'error'); return; }
+  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + titulo + ' — Ótica Horizonte</title><style>' +
+    'body{font-family:Arial,sans-serif;font-size:12px;color:#1e293b;margin:0;padding:20px}' +
+    '.ph{display:flex;align-items:flex-start;gap:16px;border-bottom:3px solid #0d2b4e;padding-bottom:12px;margin-bottom:20px}' +
+    '.ph h1{font-size:18px;color:#0d2b4e;margin:0 0 4px}' +
+    '.ph p{font-size:10px;color:#64748b;margin:2px 0}' +
+    '.pm{margin-left:auto;text-align:right;font-size:11px;color:#64748b}' +
+    '.pt{font-size:14px;font-weight:700;color:#0d2b4e}' +
+    'table{width:100%;border-collapse:collapse;margin-top:8px}' +
+    'th{background:#0d2b4e;color:white;padding:8px;text-align:left;font-size:11px}' +
+    'td{padding:7px 8px;border-bottom:1px solid #e2e8f0;font-size:11px}' +
+    'tr:nth-child(even) td{background:#f8fafc}' +
+    'tfoot tr td,tfoot tr th{background:#1e3a5c!important;color:white!important;font-weight:700}' +
+    '.fw-bold{font-weight:700}' +
+    'button{display:none!important}' +
+    '.card-header button{display:none!important}' +
+    '@media print{body{padding:10px}}' +
+    '</style></head><body>' +
+    '<div class="ph"><div><h1>Ótica Horizonte</h1>' +
+    '<p>CNPJ: 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10</p>' +
+    '<p>Tel: (92) 99289-0085 / (92) 99445-1770</p></div>' +
+    '<div class="pm"><div class="pt">' + titulo + '</div><div>' + periodoLabel + '</div><div>Emitido em: ' + dataEmissao + '</div></div></div>' +
+    el.innerHTML +
+    '<div style="margin-top:30px;border-top:1px solid #e2e8f0;padding-top:8px;font-size:10px;color:#94a3b8;text-align:center">Ótica Horizonte — Sistema de Gestão © 2026</div>' +
+    '<script>window.onload=function(){window.print();}<\/script></body></html>');
+  printWin.document.close();
+}
+
+function imprimirRelatorioCompleto() {
+  var periodoLabel = document.getElementById('rel-print-periodo-label') ? document.getElementById('rel-print-periodo-label').textContent : '';
+  var dataEmissao = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  var blocos = document.querySelectorAll('.rel-bloco');
+  var html = '';
+  blocos.forEach(function(b){ if(b.offsetParent!==null) html += '<div style="margin-bottom:30px">' + b.outerHTML + '</div>'; });
+  var printWin = window.open('', '_blank', 'width=900,height=700');
+  if (!printWin) { showToast('Permita pop-ups para imprimir', 'error'); return; }
+  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Completo — Ótica Horizonte</title><style>' +
+    'body{font-family:Arial,sans-serif;font-size:12px;color:#1e293b;margin:0;padding:20px}' +
+    '.ph{display:flex;align-items:flex-start;gap:16px;border-bottom:3px solid #0d2b4e;padding-bottom:12px;margin-bottom:20px}' +
+    '.ph h1{font-size:18px;color:#0d2b4e;margin:0 0 4px}' +
+    '.ph p{font-size:10px;color:#64748b;margin:2px 0}' +
+    '.pm{margin-left:auto;text-align:right;font-size:11px;color:#64748b}' +
+    '.pt{font-size:14px;font-weight:700;color:#0d2b4e}' +
+    'table{width:100%;border-collapse:collapse;margin-top:8px}' +
+    'th{background:#0d2b4e;color:white;padding:8px;text-align:left;font-size:11px}' +
+    'td{padding:7px 8px;border-bottom:1px solid #e2e8f0;font-size:11px}' +
+    'tr:nth-child(even) td{background:#f8fafc}' +
+    'tfoot tr td,tfoot tr th{background:#1e3a5c!important;color:white!important;font-weight:700}' +
+    '.card{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;page-break-inside:avoid}' +
+    '.card-header{background:#0d2b4e;color:white;padding:10px 14px}' +
+    '.card-header h3{margin:0;font-size:13px;color:white}' +
+    '.card-body{padding:0}' +
+    '.fw-bold{font-weight:700}' +
+    'button{display:none!important}' +
+    '@media print{body{padding:10px}.card{page-break-inside:avoid}}' +
+    '</style></head><body>' +
+    '<div class="ph"><div><h1>Ótica Horizonte</h1>' +
+    '<p>CNPJ: 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10</p>' +
+    '<p>Tel: (92) 99289-0085 / (92) 99445-1770</p></div>' +
+    '<div class="pm"><div class="pt">Relatório Completo</div><div>' + periodoLabel + '</div><div>Emitido em: ' + dataEmissao + '</div></div></div>' +
+    html +
+    '<div style="margin-top:30px;border-top:1px solid #e2e8f0;padding-top:8px;font-size:10px;color:#94a3b8;text-align:center">Ótica Horizonte — Sistema de Gestão © 2026</div>' +
+    '<script>window.onload=function(){window.print();}<\/script></body></html>');
+  printWin.document.close();
+}
+
 function initDark() {
   if (localStorage.getItem('otica_dark') === '1') {
     document.body.classList.add('dark');
