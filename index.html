@@ -12350,6 +12350,9 @@ function renderContasCrediario() {
   var parcelas = [];
   var gruposCredVistos = {};
   vendas.forEach(function(v) {
+    // Só mostrar parcelas de vendas PAGAS
+    // Venda Pendente = entrada não paga ainda, parcelas não devem aparecer
+    if (v.status === 'Pendente' || v.status === 'Cancelado') return;
     if (v.crediario && v.crediario.parcelas) {
       // Mostrar parcelas apenas UMA VEZ por grupo de venda
       var gk = v.grupoVenda || v.id;
