@@ -5896,6 +5896,96 @@ function salvarUsuarios(arr, cfg) {
   tentarSalvarUsuarios(10);
 }
 
+// ===== MODO ESCURO =====
+function initDark() {
+  if (localStorage.getItem('otica_dark') === '1') {
+    document.body.classList.add('dark');
+    var toggle = document.getElementById('dark-toggle');
+    if (toggle) toggle.textContent = '☀️ Modo Claro';
+  }
+}
+
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  var isDark = document.body.classList.contains('dark');
+  localStorage.setItem('otica_dark', isDark ? '1' : '0');
+  var toggle = document.getElementById('dark-toggle');
+  if (toggle) toggle.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+}
+
+// ===== CONTROLE DE ACESSO POR NÍVEL =====
+function aplicarControleAcesso() {
+  var user = loadUser();
+  var admin = user && user.nivel === 'Admin';
+
+  // Elementos visíveis apenas para Admin
+  var adminOnly = document.querySelectorAll('[data-admin-only]');
+  adminOnly.forEach(function(el) {
+    el.style.display = admin ? '' : 'none';
+  });
+
+  // Botões de ação restritos
+  var btnEntradaEstoque = document.getElementById('btn-entrada-estoque');
+  if (btnEntradaEstoque) btnEntradaEstoque.style.display = admin ? '' : 'none';
+
+  var btnNovoProduto = document.getElementById('btn-novo-produto');
+  if (btnNovoProduto) btnNovoProduto.style.display = admin ? '' : 'none';
+
+  // Crediário — apenas Admin
+  var crediarioOpt = document.querySelector('option[value="Crediário Próprio"]');
+  if (crediarioOpt) crediarioOpt.style.display = admin ? '' : 'none';
+
+  // Painel financeiro — apenas Admin
+  var painelFin = document.getElementById('dash-painel-financeiro');
+  if (painelFin) painelFin.style.display = admin ? '' : 'none';
+
+  // Módulo usuários — apenas Admin
+  var navUsuarios = document.getElementById('nav-usuarios');
+  if (navUsuarios) navUsuarios.style.display = admin ? 'flex' : 'none';
+
+  // Módulo relatórios — apenas Admin vê tudo
+  var navRelatorios = document.getElementById('nav-relatorios');
+  // (relatórios ficam visíveis mas com conteúdo filtrado)
+
+  // Histórico cliente — apenas Admin
+  var btnsHistorico = document.querySelectorAll('[onclick*="verHistoricoCliente"]');
+  btnsHistorico.forEach(function(btn) {
+    btn.style.display = admin ? '' : 'none';
+  });
+
+  // Botões excluir cliente — apenas Admin
+  var btnsExcluirCliente = document.querySelectorAll('[onclick*="excluirCliente"]');
+  btnsExcluirCliente.forEach(function(btn) {
+    btn.style.display = admin ? '' : 'none';
+  });
+
+  // Botões editar cliente — apenas Admin
+  var btnsEditarCliente = document.querySelectorAll('[onclick*="editarCliente"]');
+  btnsEditarCliente.forEach(function(btn) {
+    btn.style.display = admin ? '' : 'none';
+  });
+
+  // Custo e margem em produtos — apenas Admin
+  var custoEls = document.querySelectorAll('.col-custo, .col-margem, [data-custo]');
+  custoEls.forEach(function(el) {
+    el.style.display = admin ? '' : 'none';
+  });
+
+  // Configuração de comissão — apenas Admin
+  var configComissao = document.getElementById('config-comissao-section');
+  if (configComissao) configComissao.style.display = admin ? '' : 'none';
+
+  // Vendas pendentes — apenas Admin
+  var vendasPendentes = document.getElementById('vendas-pendentes-section');
+  if (vendasPendentes) vendasPendentes.style.display = admin ? '' : 'none';
+
+  // Crediário parcelas — apenas Admin
+  var crediarioSection = document.getElementById('crediario-section');
+  if (crediarioSection) crediarioSection.style.display = admin ? '' : 'none';
+}
+
+
+
 function renderUsuarios() {
   var navEl = document.getElementById('nav-usuarios');
   var user = loadUser();
