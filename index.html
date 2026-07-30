@@ -2025,6 +2025,20 @@ function resetarSistema() {
                   return p;
                 });
               }
+              // NUNCA sobrescrever local com Firebase vazio
+              var cloudLen = Array.isArray(data) ? data.length : Object.keys(data).length;
+              var localRaw = localStorage.getItem(keys[k]);
+              var localLen = 0;
+              if (localRaw) {
+                try {
+                  var localData = JSON.parse(localRaw);
+                  localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
+                } catch(e) {}
+              }
+              if (cloudLen === 0 && localLen > 0) {
+                console.log('⚠️ Firebase vazio para', k, '- mantendo dados locais (' + localLen + ' registros)');
+                continue;
+              }
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
             }
@@ -4707,8 +4721,18 @@ window.addEventListener('firebaseReady', function() {
         }
         // Carregar metas
         var metasCloud = await window._fb.loadCollection('metas_vendas');
-        if (metasCloud && typeof metasCloud === 'object') {
+        if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
           localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+        }
+        // Carregar entradas financeiras
+        var entradasFR = await window._fb.loadCollection('entradas');
+        if (entradasFR && Array.isArray(entradasFR) && entradasFR.length > 0) {
+          localStorage.setItem('otica_entradas', JSON.stringify(entradasFR));
+        }
+        // Carregar config comissão
+        var cfgFR = await window._fb.loadCollection('config_comissao');
+        if (cfgFR && typeof cfgFR === 'object' && Object.keys(cfgFR).length > 0) {
+          localStorage.setItem('otica_config_comissao', JSON.stringify(cfgFR));
         }
         if (ok > 0) { console.log('☁️ Dados carregados do Firebase:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
       }
@@ -4718,12 +4742,22 @@ window.addEventListener('firebaseReady', function() {
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 // Save com sync IMEDIATO para dados críticos
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
+// Debounce para evitar múltiplos saves simultâneos
+var _saveDebounceTimers = {};
 const save = function(k, v) {
   // 1. Salvar no localStorage imediatamente
   _saveBase(k, v);
   // 2. Salvar no Firebase
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque'];
   if (criticos.indexOf(k) === -1) return;
+  // Cancelar save anterior pendente para este módulo (debounce 800ms)
+  if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
+  _saveDebounceTimers[k] = setTimeout(function() {
+    delete _saveDebounceTimers[k];
+    tentarSalvarFirebaseDebounced(k, v, 5);
+  }, 800);
+};
+function tentarSalvarFirebaseDebounced(k, v, tentativas) {
   function tentarSalvarFirebase(tentativas) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection(k, v).then(function(ok) {
@@ -4733,16 +4767,22 @@ const save = function(k, v) {
           if (typeof mostrarConfirmacaoSync === 'function') mostrarConfirmacaoSync();
         } else if (tentativas > 0) {
           setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
+        } else {
+          // Todas tentativas falharam - avisar usuário
+          console.warn('⚠️ Falha ao salvar no Firebase:', k);
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator('erro');
         }
-      }).catch(function() {
+      }).catch(function(e) {
+        console.warn('Firebase save error:', k, e);
         if (tentativas > 0) setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 2000);
+        else if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator('erro');
       });
     } else if (tentativas > 0) {
       setTimeout(function() { tentarSalvarFirebase(tentativas-1); }, 1000);
     }
   }
-  tentarSalvarFirebase(5);
-};
+  tentarSalvarFirebase(tentativas);
+}
 
 // Auto-sync periódico removido — save() já salva imediatamente no Firebase
 const loadUser = () => JSON.parse(localStorage.getItem(KEYS.user) || 'null');
@@ -5050,9 +5090,34 @@ function finalizarLogin(userObj, usuarios) {
           }
           // Carregar entradas
           window._fb.loadCollection('entradas').then(function(entradasCloud) {
-            if (entradasCloud && Array.isArray(entradasCloud)) {
+            if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) {
               localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud));
             }
+            // Carregar metas de vendas
+            window._fb.loadCollection('metas_vendas').then(function(metasCloud) {
+              if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
+                localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+              }
+            }).catch(function(){});
+            // Carregar config comissão
+            window._fb.loadCollection('config_comissao').then(function(cfgCloud) {
+              if (cfgCloud && typeof cfgCloud === 'object' && Object.keys(cfgCloud).length > 0) {
+                localStorage.setItem('otica_config_comissao', JSON.stringify(cfgCloud));
+              }
+            }).catch(function(){});
+            // Carregar fotos
+            window._fb.loadCollection('fotos_produtos').then(function(fotosCloud) {
+              if (fotosCloud && typeof fotosCloud === 'object' && !Array.isArray(fotosCloud) && Object.keys(fotosCloud).length > 0) {
+                var prodsLocal = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
+                prodsLocal = prodsLocal.map(function(p) {
+                  if (fotosCloud[p.cod] && fotosCloud[p.cod].foto) {
+                    return Object.assign({}, p, {foto: fotosCloud[p.cod].foto, catalogo: fotosCloud[p.cod].catalogo});
+                  }
+                  return p;
+                });
+                localStorage.setItem('otica_produtos', JSON.stringify(prodsLocal));
+              }
+            }).catch(function(){});
             if (loadingEl) loadingEl.style.display = 'none';
             // Renderizar dashboard com dados ja carregados
             showSection('dashboard');
