@@ -2511,10 +2511,9 @@ function instalarApp() {
 </section>
 <!-- ── RELATÓRIOS ── -->
 <section class="section" id="sec-relatorios">
-<div class="topbar">
+<div class="topbar" id="rel-topbar-screen">
 <h1>📈 Relatórios</h1>
-<div class="topbar-actions">
-<button class="btn btn-primary" onclick="exportarRelatorioPDF()" style="background:#0d2b4e" id="btn-exportar-pdf">📄 Exportar PDF</button>
+<div class="topbar-actions" style="gap:8px;flex-wrap:wrap">
 <select id="rel-periodo" onchange="renderRelatorios()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
 <option value="hoje">Hoje</option>
 <option value="semana">Esta Semana</option>
@@ -2523,73 +2522,172 @@ function instalarApp() {
 <option value="ano">Este Ano</option>
 <option value="tudo">Todo o Período</option>
 </select>
-<button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+<button class="btn btn-primary" onclick="imprimirRelatorioCompleto()" style="background:#0d2b4e">🖨️ Imprimir Tudo</button>
 </div>
 </div>
-<div class="cards-grid" id="rel-cards"></div>
-<!-- Gráfico Vendas por Mês -->
-<div class="card" style="margin-bottom:20px">
-<div class="card-header" style="background:linear-gradient(135deg,#1a3a5c,#0ea5e9);border-radius:14px 14px 0 0">
+
+<!-- CABEÇALHO DE IMPRESSÃO (só aparece ao imprimir) -->
+<div id="rel-print-header" style="display:none">
+  <div style="display:flex;align-items:center;gap:16px;border-bottom:3px solid #0d2b4e;padding-bottom:12px;margin-bottom:20px">
+    <img src="icon-192.png" style="width:60px;height:60px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'"/>
+    <div>
+      <div style="font-size:20px;font-weight:800;color:#0d2b4e">Ótica Horizonte</div>
+      <div style="font-size:11px;color:#64748b">CNPJ: 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10</div>
+      <div style="font-size:11px;color:#64748b">Tel: (92) 99289-0085 / (92) 99445-1770</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:13px;font-weight:700;color:#0d2b4e" id="rel-print-titulo">Relatório Geral</div>
+      <div style="font-size:11px;color:#64748b" id="rel-print-periodo-label"></div>
+      <div style="font-size:11px;color:#64748b">Emitido em: <span id="rel-print-data"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESUMO EXECUTIVO (substitui os cards) -->
+<div id="rel-resumo-executivo" style="margin-bottom:20px">
+  <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:#e8c96a">📋 Resumo Executivo</div>
+      <button onclick="imprimirSecao('rel-resumo-executivo','Resumo Executivo')" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8c96a;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️ Imprimir</button>
+    </div>
+    <div id="rel-resumo-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div>
+  </div>
+</div>
+
+<!-- 1. VENDAS POR MÊS -->
+<div class="card rel-bloco" style="margin-bottom:20px">
+<div class="card-header" style="background:linear-gradient(135deg,#1a3a5c,#0ea5e9);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between">
 <h3 style="color:white">📊 Vendas por Mês (últimos 6 meses)</h3>
+<button onclick="imprimirSecao('rel-bloco-meses','Vendas por Mês')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
-<div class="card-body">
+<div class="card-body" id="rel-bloco-meses">
 <div id="rel-grafico-meses" style="display:flex;align-items:flex-end;gap:12px;height:180px;padding:10px 0"></div>
 <div id="rel-grafico-labels" style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--text-muted)"></div>
+<table style="margin-top:16px"><thead><tr><th>Mês</th><th>Nº Vendas</th><th>Receita</th><th>Ticket Médio</th></tr></thead><tbody id="rel-meses-tabela"></tbody></table>
 </div>
 </div>
+
+<!-- 2. FORMAS DE PAGAMENTO -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-<!-- Pagamentos com gráfico de barras -->
-<div class="card">
-<div class="card-header"><h3>💳 Vendas por Forma de Pagamento</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Forma</th><th>Qtd</th><th>Total</th><th>%</th></tr></thead><tbody id="rel-pagamentos"></tbody></table></div>
+<div class="card rel-bloco">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>💳 Vendas por Forma de Pagamento</h3>
+<button onclick="imprimirSecao('rel-bloco-pag','Pagamentos')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
-<div class="card">
-<div class="card-header"><h3>🔧 OS por Status</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Status</th><th>Qtd</th><th>%</th></tr></thead><tbody id="rel-os-status"></tbody></table></div>
+<div class="card-body" style="padding:0" id="rel-bloco-pag">
+<table><thead><tr><th>Forma</th><th>Qtd</th><th>Total</th><th>%</th></tr></thead><tbody id="rel-pagamentos"></tbody></table>
 </div>
 </div>
+<div class="card rel-bloco">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>🔧 OS por Status</h3>
+<button onclick="imprimirSecao('rel-bloco-os-status','OS por Status')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+</div>
+<div class="card-body" style="padding:0" id="rel-bloco-os-status">
+<table><thead><tr><th>Status</th><th>Qtd</th><th>%</th></tr></thead><tbody id="rel-os-status"></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- 3. TOP PRODUTOS E TOP CLIENTES -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-<div class="card">
-<div class="card-header"><h3>🏆 Top 10 Produtos Mais Vendidos</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Produto</th><th>Qtd</th><th>Receita</th></tr></thead><tbody id="rel-top-produtos"></tbody></table></div>
+<div class="card rel-bloco">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>🏆 Top 10 Produtos Mais Vendidos</h3>
+<button onclick="imprimirSecao('rel-bloco-top-prod','Top Produtos')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
-<div class="card">
-<div class="card-header"><h3>👥 Top Clientes</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Cliente</th><th>Compras</th><th>Total</th></tr></thead><tbody id="rel-top-clientes"></tbody></table></div>
+<div class="card-body" style="padding:0" id="rel-bloco-top-prod">
+<table><thead><tr><th>Produto</th><th>Qtd</th><th>Receita</th></tr></thead><tbody id="rel-top-produtos"></tbody></table>
 </div>
 </div>
-<div class="card" id="card-estoque-categoria">
-<div class="card-header"><h3>📦 Estoque por Categoria</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Categoria</th><th>Itens</th><th>Qtd Total</th><th>Valor Custo</th><th>Valor Venda</th><th>Margem Média</th></tr></thead><tbody id="rel-estoque"></tbody></table></div>
+<div class="card rel-bloco">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>👥 Top Clientes</h3>
+<button onclick="imprimirSecao('rel-bloco-top-cli','Top Clientes')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
-<!-- Relatório Financeiro por Venda — só Admin -->
-<div id="rel-financeiro-admin" style="display:none;margin-top:20px">
-<div class="card">
-<div class="card-header" style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:14px 14px 0 0">
+<div class="card-body" style="padding:0" id="rel-bloco-top-cli">
+<table><thead><tr><th>Cliente</th><th>Compras</th><th>Total Gasto</th><th>Última Compra</th></tr></thead><tbody id="rel-top-clientes"></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- 4. RELATÓRIO DE OS COMPLETO -->
+<div class="card rel-bloco" style="margin-bottom:20px" id="card-rel-os-completo">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>🔧 Ordens de Serviço — Detalhado</h3>
+<button onclick="imprimirSecao('rel-bloco-os-det','Ordens de Serviço')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+</div>
+<div class="card-body" style="padding:0" id="rel-bloco-os-det">
+<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Tipo</th><th>Técnico/Lab</th><th>Status</th><th style="text-align:right">Valor</th></tr></thead><tbody id="rel-os-completo"></tbody>
+<tfoot id="rel-os-completo-foot"></tfoot></table>
+</div>
+</div>
+
+<!-- 5. RELATÓRIO DE CLIENTES -->
+<div class="card rel-bloco" style="margin-bottom:20px">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>👤 Relatório de Clientes</h3>
+<button onclick="imprimirSecao('rel-bloco-clientes','Relatório de Clientes')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+</div>
+<div class="card-body" style="padding:0" id="rel-bloco-clientes">
+<table><thead><tr><th>Cliente</th><th>Telefone</th><th>Nº Compras</th><th>Total Gasto</th><th>Última Compra</th><th>Status</th></tr></thead><tbody id="rel-clientes-completo"></tbody></table>
+</div>
+</div>
+
+<!-- 6. ESTOQUE DETALHADO -->
+<div class="card rel-bloco" style="margin-bottom:20px" id="card-estoque-categoria">
+<div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+<h3>📦 Estoque por Categoria</h3>
+<button onclick="imprimirSecao('rel-bloco-estoque','Estoque')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+</div>
+<div class="card-body" style="padding:0" id="rel-bloco-estoque">
+<table><thead><tr><th>Categoria</th><th>Itens</th><th>Qtd Total</th><th>Valor Custo</th><th>Valor Venda</th><th>Margem Média</th></tr></thead><tbody id="rel-estoque"></tbody></table>
+</div>
+</div>
+
+<!-- 7. COMISSÕES POR VENDEDOR (só Admin) -->
+<div class="card rel-bloco" style="margin-bottom:20px" id="rel-comissoes-admin">
+<div class="card-header" style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between">
+<h3 style="color:#fff">🏷️ Comissões por Vendedor (Admin)</h3>
+<button onclick="imprimirSecao('rel-bloco-comissoes','Comissões por Vendedor')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+</div>
+<div class="card-body" style="padding:0" id="rel-bloco-comissoes">
+<table><thead><tr><th>Vendedor</th><th>Nº Vendas</th><th>Receita</th><th>% Comissão</th><th style="text-align:right">Valor a Pagar</th></tr></thead>
+<tbody id="rel-comissoes-tbody"></tbody>
+<tfoot id="rel-comissoes-tfoot"></tfoot></table>
+</div>
+</div>
+
+<!-- 8. CREDIÁRIO (só Admin) -->
+<div class="card rel-bloco" style="margin-bottom:20px" id="rel-crediario-admin">
+<div class="card-header" style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between">
+<h3 style="color:#fff">💳 Crediário — Parcelas a Receber (Admin)</h3>
+<button onclick="imprimirSecao('rel-bloco-crediario','Crediário')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+</div>
+<div class="card-body" style="padding:0" id="rel-bloco-crediario">
+<table><thead><tr><th>Cliente</th><th>Venda</th><th>Parcela</th><th>Vencimento</th><th style="text-align:right">Valor</th><th>Status</th></tr></thead>
+<tbody id="rel-crediario-tbody"></tbody>
+<tfoot id="rel-crediario-tfoot"></tfoot></table>
+</div>
+</div>
+
+<!-- 9. ANÁLISE FINANCEIRA POR VENDA (só Admin) -->
+<div id="rel-financeiro-admin" style="display:none;margin-bottom:20px">
+<div class="card rel-bloco">
+<div class="card-header" style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between">
 <h3 style="color:#fff">🔒 Análise Financeira por Venda (Admin)</h3>
+<button onclick="imprimirSecao('rel-bloco-financeiro','Análise Financeira')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
-<div class="card-body" style="padding:0">
-<table>
-<thead>
-<tr>
-<th>Nº</th>
-<th>Data</th>
-<th>Cliente</th>
-<th>Vendedor</th>
-<th style="text-align:right">Receita</th>
-<th style="text-align:right">Custo</th>
-<th style="text-align:right">Comissão</th>
-<th style="text-align:right">Lucro</th>
-<th style="text-align:right">Margem</th>
-</tr>
-</thead>
+<div class="card-body" style="padding:0" id="rel-bloco-financeiro">
+<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Vendedor</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Comissão</th><th style="text-align:right">Lucro</th><th style="text-align:right">Margem</th></tr></thead>
 <tbody id="rel-financeiro-tbody"></tbody>
-<tfoot id="rel-financeiro-tfoot"></tfoot>
-</table>
+<tfoot id="rel-financeiro-tfoot"></tfoot></table>
 </div>
 </div>
 </div>
+
 </section>
+
 <section class="section" id="sec-agendamentos">
 <div class="topbar">
 <h1>📅 Agendamentos</h1>
@@ -8025,245 +8123,293 @@ function delOS(id) {
 
 // ── RELATÓRIOS ───────────────────────────────────────────────────
 function renderRelatorios() {
-  if(!document.getElementById('rel-cards')) return;
+  if(!document.getElementById('rel-cards') && !document.getElementById('rel-resumo-body')) return;
 
-  // Filtro por período
   var periodo = document.getElementById('rel-periodo')?.value || 'mes';
   var hoje = new Date();
   var dataInicio = new Date();
+  var periodoLabel = '';
 
   switch(periodo) {
-    case 'hoje':
-      dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-      break;
-    case 'semana':
-      dataInicio = new Date(hoje.getTime() - 7*24*60*60*1000);
-      break;
-    case 'mes':
-      dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-      break;
-    case 'trimestre':
-      dataInicio = new Date(hoje.getFullYear(), Math.floor(hoje.getMonth()/3)*3, 1);
-      break;
-    case 'ano':
-      dataInicio = new Date(hoje.getFullYear(), 0, 1);
-      break;
-    case 'tudo':
-      dataInicio = new Date('2000-01-01');
-      break;
+    case 'hoje': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()); periodoLabel='Hoje — '+hoje.toLocaleDateString('pt-BR'); break;
+    case 'semana': dataInicio = new Date(hoje.getTime()-7*86400000); periodoLabel='Últimos 7 dias'; break;
+    case 'mes': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),1); periodoLabel='Este Mês — '+hoje.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); break;
+    case 'trimestre': dataInicio = new Date(hoje.getFullYear(),Math.floor(hoje.getMonth()/3)*3,1); periodoLabel='Este Trimestre'; break;
+    case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); periodoLabel='Este Ano — '+hoje.getFullYear(); break;
+    default: dataInicio = new Date('2000-01-01'); periodoLabel='Todo o Período'; break;
   }
 
-  var dataInicioStr = dataInicio.getFullYear()+'-'+String(dataInicio.getMonth()+1).padStart(2,'0')+'-'+String(dataInicio.getDate()).padStart(2,'0');
-  var clientes = load('clientes').filter(c=>c.status!=='Inativo');
-  var produtos = load('produtos');
-  var todasVendas = load('vendas');
-  var todasOS = load('os');
-
-  // Filtrar por período
-  var todasVendasPeriodo = periodo === 'tudo' ? todasVendas : todasVendas.filter(v=>(v.data||'') >= dataInicioStr);
-  var os = periodo === 'tudo' ? todasOS : todasOS.filter(o=>(o.abertura||'') >= dataInicioStr);
-
-  // Vendedor vê apenas suas próprias vendas
+  var dataInicioStr = dataInicio.toISOString().slice(0,10);
   var admin2 = isAdmin();
   var user2 = loadUser();
   var meuNome2 = user2 ? (user2.nome||'').toLowerCase() : '';
-  var vendas = admin2 ? todasVendasPeriodo : todasVendasPeriodo.filter(function(v){ return (v.vendedor||'').toLowerCase() === meuNome2; });
 
-  var clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
-  var prodMap = Object.fromEntries(produtos.map(p=>[p.cod,p.desc]));
+  var todasVendas = load('vendas');
+  var todasOS = load('os');
+  var clientes = load('clientes');
+  var produtos = load('produtos');
+
+  var todasVendasPeriodo = periodo==='tudo' ? todasVendas : todasVendas.filter(v=>(v.data||'')>=dataInicioStr);
+  var os = periodo==='tudo' ? todasOS : todasOS.filter(o=>(o.abertura||'')>=dataInicioStr);
+  var vendas = admin2 ? todasVendasPeriodo : todasVendasPeriodo.filter(v=>(v.vendedor||'').toLowerCase()===meuNome2);
 
   var totalVendas = calcReceitaGrupos(vendas);
   var totalOS = os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
-  var totalDesc = vendas.reduce((s,v)=>{const b=(v.preco||0)*(v.qtd||1);return s+b*(v.desc||0)/100+(v.descGlobal||0);},0);
-  var baixoEstoque = produtos.filter(p=>p.qtd<=p.min).length;
+  var totalDesc = vendas.reduce((s,v)=>{var b=(v.preco||0)*(v.qtd||1);return s+b*(v.desc||0)/100+(v.descGlobal||0);},0);
+  var ticketMedio = vendas.length ? totalVendas/vendas.length : 0;
+  var baixoEstoque = produtos.filter(p=>p.qtd<=p.min&&p.categoria!=='Serviço').length;
   var osAberto = os.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelada').length;
 
-  // Cards de resumo — vendedor vê apenas suas vendas
-  var cardsAdmin = admin2 ? `
-    <div class="stat-card green"><div class="label">Receita Total</div><div class="value">${fmtMoney(totalVendas+totalOS)}</div><div class="sub">vendas + OS</div></div>
-    <div class="stat-card"><div class="label">Receita OS</div><div class="value">${fmtMoney(totalOS)}</div><div class="sub">${os.filter(o=>o.tipoOS!=='montagem').length} OS</div></div>
-    <div class="stat-card orange"><div class="label">Descontos</div><div class="value">${fmtMoney(totalDesc)}</div><div class="sub">concedidos</div></div>
-    <div class="stat-card ${baixoEstoque>0?'red':'green'}"><div class="label">Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
-  ` : '';
-  var cardsVendedor = `
-    <div class="stat-card green"><div class="label">Minhas Vendas</div><div class="value">${fmtMoney(totalVendas)}</div><div class="sub">${vendas.length} vendas</div></div>
-    <div class="stat-card"><div class="label">Meu Ticket Médio</div><div class="value">${fmtMoney(vendas.length?totalVendas/vendas.length:0)}</div><div class="sub">por venda</div></div>
-    <div class="stat-card orange"><div class="label">Descontos</div><div class="value">${fmtMoney(totalDesc)}</div><div class="sub">concedidos</div></div>
-  `;
-  document.getElementById('rel-cards').innerHTML = cardsAdmin + cardsVendedor;
+  // Atualizar cabeçalho de impressão
+  var printPeriodo = document.getElementById('rel-print-periodo-label');
+  var printData = document.getElementById('rel-print-data');
+  if(printPeriodo) printPeriodo.textContent = periodoLabel;
+  if(printData) printData.textContent = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
-  // Pagamentos
-  var pags = {};
-  vendas.forEach(v=>{pags[v.pag]=(pags[v.pag]||{qtd:0,total:0});pags[v.pag].qtd++;pags[v.pag].total+=calcTotal(v);});
-  document.getElementById('rel-pagamentos').innerHTML = Object.entries(pags).sort((a,b)=>b[1].total-a[1].total).map(([p,d])=>`
-    <tr><td>${p}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td>
-    <td>${totalVendas>0?(d.total/totalVendas*100).toFixed(1)+'%':'0%'}</td></tr>
-  `).join('') || '<tr><td colspan="4" class="text-center" style="padding:16px;color:var(--text-muted)">Sem dados</td></tr>';
+  // ── RESUMO EXECUTIVO (substitui cards) ──
+  var resumoEl = document.getElementById('rel-resumo-body');
+  if(resumoEl) {
+    var resumoAdmin = admin2 ? `
+      <div style="background:rgba(52,211,153,.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">💰 Receita Total</div>
+        <div style="font-size:18px;font-weight:800;color:#34d399">${fmtMoney(totalVendas+totalOS)}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">vendas + OS</div>
+      </div>
+      <div style="background:rgba(251,191,36,.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">🔧 Receita OS</div>
+        <div style="font-size:18px;font-weight:800;color:#fbbf24">${fmtMoney(totalOS)}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">${os.filter(o=>o.tipoOS!=='montagem').length} OS conserto</div>
+      </div>
+      <div style="background:rgba(248,113,113,.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">🏷️ Descontos</div>
+        <div style="font-size:18px;font-weight:800;color:#f87171">${fmtMoney(totalDesc)}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">concedidos</div>
+      </div>` : '';
+    resumoEl.innerHTML = resumoAdmin + `
+      <div style="background:rgba(201,168,76,.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">🛒 ${admin2?'Nº Vendas':'Minhas Vendas'}</div>
+        <div style="font-size:18px;font-weight:800;color:#e8c96a">${vendas.length}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">${fmtMoney(totalVendas)}</div>
+      </div>
+      <div style="background:rgba(99,102,241,.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">🎯 Ticket Médio</div>
+        <div style="font-size:18px;font-weight:800;color:#a5b4fc">${fmtMoney(ticketMedio)}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">por venda</div>
+      </div>
+      <div style="background:rgba(${baixoEstoque>0?'248,113,113':'52,211,153'},.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">📦 Estoque Baixo</div>
+        <div style="font-size:18px;font-weight:800;color:${baixoEstoque>0?'#f87171':'#34d399'}">${baixoEstoque}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">produtos</div>
+      </div>
+      <div style="background:rgba(251,146,60,.15);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px">🔧 OS em Aberto</div>
+        <div style="font-size:18px;font-weight:800;color:#fb923c">${osAberto}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5)">pendentes</div>
+      </div>`;
+  }
 
-  // OS por status
-  var osStatus = {};
+  // ── VENDAS POR MÊS ──
+  var meses = [];
+  for(var m=5;m>=0;m--){
+    var d=new Date(hoje.getFullYear(),hoje.getMonth()-m,1);
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    var label=d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+    var mv=todasVendas.filter(v=>(v.data||'').startsWith(key)&&v.status!=='Cancelado');
+    var rec=calcReceitaGrupos(mv);
+    meses.push({label:label,qtd:mv.length,rec:rec,ticket:mv.length?rec/mv.length:0});
+  }
+  var maxRec=Math.max.apply(null,meses.map(m=>m.rec))||1;
+  var grafEl=document.getElementById('rel-grafico-meses');
+  var labEl=document.getElementById('rel-grafico-labels');
+  if(grafEl) grafEl.innerHTML=meses.map(m=>`
+    <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px">
+      <div style="font-size:10px;color:#0d2b4e;font-weight:700">${fmtMoney(m.rec).replace('R$ ','')}</div>
+      <div style="width:100%;background:linear-gradient(180deg,#0d2b4e,#c9a84c);border-radius:6px 6px 0 0;height:${Math.max(8,m.rec/maxRec*150).toFixed(0)}px"></div>
+      <div style="font-size:10px;color:#64748b">${m.label}</div>
+    </div>`).join('');
+  var tabelaMeses=document.getElementById('rel-meses-tabela');
+  if(tabelaMeses) tabelaMeses.innerHTML=meses.map(m=>`<tr><td>${m.label}</td><td>${m.qtd}</td><td class="fw-bold">${fmtMoney(m.rec)}</td><td>${fmtMoney(m.ticket)}</td></tr>`).join('');
+
+  // ── PAGAMENTOS ──
+  var pags={};
+  vendas.forEach(v=>{pags[v.pag]=pags[v.pag]||{qtd:0,total:0};pags[v.pag].qtd++;pags[v.pag].total+=calcTotal(v);});
+  var pagEl=document.getElementById('rel-pagamentos');
+  if(pagEl) pagEl.innerHTML=Object.entries(pags).sort((a,b)=>b[1].total-a[1].total).map(([p,d])=>`
+    <tr><td>${p}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td><td>${totalVendas>0?(d.total/totalVendas*100).toFixed(1)+'%':'0%'}</td></tr>`).join('')||'<tr><td colspan="4" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+
+  // ── OS POR STATUS ──
+  var osStatus={};
   os.forEach(o=>{osStatus[o.status]=(osStatus[o.status]||0)+1;});
-  document.getElementById('rel-os-status').innerHTML = Object.entries(osStatus).map(([s,n])=>`
-    <tr><td>${statusBadge(s)}</td><td>${n}</td><td>${os.length>0?(n/os.length*100).toFixed(1)+'%':'0%'}</td></tr>
-  `).join('') || '<tr><td colspan="3" class="text-center" style="padding:16px;color:var(--text-muted)">Sem dados</td></tr>';
+  var osStatusEl=document.getElementById('rel-os-status');
+  if(osStatusEl) osStatusEl.innerHTML=Object.entries(osStatus).map(([s,n])=>`
+    <tr><td>${statusBadge(s)}</td><td>${n}</td><td>${os.length>0?(n/os.length*100).toFixed(1)+'%':'0%'}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
-  // Top produtos - incluindo vendas compostas
-  var prodCount = {};
+  // ── TOP PRODUTOS ──
+  var prodCount={};
   vendas.forEach(v=>{
-    if (v.itens && v.itens.length > 0) {
-      v.itens.forEach(function(it){
-        if(it.cod) {
-          prodCount[it.cod]=(prodCount[it.cod]||{qtd:0,total:0});
-          prodCount[it.cod].qtd+=(it.qtd||1);
-          prodCount[it.cod].total+=(it.preco||0)*(it.qtd||1);
-        }
-      });
-    } else if(v.produto&&v.produto!=='OCULOS-COMPLETO'&&v.produto!=='COMPOSICAO'&&v.produto!=='SERVICO') {
-      prodCount[v.produto]=(prodCount[v.produto]||{qtd:0,total:0});
-      prodCount[v.produto].qtd+=(v.qtd||1);
-      prodCount[v.produto].total+=calcTotal(v);
-    }
+    var itens=v.itens&&v.itens.length>0?v.itens:[{cod:v.produto,desc:v.desc_prod||v.produto,preco:v.preco||0,qtd:v.qtd||1}];
+    itens.forEach(it=>{if(!it.cod)return;prodCount[it.cod]=prodCount[it.cod]||{desc:it.desc||it.cod,qtd:0,total:0};prodCount[it.cod].qtd+=(it.qtd||1);prodCount[it.cod].total+=(it.preco||0)*(it.qtd||1);});
   });
-  var topProds = Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
-  document.getElementById('rel-top-produtos').innerHTML = topProds.length ? topProds.map(([cod,d])=>`
-    <tr><td style="font-size:12px">${prodMap[cod]||cod}</td><td>${d.qtd}</td><td class="fw-bold text-success">${fmtMoney(d.total)}</td></tr>
-  `).join('') : '<tr><td colspan="3" class="text-center" style="padding:16px;color:var(--text-muted)">Sem dados</td></tr>';
+  var topProdEl=document.getElementById('rel-top-produtos');
+  if(topProdEl) topProdEl.innerHTML=Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).slice(0,10).map(([cod,d],i)=>`
+    <tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${d.desc}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
-  // Top clientes
-  var cliCount = {};
+  // ── TOP CLIENTES ──
+  var cliMap={};
   vendas.forEach(v=>{
-    if(v.clienteId) {
-      cliCount[v.clienteId]=(cliCount[v.clienteId]||{qtd:0,total:0});
-      cliCount[v.clienteId].qtd++;
-      cliCount[v.clienteId].total+=calcTotal(v);
-    }
+    var cid=v.cliente||'';if(!cid)return;
+    cliMap[cid]=cliMap[cid]||{nome:v.clienteNome||cid,compras:0,total:0,ultima:''};
+    cliMap[cid].compras++;cliMap[cid].total+=calcTotal(v);
+    if((v.data||'')>cliMap[cid].ultima)cliMap[cid].ultima=v.data||'';
   });
-  var topClis = Object.entries(cliCount).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
-  document.getElementById('rel-top-clientes').innerHTML = topClis.length ? topClis.map(([id,d])=>`
-    <tr><td><strong>${clMap[id]||'—'}</strong></td><td>${d.qtd}</td><td class="fw-bold text-success">${fmtMoney(d.total)}</td></tr>
-  `).join('') : '<tr><td colspan="3" class="text-center" style="padding:16px;color:var(--text-muted)">Sem dados</td></tr>';
+  var topCliEl=document.getElementById('rel-top-clientes');
+  if(topCliEl) topCliEl.innerHTML=Object.values(cliMap).sort((a,b)=>b.total-a.total).slice(0,10).map((c,i)=>`
+    <tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${c.nome}</td><td>${c.compras}</td><td class="fw-bold">${fmtMoney(c.total)}</td><td>${c.ultima?new Date(c.ultima+'T12:00').toLocaleDateString('pt-BR'):'-'}</td></tr>`).join('')||'<tr><td colspan="4" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
-  // ── Gráfico Vendas por Mês (últimos 6 meses) ──
-  (function() {
-    var grafico = document.getElementById('rel-grafico-meses');
-    var labels  = document.getElementById('rel-grafico-labels');
-    if (!grafico || !labels) return;
-    var meses = [];
-    var hoje2 = new Date();
-    for (var i=5; i>=0; i--) {
-      var d = new Date(hoje2.getFullYear(), hoje2.getMonth()-i, 1);
-      meses.push({
-        ano: d.getFullYear(),
-        mes: d.getMonth(),
-        label: d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}),
-        total: 0, qtd: 0
-      });
-    }
-    // Filtrar por vendedor se não for admin
-    var adminRelGraf = isAdmin();
-    var userRelGraf = loadUser();
-    var meuNomeRelGraf = userRelGraf ? (userRelGraf.nome||'').toLowerCase() : '';
-    var vendasParaGrafico = adminRelGraf ? todasVendas : todasVendas.filter(function(v){ return (v.vendedor||'').toLowerCase()===meuNomeRelGraf; });
-    vendasParaGrafico.forEach(function(v) {
-      if (!v.data) return;
-      var dv = new Date(v.data+'T12:00:00');
-      meses.forEach(function(m) {
-        if (dv.getFullYear()===m.ano && dv.getMonth()===m.mes) {
-          m.total += calcTotal(v);
-          m.qtd++;
-        }
-      });
-    });
-    var maxVal = Math.max.apply(null, meses.map(function(m){return m.total;})) || 1;
-    var cores = ['#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#0ea5e9','#16a34a'];
-    grafico.innerHTML = meses.map(function(m,i) {
-      var h = Math.max(8, Math.round((m.total/maxVal)*160));
-      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">' +
-        '<div style="font-size:10px;color:var(--text-muted);font-weight:600">' + (m.total>0?fmtMoney(m.total).replace('R$ ','R$'):'') + '</div>' +
-        '<div style="width:100%;height:'+h+'px;background:'+cores[i]+';border-radius:6px 6px 0 0;transition:height .3s;cursor:default" title="'+m.label+': '+fmtMoney(m.total)+' ('+m.qtd+' vendas)"></div>' +
-        '</div>';
-    }).join('');
-    labels.innerHTML = meses.map(function(m) {
-      return '<div style="flex:1;text-align:center;font-size:11px;color:var(--text-muted)">'+m.label+'</div>';
-    }).join('');
-  })();
+  // ── OS COMPLETO ──
+  var osCompEl=document.getElementById('rel-os-completo');
+  var osCompFoot=document.getElementById('rel-os-completo-foot');
+  if(osCompEl){
+    var osSorted=[...os].sort((a,b)=>(b.abertura||'').localeCompare(a.abertura||''));
+    var totalOSVal=os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
+    osCompEl.innerHTML=osSorted.map(o=>`
+      <tr>
+        <td style="font-weight:700;color:#0d2b4e">${o.num||o.id||'-'}</td>
+        <td>${o.abertura?new Date(o.abertura+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+        <td>${o.clienteNome||o.cliente||'-'}</td>
+        <td>${o.tipoOS==='montagem'?'🔵 Montagem':'🔧 Conserto'}</td>
+        <td>${o.tecnico||o.laboratorio||'-'}</td>
+        <td>${statusBadge(o.status)}</td>
+        <td style="text-align:right">${o.tipoOS==='montagem'?'<span style="color:#94a3b8;font-size:11px">incluso na venda</span>':fmtMoney(o.valor||0)}</td>
+      </tr>`).join('')||'<tr><td colspan="7" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+    if(osCompFoot) osCompFoot.innerHTML=`<tr style="background:#f8fafc;font-weight:700"><td colspan="6">Total OS Conserto</td><td style="text-align:right">${fmtMoney(totalOSVal)}</td></tr>`;
+  }
 
-  // Estoque por categoria
-  var cats = {};
-  produtos.forEach(p=>{
-    if(!cats[p.cat]) cats[p.cat]={itens:0,qtd:0,custo:0,venda:0,margens:[]};
-    cats[p.cat].itens++;
-    cats[p.cat].qtd+=p.qtd;
-    cats[p.cat].custo+=p.qtd*p.custo;
-    cats[p.cat].venda+=p.qtd*p.venda;
-    if(p.venda>0) cats[p.cat].margens.push((p.venda-p.custo)/p.venda*100);
-  });
-  // Ocultar estoque por categoria para vendedor
-  var cardEstoque = document.getElementById('card-estoque-categoria');
-  if (cardEstoque) cardEstoque.style.display = admin2 ? '' : 'none';
-
-  document.getElementById('rel-estoque').innerHTML = Object.entries(cats).map(([cat,d])=>{
-    var margMedia = d.margens.length ? d.margens.reduce((a,b)=>a+b,0)/d.margens.length : 0;
-    return `<tr><td><strong>${cat}</strong></td><td>${d.itens}</td><td>${d.qtd}</td><td>${fmtMoney(d.custo)}</td><td>${fmtMoney(d.venda)}</td><td>${margMedia.toFixed(1)}%</td></tr>`;
-  }).join('') || '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text-muted)">Sem dados</td></tr>';
-
-  // ── Relatório Financeiro por Venda (só Admin) ──
-  var user2 = loadUser();
-  var isAdmin2 = user2 && (user2.nivel==='Admin'||user2.nome==='Administrador');
-  var relFinEl = document.getElementById('rel-financeiro-admin');
-  if (relFinEl) relFinEl.style.display = isAdmin2 ? 'block' : 'none';
-  if (isAdmin2) {
-    var cfg2 = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-    // Agrupar vendas por grupoVenda
-    var grupos = {};
-    vendas.forEach(function(v) {
-      var gk = v.grupoVenda || v.id;
-      if (!grupos[gk]) grupos[gk] = {id: v.id, data: v.data, clienteId: v.clienteId, vendedor: v.vendedor, receita:0, custo:0, comissao:0};
-      grupos[gk].receita += calcReceitaCaixa(v);
-      // custo dos itens
-      if (v.itens && v.itens.length > 0) {
-        v.itens.forEach(function(it){ grupos[gk].custo += (it.custo||0)*(it.qtd||1); });
-      } else {
-        grupos[gk].custo += (v.custo||0)*(v.qtd||1);
-      }
-    });
-    var clMap2 = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
-    var linhas = Object.values(grupos);
-    linhas.forEach(function(g) {
-      var pct = cfg2[(g.vendedor||'').toLowerCase()] || cfg2['default'] || 0;
-      g.comissao = g.receita * (pct/100);
-      g.lucro = g.receita - g.custo - g.comissao;
-      g.margem = g.receita > 0 ? g.lucro/g.receita*100 : 0;
-    });
-    linhas.sort(function(a,b){ return (b.data||'') > (a.data||'') ? 1 : -1; });
-    var totRec=0, totCusto=0, totComissao=0, totLucro=0;
-    linhas.forEach(function(g){ totRec+=g.receita; totCusto+=g.custo; totComissao+=g.comissao; totLucro+=g.lucro; });
-    var totMargem = totRec > 0 ? totLucro/totRec*100 : 0;
-    document.getElementById('rel-financeiro-tbody').innerHTML = linhas.length ? linhas.map(function(g){
-      var cor = g.lucro >= 0 ? '#16a34a' : '#dc2626';
+  // ── CLIENTES COMPLETO ──
+  var cliCompEl=document.getElementById('rel-clientes-completo');
+  if(cliCompEl){
+    var cliVendas={};
+    todasVendas.forEach(v=>{var cid=v.cliente||'';if(!cid)return;cliVendas[cid]=cliVendas[cid]||{compras:0,total:0,ultima:''};cliVendas[cid].compras++;cliVendas[cid].total+=calcTotal(v);if((v.data||'')>cliVendas[cid].ultima)cliVendas[cid].ultima=v.data||'';});
+    var cliList=clientes.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+    cliCompEl.innerHTML=cliList.map(c=>{
+      var cv=cliVendas[c.id]||{compras:0,total:0,ultima:''};
+      var statusCor=c.status==='Inativo'?'color:#f87171':'color:#34d399';
       return `<tr>
-        <td><strong style="color:#1a3a5c">${g.id}</strong></td>
-        <td>${fmtDate(g.data)}</td>
-        <td>${clMap2[g.clienteId]||'—'}</td>
-        <td>${g.vendedor||'—'}</td>
-        <td style="text-align:right;font-weight:600">${fmtMoney(g.receita)}</td>
-        <td style="text-align:right;color:#d97706">${fmtMoney(g.custo)}</td>
-        <td style="text-align:right;color:#f97316">${fmtMoney(g.comissao)}</td>
-        <td style="text-align:right;font-weight:700;color:${cor}">${fmtMoney(g.lucro)}</td>
-        <td style="text-align:right;font-weight:700;color:${cor}">${g.margem.toFixed(1)}%</td>
-      </tr>`;
-    }).join('') : '<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--text-muted)">Sem vendas no período</td></tr>';
-    document.getElementById('rel-financeiro-tfoot').innerHTML = `
-      <tr style="background:#0f2744;color:#fff;font-weight:700">
-        <td colspan="4" style="padding:10px 12px">TOTAL (${linhas.length} vendas)</td>
-        <td style="text-align:right;padding:10px 12px">${fmtMoney(totRec)}</td>
-        <td style="text-align:right;padding:10px 12px;color:#fbbf24">${fmtMoney(totCusto)}</td>
-        <td style="text-align:right;padding:10px 12px;color:#fb923c">${fmtMoney(totComissao)}</td>
-        <td style="text-align:right;padding:10px 12px;color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td>
-        <td style="text-align:right;padding:10px 12px;color:${totLucro>=0?'#34d399':'#f87171'}">${totMargem.toFixed(1)}%</td>
-      </tr>`;
+        <td style="font-weight:600">${c.nome||'-'}</td>
+        <td>${c.tel||c.fone||'-'}</td>
+        <td style="text-align:center">${cv.compras}</td>
+        <td class="fw-bold">${fmtMoney(cv.total)}</td>
+        <td>${cv.ultima?new Date(cv.ultima+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+        <td><span style="${statusCor};font-weight:600">${c.status||'Ativo'}</span></td>
+      </tr>`;}).join('')||'<tr><td colspan="6" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+  }
+
+  // ── ESTOQUE ──
+  var estEl=document.getElementById('rel-estoque');
+  if(estEl){
+    var cats={};
+    produtos.forEach(p=>{var cat=p.categoria||'Outros';cats[cat]=cats[cat]||{itens:0,qtd:0,custo:0,venda:0,margens:[]};cats[cat].itens++;cats[cat].qtd+=(p.qtd||0);cats[cat].custo+=(p.custo||0)*(p.qtd||0);cats[cat].venda+=(p.preco||0)*(p.qtd||0);if(p.custo>0&&p.preco>0)cats[cat].margens.push((p.preco-p.custo)/p.preco*100);});
+    estEl.innerHTML=Object.entries(cats).sort((a,b)=>b[1].venda-a[1].venda).map(([cat,d])=>{
+      var mg=d.margens.length?d.margens.reduce((s,v)=>s+v,0)/d.margens.length:0;
+      return `<tr><td style="font-weight:600">${cat}</td><td>${d.itens}</td><td>${d.qtd}</td><td>${fmtMoney(d.custo)}</td><td class="fw-bold">${fmtMoney(d.venda)}</td><td style="color:${mg>30?'#16a34a':'#dc2626'};font-weight:700">${mg.toFixed(1)}%</td></tr>`;}).join('')||'<tr><td colspan="6" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+  }
+
+  if(admin2){
+    // ── COMISSÕES ──
+    var comEl=document.getElementById('rel-comissoes-tbody');
+    var comFoot=document.getElementById('rel-comissoes-tfoot');
+    var comAdminEl=document.getElementById('rel-comissoes-admin');
+    if(comAdminEl) comAdminEl.style.display='block';
+    if(comEl){
+      var cfg=window._comissaoVendedor||JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+      var usuarios=getUsuarios?getUsuarios():[];
+      var vendedores=usuarios.filter(u=>u.nivel!=='Admin');
+      var totalComissao=0;
+      comEl.innerHTML=vendedores.map(u=>{
+        var pct=u.comissao||cfg[u.login]||0;
+        var uvs=todasVendasPeriodo.filter(v=>(v.vendedor||'').toLowerCase()===(u.nome||'').toLowerCase()||(v.vendedor||'').toLowerCase()===u.login);
+        var rec=calcReceitaGrupos(uvs);
+        var com=rec*(pct/100);
+        totalComissao+=com;
+        return `<tr><td style="font-weight:600">${u.nome}</td><td>${uvs.length}</td><td>${fmtMoney(rec)}</td><td>${pct}%</td><td style="text-align:right;font-weight:700;color:#c9a84c">${fmtMoney(com)}</td></tr>`;}).join('')||'<tr><td colspan="5" style="padding:16px;text-align:center;color:#94a3b8">Sem vendedores</td></tr>';
+      if(comFoot) comFoot.innerHTML=`<tr style="background:#f8fafc;font-weight:700"><td colspan="4">Total a Pagar</td><td style="text-align:right;color:#c9a84c">${fmtMoney(totalComissao)}</td></tr>`;
+    }
+
+    // ── CREDIÁRIO ──
+    var credEl=document.getElementById('rel-crediario-tbody');
+    var credFoot=document.getElementById('rel-crediario-tfoot');
+    var credAdminEl=document.getElementById('rel-crediario-admin');
+    if(credAdminEl) credAdminEl.style.display='block';
+    if(credEl){
+      var parcelas=[];
+      todasVendas.filter(v=>v.pag==='Crediário Próprio'&&v.crediario&&v.crediario.parcelas).forEach(v=>{
+        v.crediario.parcelas.forEach(p=>{
+          parcelas.push({cliente:v.clienteNome||v.cliente||'-',venda:v.num||v.id||'-',parcela:p.num||'-',venc:p.data||'',valor:p.valor||0,pago:p.pago||false});
+        });
+      });
+      parcelas.sort((a,b)=>(a.venc||'').localeCompare(b.venc||''));
+      var hoje2=new Date().toISOString().slice(0,10);
+      var totalPend=parcelas.filter(p=>!p.pago).reduce((s,p)=>s+p.valor,0);
+      var totalVenc=parcelas.filter(p=>!p.pago&&p.venc<hoje2).reduce((s,p)=>s+p.valor,0);
+      credEl.innerHTML=parcelas.map(p=>{
+        var vencida=!p.pago&&p.venc<hoje2;
+        var cor=p.pago?'color:#34d399':vencida?'color:#f87171':'color:#fbbf24';
+        var status=p.pago?'✅ Pago':vencida?'⚠️ Vencida':'⏳ Pendente';
+        return `<tr style="${vencida&&!p.pago?'background:#fff5f5':''}">
+          <td style="font-weight:600">${p.cliente}</td><td>${p.venda}</td><td>${p.parcela}</td>
+          <td>${p.venc?new Date(p.venc+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+          <td style="text-align:right;font-weight:700">${fmtMoney(p.valor)}</td>
+          <td><span style="${cor};font-weight:600">${status}</span></td>
+        </tr>`;}).join('')||'<tr><td colspan="6" style="padding:16px;text-align:center;color:#94a3b8">Sem parcelas</td></tr>';
+      if(credFoot) credFoot.innerHTML=`<tr style="background:#f8fafc;font-weight:700"><td colspan="4">Total Pendente</td><td style="text-align:right">${fmtMoney(totalPend)}</td><td style="color:#f87171">Vencido: ${fmtMoney(totalVenc)}</td></tr>`;
+    }
+
+    // ── ANÁLISE FINANCEIRA ──
+    var finAdminEl=document.getElementById('rel-financeiro-admin');
+    if(finAdminEl) finAdminEl.style.display='block';
+    var finEl=document.getElementById('rel-financeiro-tbody');
+    var finFoot=document.getElementById('rel-financeiro-tfoot');
+    if(finEl){
+      var cfg2=window._comissaoVendedor||JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+      var usuarios2=getUsuarios?getUsuarios():[];
+      var admins2=usuarios2.filter(u=>u.nivel==='Admin').map(u=>(u.nome||'').toLowerCase());
+      var totRec=0,totCusto=0,totCom=0,totLucro=0;
+      finEl.innerHTML=vendas.map(v=>{
+        var rec=calcTotal(v);
+        var custo=v.itens&&v.itens.length>0?v.itens.reduce((s,it)=>s+(it.custo||0)*(it.qtd||1),0):(v.custo||0);
+        var vend=(v.vendedor||'').toLowerCase();
+        var isAdminVend=admins2.indexOf(vend)!==-1;
+        var pct=0;
+        if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
+        var com=rec*(pct/100);
+        var lucro=rec-custo-com;
+        var margem=rec>0?lucro/rec*100:0;
+        totRec+=rec;totCusto+=custo;totCom+=com;totLucro+=lucro;
+        return `<tr>
+          <td style="font-weight:700;color:#0d2b4e">${v.num||v.id||'-'}</td>
+          <td>${v.data?new Date(v.data+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+          <td>${v.clienteNome||v.cliente||'-'}</td>
+          <td>${v.vendedor||'-'}</td>
+          <td style="text-align:right">${fmtMoney(rec)}</td>
+          <td style="text-align:right;color:#fbbf24">${fmtMoney(custo)}</td>
+          <td style="text-align:right;color:#fb923c">${fmtMoney(com)}</td>
+          <td style="text-align:right;color:${lucro>=0?'#16a34a':'#dc2626'};font-weight:700">${fmtMoney(lucro)}</td>
+          <td style="text-align:right">${margem.toFixed(1)}%</td>
+        </tr>`;}).join('')||'<tr><td colspan="9" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+      if(finFoot){var totMarg=totRec>0?totLucro/totRec*100:0;finFoot.innerHTML=`<tr style="background:#0f2744;color:white;font-weight:700"><td colspan="4">TOTAL</td><td style="text-align:right">${fmtMoney(totRec)}</td><td style="text-align:right;color:#fbbf24">${fmtMoney(totCusto)}</td><td style="text-align:right;color:#fb923c">${fmtMoney(totCom)}</td><td style="text-align:right;color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td><td style="text-align:right">${totMarg.toFixed(1)}%</td></tr>`;}
+    }
+  } else {
+    var comAdminEl2=document.getElementById('rel-comissoes-admin');
+    if(comAdminEl2) comAdminEl2.style.display='none';
+    var credAdminEl2=document.getElementById('rel-crediario-admin');
+    if(credAdminEl2) credAdminEl2.style.display='none';
+    var finAdminEl2=document.getElementById('rel-financeiro-admin');
+    if(finAdminEl2) finAdminEl2.style.display='none';
+    var estAdminEl=document.getElementById('card-estoque-categoria');
+    if(estAdminEl) estAdminEl.style.display='none';
   }
 }
+
 
 function imprimirOS(id) {
   const o = load('os').find(x=>x.id===id);
