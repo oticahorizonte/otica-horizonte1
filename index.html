@@ -13124,7 +13124,7 @@ function renderContasReceber() {
 
   var rows = gruposArr.map(function(entry) {
     var chave = entry[0], g = entry[1];
-    var total = g.itens.reduce(function(s,v){ return s+calcTotal(v); }, 0);
+    var total = calcReceitaGrupos(g.itens); // Para crediário: só a entrada
     var parcInfo = g.parcelas && g.parcelas > 1 ? ' (' + g.parcelas + 'x)' : '';
     var tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid #fee2e2';
