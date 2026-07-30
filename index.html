@@ -5779,7 +5779,7 @@ function renderMetasIndividuais() {
     return '<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:12px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
         '<div style="font-size:13px;font-weight:700;color:white">' + nivelBadge + ' ' + u.nome + '</div>' +
-        (adminDash ? '<button onclick="editarMetaIndividual('' + u.nome.replace(/'/g,"\'") + '')" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.3);color:#e8c96a;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">✏️</button>' : '') +
+        (adminDash ? '<button data-nome="' + encodeURIComponent(u.nome||'') + '" onclick="editarMetaIndividualBtn(this)" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.3);color:#e8c96a;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">✏️</button>' : '') +
       '</div>' +
       '<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">' +
         '<span>' + fmtMoney(realizado) + ' realizado</span>' +
@@ -5793,6 +5793,11 @@ function renderMetasIndividuais() {
         : '<div style="font-size:11px;color:rgba(255,255,255,.4)">Clique em ✏️ para definir meta</div>') +
     '</div>';
   }).join('');
+}
+
+function editarMetaIndividualBtn(btn) {
+  var nome = decodeURIComponent(btn.getAttribute('data-nome') || '');
+  editarMetaIndividual(nome);
 }
 
 function editarMetaIndividual(nome) {
