@@ -88,6 +88,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;min-height:1
 <button class="filtro-btn" data-cat="armação">🕶️ Armações</button>
 <button class="filtro-btn" data-cat="solar">☀️ Solar</button>
 <button class="filtro-btn" data-cat="acessório">🎁 Acessórios</button>
+<button class="filtro-btn" data-cat="serviço">👁️ Serviços</button>
 <div class="search-box">
 <span class="search-icon">🔍</span>
 <input id="busca" placeholder="Buscar produto..." type="text"/>
@@ -182,7 +183,7 @@ async function carregarProdutos() {
     if (snap.exists()) {
       const raw = snap.data().data;
       const todos = JSON.parse(raw || '[]');
-      _produtos = todos.filter(p => p.catalogo === true && p.cat !== 'Serviço');
+      _produtos = todos.filter(p => p.catalogo === true && p.foto && p.foto.startsWith('https://'));
       renderCatalogo();
     } else {
       mostrarVazio('Nenhum produto cadastrado ainda.');
@@ -271,7 +272,10 @@ function renderCatalogo() {
     nome.textContent = p.desc || '';
     body.appendChild(nome);
     
-    const info = [p.marca, p.modelo, p.cor].filter(Boolean).join(' · ');
+    const isServico = (p.cat||'').toLowerCase() === 'serviço';
+    const info = isServico 
+      ? (p.desc || '') 
+      : [p.marca, p.modelo, p.cor].filter(Boolean).join(' · ');
     if (info) {
       const infoEl = document.createElement('div');
       infoEl.className = 'card-info';
@@ -284,7 +288,8 @@ function renderCatalogo() {
     const footer = document.createElement('div');
     footer.className = 'card-footer';
     
-    const msg = 'Olá! Vi no catálogo da Ótica Horizonte:\n🕶️ *' + (p.desc || p.cod) + '*\nCódigo: ' + (p.cod || '') +
+    const msgEmoji = isServico ? '👁️' : '🕶️';
+    const msg = 'Olá! Vi no catálogo da Ótica Horizonte:\n' + msgEmoji + ' *' + (p.desc || p.cod) + '*\nCódigo: ' + (p.cod || '') +
       (p.marca ? '\nMarca: ' + p.marca : '') +
       (p.modelo ? '\nModelo: ' + p.modelo : '') +
       (p.cor ? '\nCor: ' + p.cor : '') +
