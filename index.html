@@ -6742,9 +6742,9 @@ function verRegistroVendas() {
   if (card) { card.style.display = ''; }
   if (cardsVendas) cardsVendas.style.display = '';
   if (cardHoje) cardHoje.style.display = '';
-  // Atualizar botão
-  var btn = document.querySelector('[onclick="toggleRegistroVendas()"]');
-  if (btn) btn.innerHTML = '▲ Recolher';
+  // Atualizar ícone da seta
+  var icon = document.getElementById('registro-icon');
+  if (icon) { icon.textContent = '▼'; icon.style.color = '#e8c96a'; }
   // Renderizar dados
   if (typeof renderVendas === 'function') renderVendas();
   if (typeof renderVendasHoje === 'function') renderVendasHoje();
