@@ -5748,10 +5748,17 @@ function renderPainelFinanceiroAdmin() {
   // Comissão total — apenas vendedores (admin não conta)
   var cfg = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
   var usuarios = getUsuarios ? getUsuarios() : [];
+  var usuariosParaComissao = getUsuarios ? getUsuarios() : [];
+  var adminsParaComissao = usuariosParaComissao
+    .filter(function(u){ return u.nivel === 'Admin'; })
+    .map(function(u){ return (u.nome||'').toLowerCase(); });
+  if (adminsParaComissao.indexOf('administrador') === -1) adminsParaComissao.push('administrador');
+  if (adminsParaComissao.indexOf('admin') === -1) adminsParaComissao.push('admin');
+
   var comissaoTotal = vendas.reduce(function(s,v){
     var vendedorNome = (v.vendedor||'').toLowerCase();
-    // Não contar comissão do administrador
-    if (vendedorNome === 'administrador' || vendedorNome === 'admin') return s;
+    // Não contar comissão de admins
+    if (adminsParaComissao.indexOf(vendedorNome) !== -1) return s;
     // Buscar % pelo nome completo OU pelo login
     var pct = 0;
     // 1. Tentar pelo nome completo (ex: "Carlos Mendes" → buscar usuário com esse nome)
@@ -5846,7 +5853,7 @@ function checkEstoqueAlert() {
 // ── CONTROLE DE ACESSO ────────────────────────────────────────────────────
 function isAdmin() {
   var u = loadUser();
-  return u && (u.nivel === 'Admin' || u.nome === 'Administrador');
+  return u && u.nivel === 'Admin';
 }
 
 function isVendedor() {
@@ -8416,7 +8423,7 @@ function saveUsuarios(arr) {
 function renderUsuarios() {
   var navEl = document.getElementById('nav-usuarios');
   var user = loadUser();
-  var isAdminUser = user && (user.nivel==='Admin'||user.nome==='Administrador');
+  var isAdminUser = user && user.nivel === 'Admin';
   if (navEl) navEl.style.display = isAdminUser ? 'flex' : 'none';
   if (!document.getElementById('tb-usuarios')) return;
   if (!isAdminUser) { showSection('clientes'); return; }
@@ -9066,10 +9073,19 @@ function renderComissoes() {
 
   // Agrupar por vendedor
   const vendedores = {};
+  // Mapear usuários admins para excluir das comissões
+  var usuariosArr = getUsuarios ? getUsuarios() : [];
+  var adminsNomes = usuariosArr
+    .filter(function(u){ return u.nivel === 'Admin'; })
+    .map(function(u){ return (u.nome||'').toLowerCase(); });
+  // Sempre incluir 'administrador' e 'admin' como admins
+  if (adminsNomes.indexOf('administrador') === -1) adminsNomes.push('administrador');
+  if (adminsNomes.indexOf('admin') === -1) adminsNomes.push('admin');
+
   vendas.forEach(v => {
     const vend = v.vendedor || 'Não informado';
-    // Excluir admin das comissoes
-    if (vend.toLowerCase() === 'administrador' || vend.toLowerCase() === 'admin') return;
+    // Excluir todos os admins das comissoes
+    if (adminsNomes.indexOf(vend.toLowerCase()) !== -1) return;
     if (!vendedores[vend]) vendedores[vend] = {qtd:0, total:0, vendas:[]};
     const tot = calcTotal(v);
     vendedores[vend].qtd++;
