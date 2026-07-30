@@ -2244,9 +2244,10 @@ function instalarApp() {
 </div>
 <div id="estoque-alert"></div>
 
+<!-- 1. CARDS -->
 <div class="cards-grid" id="dash-cards"></div>
 
-<!-- BLOCO META DA ÓTICA -->
+<!-- 2. META DA ÓTICA -->
 <div id="dash-meta-otica" style="display:none;margin-bottom:16px">
   <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px;padding:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -2257,7 +2258,7 @@ function instalarApp() {
   </div>
 </div>
 
-
+<!-- 3. PAINEL FINANCEIRO -->
 <div id="dash-painel-financeiro" style="display:none;margin-bottom:20px">
 <div style="background:#0f2744;border-radius:14px;padding:16px">
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
@@ -2281,8 +2282,7 @@ function instalarApp() {
 </div>
 </div>
 
-
-<!-- BLOCO GRÁFICO MISTO + TOP PRODUTOS -->
+<!-- 4. GRÁFICO MISTO + TOP PRODUTOS -->
 <div id="dash-grafico-avancado" style="display:none;margin-bottom:16px">
   <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
     <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
@@ -2296,8 +2296,7 @@ function instalarApp() {
   </div>
 </div>
 
-
-<!-- BLOCO CREDIÁRIO A RECEBER -->
+<!-- 5. CREDIÁRIO A RECEBER -->
 <div id="dash-crediario-receber" style="display:none;margin-bottom:16px">
   <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
     <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">💳 Crediário a Receber</div>
@@ -2305,7 +2304,7 @@ function instalarApp() {
   </div>
 </div>
 
-<!-- BLOCO METAS INDIVIDUAIS -->
+<!-- 6. METAS INDIVIDUAIS -->
 <div id="dash-metas-individuais" style="display:none;margin-bottom:16px">
   <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px;padding:16px">
     <div style="font-size:14px;font-weight:700;color:#e8c96a;margin-bottom:12px">👥 Metas Individuais</div>
@@ -2313,33 +2312,28 @@ function instalarApp() {
   </div>
 </div>
 
-
-<!-- Gráficos -->
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
-</div>
-<div class="card">
+<!-- 7. PAGAMENTOS -->
+<div class="card" style="margin-bottom:16px">
 <div class="card-header"><h3>💳 Pagamentos</h3></div>
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Forma</th><th>%</th></tr></thead>
 <tbody id="chart-pagamentos"></tbody></table>
 </div>
 </div>
-</div>
 
-<div class="card" style="grid-column:1/-1">
+<!-- 8. ÚLTIMAS VENDAS -->
+<div class="card" style="grid-column:1/-1;margin-bottom:16px">
 <div class="card-header"><h3>💰 Últimas Vendas</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Status</th></tr></thead><tbody id="dash-vendas"></tbody></table></div>
 </div>
 
-<div class="card" id="card-dash-os" style="grid-column:1/-1">
+<!-- 9. OS EM ABERTO -->
+<div class="card" id="card-dash-os" style="grid-column:1/-1;margin-bottom:16px">
 <div class="card-header"><h3>🔧 OS em Aberto</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
 </div>
-</div>
-</section>
-<!-- ── CLIENTES ── -->
 
-<!-- Aniversariantes -->
+<!-- 10. ANIVERSARIANTES -->
 <div class="card" id="aniversariantes-box" style="margin-bottom:20px;display:none">
 <div class="card-header" style="background:#fef3c7"><h3>🎂 Aniversariantes do Mês</h3></div>
 <div class="card-body" style="padding:0">
@@ -2347,6 +2341,8 @@ function instalarApp() {
 <tbody id="tb-aniversariantes"></tbody></table>
 </div>
 </div>
+
+</section>
 <section class="section" id="sec-clientes">
 <div class="topbar">
 <h1>👥 Clientes</h1>
