@@ -2311,12 +2311,6 @@ function instalarApp() {
 <!-- Gráficos -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
 <div class="card">
-<div class="card-header"><h3>📊 Vendas por Mês</h3></div>
-<div class="card-body">
-<div id="chart-vendas-mes" style="display:flex;align-items:flex-end;gap:6px;height:100px;padding:0 4px"></div>
-</div>
-</div>
-<div class="card">
 <div class="card-header"><h3>🏆 Top Produtos</h3></div>
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Produto</th><th>Qtd</th></tr></thead>
@@ -2340,26 +2334,7 @@ function instalarApp() {
 </div>
 </div>
 <!-- Meta de Vendas — só Admin -->
-<div class="card" id="card-meta-vendas" style="margin-bottom:20px;display:none">
-<div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a)">
-<h3 style="color:#e8c96a">🎯 Meta de Vendas — Este Mês</h3>
-</div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Vendedor</th><th>Realizado</th><th>Meta (R$)</th><th>Progresso</th></tr></thead>
-<tbody id="meta-vendas-body"></tbody></table>
-</div>
-</div>
 <!-- Inadimplência — só Admin -->
-<div class="card" id="card-inadimplencia" style="margin-bottom:20px;display:none">
-<div class="card-header" style="background:linear-gradient(135deg,#dc2626,#f87171)">
-<h3 style="color:white">⚠️ Inadimplência — Crediário Vencido</h3>
-<span id="inadimplencia-total" style="font-size:12px;color:rgba(255,255,255,.8)"></span>
-</div>
-<div class="card-body" style="padding:0">
-<table><thead><tr><th>Cliente</th><th>Parcelas</th><th>Total Vencido</th></tr></thead>
-<tbody id="inadimplencia-body"></tbody></table>
-</div>
-</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 <div class="card" style="grid-column:1/-1">
 <div class="card-header"><h3>💰 Últimas Vendas</h3></div>
@@ -5986,8 +5961,8 @@ function renderDashboard() {
     <div class="stat-card green"><div class="label">Receita do Mês</div><div class="value">${fmtMoney(receitaMes)}</div><div class="sub">${vendasMes.length} vendas</div></div>
     <div class="stat-card"><div class="label">Ticket Médio</div><div class="value">${fmtMoney(ticketMedio)}</div><div class="sub">por venda</div></div>
     <div class="stat-card ${corSaldo}"><div class="label">💵 Saldo Hoje</div><div class="value">${fmtMoney(saldoHoje)}</div><div class="sub">${vendasHoje2.length} vendas hoje</div></div>
-    <div class="stat-card orange"><div class="label">OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
-    <div class="stat-card ${baixoEstoque>0?'red':'green'}"><div class="label">Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
+    <div class="stat-card" style="border-left:3px solid #c9a84c"><div class="label" style="color:#0d2b4e">🔧 OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
+    <div class="stat-card"><div class="label">Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
   `;
   // Últimas vendas
   const clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
@@ -6005,7 +5980,7 @@ function renderDashboard() {
     gruposVistosD.add(chave);
     return true;
   });
-  document.getElementById('dash-vendas').innerHTML = vendasUnicasD.slice(-10).reverse().map(v => `
+  document.getElementById('dash-vendas').innerHTML = vendasUnicasD.slice(-4).reverse().map(v => `
     <tr style="cursor:pointer" onclick="showSection('vendas')" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background=''">
       <td><strong style="color:#0d2b4e">${v.id}</strong></td>
       <td style="color:#5a6a8a;font-size:12px">${fmtDate(v.data)}</td>
@@ -6031,7 +6006,7 @@ function renderDashboard() {
   var cardDashOS2 = document.getElementById('card-dash-os');
   if (cardDashOS2) cardDashOS2.style.display = adminDash ? '' : 'none';
   if (adminDash) {
-    document.getElementById('dash-os').innerHTML = os.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelada').slice(0,5).map(o => `
+    document.getElementById('dash-os').innerHTML = os.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelada').slice(0,4).map(o => `
       <tr><td><strong>${o.id}</strong></td><td>${clMap[o.clienteId]||'-'}</td><td>${o.tipo}</td><td>${statusBadge(o.status)}</td></tr>
     `).join('') || '<tr><td colspan="4" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma OS em aberto</td></tr>';
   }
