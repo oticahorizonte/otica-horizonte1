@@ -2244,6 +2244,26 @@ function instalarApp() {
 </div>
 <div id="estoque-alert"></div>
 <div class="cards-grid" id="dash-cards"></div>
+
+<!-- BLOCO META DA ÓTICA -->
+<div id="dash-meta-otica" style="display:none;margin-bottom:16px">
+  <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:700;color:#e8c96a">🎯 Meta de Faturamento — Este Mês</div>
+      <button onclick="editarMetaOtica()" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8c96a;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer">✏️ Editar Meta</button>
+    </div>
+    <div id="dash-meta-otica-body"></div>
+  </div>
+</div>
+
+<!-- BLOCO METAS INDIVIDUAIS -->
+<div id="dash-metas-individuais" style="display:none;margin-bottom:16px">
+  <div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px;padding:16px">
+    <div style="font-size:14px;font-weight:700;color:#e8c96a;margin-bottom:12px">👥 Metas Individuais</div>
+    <div id="dash-metas-ind-body" style="display:grid;gap:10px"></div>
+  </div>
+</div>
+
 <div id="dash-painel-financeiro" style="display:none;margin-bottom:20px">
 <div style="background:#0f2744;border-radius:14px;padding:16px">
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
@@ -2265,6 +2285,28 @@ function instalarApp() {
 <div id="dash-fin-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
 <div id="dash-dre"></div>
 </div>
+</div>
+
+<!-- BLOCO GRÁFICO MISTO + TOP PRODUTOS -->
+<div id="dash-grafico-avancado" style="display:none;margin-bottom:16px">
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+    <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+      <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">📊 Vendas e Receita — Últimos 7 dias</div>
+      <div id="dash-grafico-misto" style="height:160px;display:flex;align-items:flex-end;gap:4px;position:relative"></div>
+    </div>
+    <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+      <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">🏆 Top Produtos do Mês</div>
+      <div id="dash-top-produtos-novo"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCO CREDIÁRIO A RECEBER -->
+<div id="dash-crediario-receber" style="display:none;margin-bottom:16px">
+  <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+    <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">💳 Crediário a Receber</div>
+    <div id="dash-crediario-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+  </div>
 </div>
 <!-- Gráficos -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
@@ -5628,12 +5670,288 @@ function salvarMeta(vendedor, valor) {
   renderMetaVendas();
 }
 
+
+// ===== META DA ÓTICA =====
+function renderMetaOtica() {
+  var adminDash = isAdmin();
+  var metaEl = document.getElementById('dash-meta-otica');
+  if (!metaEl) return;
+  metaEl.style.display = adminDash ? '' : 'none';
+  if (!adminDash) return;
+
+  var hoje = new Date();
+  var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+  var vendas = load('vendas').filter(v=>(v.data||'').startsWith(mesAtual) && v.status !== 'Pendente' && v.status !== 'Cancelado');
+  var receitaMes = calcReceitaGrupos(vendas);
+  
+  // Meta da ótica
+  var metaOtica = parseFloat(localStorage.getItem('otica_meta_faturamento') || '5000');
+  var pct = metaOtica > 0 ? Math.min(100, receitaMes/metaOtica*100) : 0;
+  var corBarra = pct >= 100 ? '#16a34a' : pct >= 70 ? '#f59e0b' : '#e11d48';
+  var faltam = Math.max(0, metaOtica - receitaMes);
+  
+  // Projeção do mês
+  var diasNoMes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate();
+  var diaAtual = hoje.getDate();
+  var projecao = diaAtual > 0 ? (receitaMes / diaAtual) * diasNoMes : 0;
+  
+  // Mês anterior
+  var mesAnterior = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+  var mesAntStr = mesAnterior.getFullYear()+'-'+String(mesAnterior.getMonth()+1).padStart(2,'0');
+  var vendasAnt = load('vendas').filter(v=>(v.data||'').startsWith(mesAntStr) && v.status !== 'Pendente');
+  var receitaAnt = calcReceitaGrupos(vendasAnt);
+  var crescimento = receitaAnt > 0 ? ((receitaMes - receitaAnt) / receitaAnt * 100) : 0;
+  var crescIcon = crescimento >= 0 ? '↑' : '↓';
+  var crescCor = crescimento >= 0 ? '#34d399' : '#f87171';
+
+  var body = document.getElementById('dash-meta-otica-body');
+  if (!body) return;
+  body.innerHTML = 
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">' +
+      '<div style="text-align:center">' +
+        '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:4px">Realizado</div>' +
+        '<div style="font-size:22px;font-weight:800;color:#34d399">' + fmtMoney(receitaMes) + '</div>' +
+      '</div>' +
+      '<div style="text-align:center">' +
+        '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:4px">Meta</div>' +
+        '<div style="font-size:22px;font-weight:800;color:#e8c96a">' + fmtMoney(metaOtica) + '</div>' +
+      '</div>' +
+      '<div style="text-align:center">' +
+        '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:4px">Projeção</div>' +
+        '<div style="font-size:22px;font-weight:800;color:#60a5fa">' + fmtMoney(projecao) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,.1);border-radius:8px;height:12px;margin-bottom:8px;overflow:hidden">' +
+      '<div style="height:100%;border-radius:8px;background:' + corBarra + ';width:' + pct.toFixed(1) + '%;transition:width .5s"></div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.7)">' +
+      '<span>' + pct.toFixed(1) + '% da meta atingida</span>' +
+      (faltam > 0 ? '<span>Faltam ' + fmtMoney(faltam) + '</span>' : '<span style="color:#34d399">✅ Meta atingida!</span>') +
+    '</div>' +
+    (receitaAnt > 0 ? '<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.6)">vs mês anterior: <span style="color:' + crescCor + ';font-weight:700">' + crescIcon + ' ' + Math.abs(crescimento).toFixed(1) + '%</span></div>' : '');
+}
+
+function editarMetaOtica() {
+  var atual = localStorage.getItem('otica_meta_faturamento') || '5000';
+  var novo = prompt('Meta de faturamento mensal da ótica (R$):', atual);
+  if (novo && !isNaN(parseFloat(novo))) {
+    localStorage.setItem('otica_meta_faturamento', parseFloat(novo).toString());
+    renderMetaOtica();
+    showToast('✅ Meta atualizada: ' + fmtMoney(parseFloat(novo)), 'success');
+  }
+}
+
+// ===== METAS INDIVIDUAIS =====
+function renderMetasIndividuais() {
+  var adminDash = isAdmin();
+  var user = loadUser();
+  var metasEl = document.getElementById('dash-metas-individuais');
+  if (!metasEl) return;
+  metasEl.style.display = '';
+
+  var hoje = new Date();
+  var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+  var todasVendas = load('vendas').filter(v=>(v.data||'').startsWith(mesAtual) && v.status !== 'Pendente');
+  var metas = JSON.parse(localStorage.getItem('otica_metas_vendas') || '{}');
+  var usuarios = getUsuarios ? getUsuarios() : [];
+  
+  // Quem mostrar: admin vê todos, vendedor vê só o próprio
+  var usuariosParaMeta = adminDash 
+    ? usuarios.filter(u => u.status === 'Ativo')
+    : usuarios.filter(u => u.login === user.login);
+
+  var body = document.getElementById('dash-metas-ind-body');
+  if (!body) return;
+
+  if (usuariosParaMeta.length === 0) {
+    body.innerHTML = '<div style="color:rgba(255,255,255,.5);font-size:13px">Nenhum usuário ativo</div>';
+    return;
+  }
+
+  body.innerHTML = usuariosParaMeta.map(function(u) {
+    var vendedorVendas = todasVendas.filter(function(v){ return (v.vendedor||'').toLowerCase() === (u.nome||'').toLowerCase(); });
+    var realizado = calcReceitaGrupos(vendedorVendas);
+    var meta = parseFloat(metas[u.nome] || metas[u.login] || 0);
+    var pct = meta > 0 ? Math.min(100, realizado/meta*100) : 0;
+    var corBarra = pct >= 100 ? '#16a34a' : pct >= 70 ? '#f59e0b' : '#e11d48';
+    var nivelBadge = u.nivel === 'Admin' ? '👑' : '🏷️';
+    
+    return '<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+        '<div style="font-size:13px;font-weight:700;color:white">' + nivelBadge + ' ' + u.nome + '</div>' +
+        (adminDash ? '<button onclick="editarMetaIndividual('' + u.nome.replace(/'/g,"\'") + '')" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.3);color:#e8c96a;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">✏️</button>' : '') +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">' +
+        '<span>' + fmtMoney(realizado) + ' realizado</span>' +
+        '<span>' + (meta > 0 ? fmtMoney(meta) + ' meta' : 'Sem meta') + '</span>' +
+      '</div>' +
+      (meta > 0 ? 
+        '<div style="background:rgba(255,255,255,.1);border-radius:6px;height:8px;overflow:hidden">' +
+          '<div style="height:100%;border-radius:6px;background:' + corBarra + ';width:' + pct.toFixed(1) + '%"></div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">' + pct.toFixed(1) + '%</div>'
+        : '<div style="font-size:11px;color:rgba(255,255,255,.4)">Clique em ✏️ para definir meta</div>') +
+    '</div>';
+  }).join('');
+}
+
+function editarMetaIndividual(nome) {
+  var metas = JSON.parse(localStorage.getItem('otica_metas_vendas') || '{}');
+  var atual = metas[nome] || 0;
+  var novo = prompt('Meta mensal para ' + nome + ' (R$):', atual);
+  if (novo !== null && !isNaN(parseFloat(novo))) {
+    metas[nome] = parseFloat(novo);
+    localStorage.setItem('otica_metas_vendas', JSON.stringify(metas));
+    if (window._fb) window._fb.saveCollection('metas_vendas', metas).catch(function(){});
+    renderMetasIndividuais();
+    showToast('✅ Meta de ' + nome + ' atualizada!', 'success');
+  }
+}
+
+// ===== GRÁFICO MISTO =====
+function renderGraficoMisto() {
+  var el = document.getElementById('dash-grafico-misto');
+  var advEl = document.getElementById('dash-grafico-avancado');
+  if (!el || !advEl) return;
+  advEl.style.display = isAdmin() ? '' : 'none';
+  if (!isAdmin()) return;
+
+  var hoje = new Date();
+  var dias = [];
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(hoje);
+    d.setDate(hoje.getDate() - i);
+    dias.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+  }
+
+  var vendas = load('vendas').filter(v => v.status !== 'Pendente' && v.status !== 'Cancelado');
+  var dadosDias = dias.map(function(d) {
+    var vDia = vendas.filter(function(v){ return (v.data||'').startsWith(d); });
+    var grupos = new Set(vDia.map(function(v){ return v.grupoVenda||v.id; }));
+    return { data: d, qtd: grupos.size, receita: calcReceitaGrupos(vDia) };
+  });
+
+  var maxReceita = Math.max.apply(null, dadosDias.map(function(d){ return d.receita; })) || 1;
+  var maxQtd = Math.max.apply(null, dadosDias.map(function(d){ return d.qtd; })) || 1;
+
+  // Calcular receita acumulada para linha
+  var acumulado = 0;
+  var acumulados = dadosDias.map(function(d) { acumulado += d.receita; return acumulado; });
+  var maxAcum = acumulados[acumulados.length-1] || 1;
+
+  el.style.position = 'relative';
+  el.innerHTML = dadosDias.map(function(d, idx) {
+    var altBarra = maxReceita > 0 ? (d.receita/maxReceita*100) : 0;
+    var diaSemana = new Date(d.data+'T12:00:00').toLocaleDateString('pt-BR', {weekday:'short'});
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">' +
+      '<div style="font-size:9px;color:#64748b;font-weight:600">' + (d.qtd > 0 ? d.qtd : '') + '</div>' +
+      '<div style="width:100%;background:#e2e8f0;border-radius:4px 4px 0 0;position:relative;height:120px;display:flex;align-items:flex-end">' +
+        '<div style="width:100%;background:linear-gradient(180deg,#3b82f6,#1d4ed8);border-radius:4px 4px 0 0;height:' + altBarra + '%;transition:height .5s" title="' + fmtMoney(d.receita) + '"></div>' +
+      '</div>' +
+      '<div style="font-size:9px;color:#64748b;text-transform:capitalize">' + diaSemana + '</div>' +
+    '</div>';
+  }).join('');
+
+  // Linha de receita acumulada (SVG overlay)
+  var pontos = acumulados.map(function(v, i) {
+    var x = (i / (acumulados.length-1)) * 100;
+    var y = 100 - (v/maxAcum*80);
+    return x + ',' + y;
+  }).join(' ');
+
+  var svg = '<svg style="position:absolute;top:0;left:0;width:100%;height:120px;pointer-events:none" viewBox="0 0 100 100" preserveAspectRatio="none">' +
+    '<polyline points="' + pontos + '" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    acumulados.map(function(v, i) {
+      var x = (i / (acumulados.length-1)) * 100;
+      var y = 100 - (v/maxAcum*80);
+      return '<circle cx="' + x + '" cy="' + y + '" r="2" fill="#f59e0b"/>';
+    }).join('') +
+  '</svg>';
+  el.insertAdjacentHTML('beforeend', svg);
+
+  // Top produtos
+  var topEl = document.getElementById('dash-top-produtos-novo');
+  if (topEl) {
+    var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+    var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual));
+    var prodCount = {};
+    vendasMes.forEach(function(v) {
+      var nome = v.descricaoCompleta || v.produto || '—';
+      if (nome.length > 25) nome = nome.substring(0,22)+'...';
+      if (!prodCount[nome]) prodCount[nome] = {qtd:0, receita:0};
+      prodCount[nome].qtd++;
+      prodCount[nome].receita += calcTotal(v);
+    });
+    var top3 = Object.entries(prodCount).sort(function(a,b){ return b[1].receita-a[1].receita; }).slice(0,3);
+    topEl.innerHTML = top3.length ? top3.map(function(entry, idx) {
+      var medals = ['🥇','🥈','🥉'];
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px">' +
+        '<span>' + medals[idx] + ' ' + entry[0] + '</span>' +
+        '<span style="font-weight:700;color:#16a34a">' + fmtMoney(entry[1].receita) + '</span>' +
+      '</div>';
+    }).join('') : '<div style="color:#94a3b8;font-size:12px">Sem vendas este mês</div>';
+  }
+}
+
+// ===== CREDIÁRIO A RECEBER NO DASHBOARD =====
+function renderCrediarioDash() {
+  var el = document.getElementById('dash-crediario-receber');
+  var body = document.getElementById('dash-crediario-body');
+  if (!el || !body) return;
+  el.style.display = isAdmin() ? '' : 'none';
+  if (!isAdmin()) return;
+
+  var hoje = new Date();
+  var hojeStr = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  var em7 = new Date(hoje.getTime()+7*86400000).toISOString().slice(0,10);
+
+  var vendas = load('vendas');
+  var parcelas = [];
+  var gruposVistos = {};
+  vendas.forEach(function(v) {
+    if (v.crediario && v.crediario.parcelas) {
+      var gk = v.grupoVenda || v.id;
+      if (!gruposVistos[gk]) {
+        gruposVistos[gk] = true;
+        v.crediario.parcelas.forEach(function(p) {
+          if (p.status !== 'Pago') parcelas.push(p);
+        });
+      }
+    }
+  });
+
+  var totalPend = parcelas.reduce(function(s,p){ return s+p.valor; }, 0);
+  var vencidas = parcelas.filter(function(p){ return p.data < hojeStr; });
+  var proximas = parcelas.filter(function(p){ return p.data >= hojeStr && p.data <= em7; });
+
+  body.innerHTML = 
+    '<div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center">' +
+      '<div style="font-size:11px;color:#dc2626;font-weight:700;margin-bottom:4px">Total Pendente</div>' +
+      '<div style="font-size:18px;font-weight:800;color:#dc2626">' + fmtMoney(totalPend) + '</div>' +
+      '<div style="font-size:11px;color:#94a3b8">' + parcelas.length + ' parcela(s)</div>' +
+    '</div>' +
+    '<div style="background:#fff7ed;border-radius:10px;padding:12px;text-align:center">' +
+      '<div style="font-size:11px;color:#ea580c;font-weight:700;margin-bottom:4px">⚠️ Vencidas</div>' +
+      '<div style="font-size:18px;font-weight:800;color:#ea580c">' + fmtMoney(vencidas.reduce(function(s,p){return s+p.valor;},0)) + '</div>' +
+      '<div style="font-size:11px;color:#94a3b8">' + vencidas.length + ' parcela(s)</div>' +
+    '</div>' +
+    '<div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center">' +
+      '<div style="font-size:11px;color:#16a34a;font-weight:700;margin-bottom:4px">📅 Próx. 7 dias</div>' +
+      '<div style="font-size:18px;font-weight:800;color:#16a34a">' + fmtMoney(proximas.reduce(function(s,p){return s+p.valor;},0)) + '</div>' +
+      '<div style="font-size:11px;color:#94a3b8">' + proximas.length + ' parcela(s)</div>' +
+    '</div>';
+}
+
 function renderDashboard() {
   if(!document.getElementById('dash-cards')) return;
   // Declarar adminDash no inicio para uso em toda a funcao
   var adminDash = isAdmin();
   renderGraficos();
   atualizarBadges();
+  renderMetaOtica();
+  renderMetasIndividuais();
+  renderGraficoMisto();
+  renderCrediarioDash();
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const clientes = load('clientes').filter(c=>c.status!=='Inativo'), produtos = load('produtos'), vendas = load('vendas'), os = load('os');
   const totalVendas = vendas.reduce((s,v) => s + calcTotal(v), 0);
