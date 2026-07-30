@@ -8762,10 +8762,12 @@ function filtrarClientesAgend(q) {
   });
   if (filtrados.length === 0) { lista.style.display = 'none'; return; }
   lista.innerHTML = filtrados.slice(0,8).map(function(c){
-    return '<div onclick="selecionarClienteAgend('' + c.id + '','' + (c.nome||'').replace(/'/g,"\'") + '')" ' +
+    var nome = (c.nome||'-').replace(/"/g,'&quot;');
+    var id = c.id || '';
+    return '<div onclick="selecionarClienteAgend(' + JSON.stringify(id) + ',' + JSON.stringify(c.nome||'') + ')" ' +
       'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px" ' +
       'onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">' +
-      '<strong>' + (c.nome||'-') + '</strong>' +
+      '<strong>' + nome + '</strong>' +
       '<span style="color:#64748b;font-size:11px;margin-left:8px">' + (c.tel||'') + '</span></div>';
   }).join('');
   lista.style.display = 'block';
