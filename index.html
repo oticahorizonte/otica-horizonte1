@@ -8650,21 +8650,13 @@ function imprimirSecao(secaoId, titulo) {
   var dataEmissao = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   var printWin = window.open('', '_blank', 'width=960,height=750');
   if (!printWin) { showToast('Permita pop-ups para imprimir', 'error'); return; }
-  var css =  + PRINT_CSS + ;
+  var css = 'body{font-family:Arial,sans-serif;font-size:12px;color:#1e293b;margin:0;padding:24px;background:white} .ph{display:flex;align-items:center;gap:20px;padding:16px 20px;background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;margin-bottom:24px} .ph-logo{width:56px;height:56px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0} .ph h1{font-size:20px;color:white;margin:0 0 3px;font-weight:800} .ph p{font-size:10px;color:rgba(255,255,255,.75);margin:2px 0} .pm{margin-left:auto;text-align:right} .pt{font-size:15px;font-weight:800;color:#e8c96a} .pp{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px} .pd{font-size:10px;color:rgba(255,255,255,.5)} table{width:100%;border-collapse:collapse;margin-top:0} thead th{background:linear-gradient(135deg,#1a3a5c,#0d2b4e);color:white;padding:9px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.3px} tbody td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:11px;vertical-align:middle} tbody tr:nth-child(even) td{background:#f8fafc} tfoot td,tfoot th{background:linear-gradient(135deg,#0d2b4e,#1a3a5c)!important;color:white!important;font-weight:700;padding:10px;font-size:12px} .bloco{border:1px solid #e2e8f0;border-radius:10px;margin-bottom:24px;overflow:hidden;page-break-inside:avoid} .bloco-header{background:linear-gradient(135deg,#0d2b4e,#1e3a5c);padding:10px 16px} .bloco-header h3{margin:0;font-size:13px;color:white;font-weight:700} .card-header{background:linear-gradient(135deg,#0d2b4e,#1e3a5c);padding:10px 16px} .card-header h3{margin:0;font-size:13px;color:white;font-weight:700} .fw-bold{font-weight:700} .money{font-weight:700;color:#0d2b4e} .money-green{font-weight:700;color:#16a34a} .money-red{font-weight:700;color:#dc2626} .money-gold{font-weight:700;color:#c9a84c} .footer{margin-top:32px;border-top:2px solid #e2e8f0;padding-top:10px;text-align:center;font-size:10px;color:#94a3b8} .footer strong{color:#0d2b4e} button{display:none!important} @media print{body{padding:10px}.bloco{page-break-inside:avoid}thead{display:table-header-group}}';
+  var elHtml = el.innerHTML.replace(/class="card-header"/g,'class="bloco-header"');
   var header = '<div class="ph"><div class="ph-logo">👁️</div><div><h1>Ótica Horizonte</h1><p>CNPJ: 64.448.745/0001-09</p><p>Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10</p><p>Tel: (92) 99289-0085 / (92) 99445-1770</p></div><div class="pm"><div class="pt">' + titulo + '</div><div class="pp">' + periodoLabel + '</div><div class="pd">Emitido em: ' + dataEmissao + '</div></div></div>';
-  var footer = '<div class="footer"><strong>Ótica Horizonte</strong> — Sistema de Gestão © 2026 | Documento gerado em ' + dataEmissao + '</div>';
-  // Converter card-header h3 para bloco-header h3 no conteúdo
-  var elHtml = el.innerHTML
-    .replace(/class="card-header"/g, 'class="bloco-header"')
-    .replace(/class="card-body"/g, 'style="padding:0"');
-  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
-    '<title>' + titulo + ' — Ótica Horizonte</title>' +
-    '<style>' + css + '</style></head><body>' +
-    header + elHtml + footer +
-    '<script>window.onload=function(){window.print();}<\/script></body></html>');
+  var footer = '<div class="footer"><strong>Ótica Horizonte</strong> — Sistema de Gestão © 2026 | Emitido em ' + dataEmissao + '</div>';
+  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + titulo + ' — Ótica Horizonte</title><style>' + css + '</style></head><body>' + header + '<div class="bloco">' + elHtml + '</div>' + footer + '<script>window.onload=function(){window.print();}<\/script></body></html>');
   printWin.document.close();
 }
-
 
 function imprimirRelatorioCompleto() {
   var periodoLabel = document.getElementById('rel-print-periodo-label') ? document.getElementById('rel-print-periodo-label').textContent : '';
@@ -8672,23 +8664,17 @@ function imprimirRelatorioCompleto() {
   var blocos = document.querySelectorAll('.rel-bloco');
   var html = '';
   blocos.forEach(function(b){
-    if(b.offsetParent!==null) {
-      var bHtml = b.outerHTML
-        .replace(/class="card-header"/g,'class="bloco-header"')
-        .replace(/class="card-body"/g,'style="padding:0"');
+    if(b.offsetParent!==null){
+      var bHtml = b.outerHTML.replace(/class="card-header"/g,'class="bloco-header"');
       html += '<div class="bloco">' + bHtml + '</div>';
     }
   });
   var printWin = window.open('', '_blank', 'width=960,height=750');
   if (!printWin) { showToast('Permita pop-ups para imprimir', 'error'); return; }
-  var css =  + PRINT_CSS + ;
+  var css = 'body{font-family:Arial,sans-serif;font-size:12px;color:#1e293b;margin:0;padding:24px;background:white} .ph{display:flex;align-items:center;gap:20px;padding:16px 20px;background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;margin-bottom:24px} .ph-logo{width:56px;height:56px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0} .ph h1{font-size:20px;color:white;margin:0 0 3px;font-weight:800} .ph p{font-size:10px;color:rgba(255,255,255,.75);margin:2px 0} .pm{margin-left:auto;text-align:right} .pt{font-size:15px;font-weight:800;color:#e8c96a} .pp{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px} .pd{font-size:10px;color:rgba(255,255,255,.5)} table{width:100%;border-collapse:collapse;margin-top:0} thead th{background:linear-gradient(135deg,#1a3a5c,#0d2b4e);color:white;padding:9px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.3px} tbody td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:11px;vertical-align:middle} tbody tr:nth-child(even) td{background:#f8fafc} tfoot td,tfoot th{background:linear-gradient(135deg,#0d2b4e,#1a3a5c)!important;color:white!important;font-weight:700;padding:10px;font-size:12px} .bloco{border:1px solid #e2e8f0;border-radius:10px;margin-bottom:24px;overflow:hidden;page-break-inside:avoid} .bloco-header{background:linear-gradient(135deg,#0d2b4e,#1e3a5c);padding:10px 16px} .bloco-header h3{margin:0;font-size:13px;color:white;font-weight:700} .card-header{background:linear-gradient(135deg,#0d2b4e,#1e3a5c);padding:10px 16px} .card-header h3{margin:0;font-size:13px;color:white;font-weight:700} .fw-bold{font-weight:700} .money{font-weight:700;color:#0d2b4e} .money-green{font-weight:700;color:#16a34a} .money-red{font-weight:700;color:#dc2626} .money-gold{font-weight:700;color:#c9a84c} .footer{margin-top:32px;border-top:2px solid #e2e8f0;padding-top:10px;text-align:center;font-size:10px;color:#94a3b8} .footer strong{color:#0d2b4e} button{display:none!important} @media print{body{padding:10px}.bloco{page-break-inside:avoid}thead{display:table-header-group}}';
   var header = '<div class="ph"><div class="ph-logo">👁️</div><div><h1>Ótica Horizonte</h1><p>CNPJ: 64.448.745/0001-09</p><p>Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10</p><p>Tel: (92) 99289-0085 / (92) 99445-1770</p></div><div class="pm"><div class="pt">Relatório Completo</div><div class="pp">' + periodoLabel + '</div><div class="pd">Emitido em: ' + dataEmissao + '</div></div></div>';
-  var footer = '<div class="footer"><strong>Ótica Horizonte</strong> — Sistema de Gestão © 2026 | Documento gerado em ' + dataEmissao + '</div>';
-  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
-    '<title>Relatório Completo — Ótica Horizonte</title>' +
-    '<style>' + css + '</style></head><body>' +
-    header + html + footer +
-    '<script>window.onload=function(){window.print();}<\/script></body></html>');
+  var footer = '<div class="footer"><strong>Ótica Horizonte</strong> — Sistema de Gestão © 2026 | Emitido em ' + dataEmissao + '</div>';
+  printWin.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Completo — Ótica Horizonte</title><style>' + css + '</style></head><body>' + header + html + footer + '<script>window.onload=function(){window.print();}<\/script></body></html>');
   printWin.document.close();
 }
 
