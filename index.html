@@ -13153,7 +13153,8 @@ function renderContasReceber() {
       '<td style="padding:10px 12px;font-size:13px;color:#64748b">' + (g.pag||'—') + parcInfo + '</td>' +
       '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#dc2626;font-size:15px">' + fmtMoney(total) + '</td>' +
       '<td style="padding:10px 12px;text-align:center">' +
-      '<button class="btn btn-sm btn-success" data-chave="' + chave + '" data-tip="Marcar como Pago" style="font-size:11px" onclick="marcarContaPaga(this.dataset.chave)">Marcar Pago</button>' +
+      '<button class="btn btn-sm" data-chave="' + chave + '" data-tip="Ver detalhes da venda" style="font-size:11px;background:#0ea5e9;color:white" onclick="verDetalhesPendente(this.dataset.chave)">👁️ Ver</button>' +
+      '<button class="btn btn-sm btn-success" data-chave="' + chave + '" data-tip="Marcar como Pago" style="font-size:11px" onclick="marcarContaPaga(this.dataset.chave)">✅ Marcar Pago</button>' +
       '</td>';
     return tr.outerHTML;
   }).join('');
@@ -13171,6 +13172,71 @@ function renderContasReceber() {
     '<th style="padding:10px 12px;text-align:right;font-size:12px;color:#dc2626">Valor</th>' +
     '<th style="padding:10px 12px;text-align:center;font-size:12px;color:#dc2626">Ação</th>' +
     '</tr></thead><tbody>' + rows + totalRow + '</tbody></table>';
+}
+
+function verDetalhesPendente(chave) {
+  var vendas = load('vendas').filter(function(v) {
+    return (v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data)) === chave;
+  });
+  if (!vendas.length) return;
+  var v = vendas[0];
+  var clientes = load('clientes');
+  var cli = clientes.find(function(c){ return c.id === v.clienteId; });
+  var nomeCliente = cli ? cli.nome : '—';
+  var totalVenda = vendas.reduce(function(s,x){ return s+calcTotal(x); }, 0);
+  
+  // Montar detalhes
+  var detalhes = '<div style="padding:20px;font-family:sans-serif">';
+  detalhes += '<div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:12px">';
+  detalhes += '<div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:8px">👤 ' + nomeCliente + '</div>';
+  detalhes += '<div style="font-size:12px;color:#64748b">📅 Data: <strong>' + (v.data||'—') + '</strong></div>';
+  detalhes += '<div style="font-size:12px;color:#64748b">💳 Pagamento: <strong>' + (v.pag||'—') + '</strong></div>';
+  detalhes += '<div style="font-size:12px;color:#64748b">📦 Itens: <strong>' + vendas.length + '</strong></div>';
+  detalhes += '</div>';
+  
+  // Valor total
+  detalhes += '<div style="background:#f0fdf4;border-radius:10px;padding:12px;margin-bottom:12px">';
+  detalhes += '<div style="font-size:12px;color:#64748b">💰 Valor Total da Venda:</div>';
+  detalhes += '<div style="font-size:20px;font-weight:800;color:#16a34a">' + fmtMoney(totalVenda) + '</div>';
+  detalhes += '</div>';
+  
+  // Crediário
+  if (v.pag === 'Crediário Próprio' && v.crediario) {
+    detalhes += '<div style="background:#fef3c7;border-radius:10px;padding:12px;margin-bottom:12px">';
+    detalhes += '<div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">💳 Crediário Próprio</div>';
+    detalhes += '<div style="font-size:12px;color:#92400e">✅ Entrada: <strong>' + fmtMoney(v.crediario.entrada||0) + '</strong> (' + (v.crediario.entradaPag||'—') + ')</div>';
+    if (v.crediario.parcelas && v.crediario.parcelas.length > 0) {
+      detalhes += '<div style="font-size:12px;color:#92400e;margin-top:4px">📅 ' + v.crediario.parcelas.length + ' parcela(s) de ' + fmtMoney(v.crediario.parcelas[0].valor||0) + '</div>';
+    }
+    detalhes += '</div>';
+  }
+  
+  // Itens
+  detalhes += '<div style="background:#f8fafc;border-radius:10px;padding:12px">';
+  detalhes += '<div style="font-size:12px;font-weight:700;color:#0d2b4e;margin-bottom:6px">🛒 Itens da Venda</div>';
+  vendas.forEach(function(item) {
+    detalhes += '<div style="font-size:12px;color:#475569;padding:3px 0;border-bottom:1px solid #e2e8f0">';
+    detalhes += (item.descricaoCompleta || item.produto || '—') + ' — <strong>' + fmtMoney(calcTotal(item)) + '</strong>';
+    detalhes += '</div>';
+  });
+  detalhes += '</div>';
+  detalhes += '</div>';
+  
+  // Mostrar em modal simples
+  var existing = document.getElementById('modal-detalhes-pendente');
+  if (existing) existing.remove();
+  var modal = document.createElement('div');
+  modal.id = 'modal-detalhes-pendente';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center';
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:white;border-radius:16px;max-width:420px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)';
+  inner.innerHTML = '<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:14px 18px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">' +
+    '<span style="color:#e8c96a;font-weight:700;font-size:15px">📋 Detalhes da Venda Pendente</span>' +
+    '<button onclick="document.getElementById('modal-detalhes-pendente').remove()" style="background:none;border:none;color:white;font-size:18px;cursor:pointer">✕</button>' +
+    '</div>' + detalhes;
+  modal.appendChild(inner);
+  document.body.appendChild(modal);
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
 }
 
 function marcarContaPaga(chave) {
