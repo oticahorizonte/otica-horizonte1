@@ -5877,7 +5877,9 @@ function renderGraficoMisto(vendas) {
       legenda +
       '</svg>';
   }
+}
 
+function salvarUsuarios(arr, cfg) {
   function tentarSalvarUsuarios(tentativas) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection('usuarios', arr).then(function(ok){
@@ -5892,7 +5894,7 @@ function renderGraficoMisto(vendas) {
       setTimeout(function() { tentarSalvarUsuarios(tentativas - 1); }, 2000);
     }
   }
-  tentarSalvarUsuarios(10); // Mais tentativas para garantir
+  tentarSalvarUsuarios(10);
 }
 
 function renderUsuarios() {
