@@ -18037,7 +18037,7 @@ function _fbAutoSync(k, v) {
   }, 2000);
 }
 
-async async function syncLocalToCloud() {
+async function syncLocalToCloud() {
   if (!window._firebaseReady || !window._fb) {
     showToast('Firebase conectando... tente em instantes.', 'warning');
     return;
