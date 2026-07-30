@@ -9231,15 +9231,40 @@ function renderComissoes() {
 function verHistorico(id) {
   const c = load('clientes').find(x=>x.id===id);
   if (!c) return;
-  const vendas = load('vendas').filter(v=>v.clienteId===id);
+  const todasVendas = load('vendas').filter(v=>v.clienteId===id);
   const os = load('os').filter(o=>o.clienteId===id);
   const receitas = load('receitas').filter(r=>r.clienteId===id);
   const agend = load('agendamentos').filter(a=>a.clienteId===id);
   const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
-  const totalGasto = vendas.reduce((s,v)=>s+calcTotal(v),0) + os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
+  
+  // Agrupar vendas por grupo
+  var gruposVenda = {};
+  todasVendas.forEach(function(v) {
+    var gk = v.grupoVenda || v.id;
+    if (!gruposVenda[gk]) gruposVenda[gk] = [];
+    gruposVenda[gk].push(v);
+  });
+  var vendas = todasVendas; // manter para compatibilidade
+  var gruposArr = Object.entries(gruposVenda).sort(function(a,b) {
+    return (b[1][0].data||'') > (a[1][0].data||'') ? 1 : -1;
+  });
+  
+  // Total gasto real (entrada do crediário, não valor total)
+  const totalGasto = calcReceitaGrupos(todasVendas.filter(v=>v.status==='Pago')) + 
+    os.filter(o=>o.tipoOS!=='montagem' && o.status==='Entregue').reduce((s,o)=>s+(o.valor||0),0);
+  
   // Crediário pendente
   var credPendente = 0;
-  vendas.forEach(function(v){ if(v.crediario) v.crediario.parcelas.forEach(function(p){ if(p.status!=='Pago') credPendente+=p.valor; }); });
+  var gruposCredVistos = {};
+  todasVendas.forEach(function(v){ 
+    if(v.crediario && v.crediario.parcelas) {
+      var gk = v.grupoVenda || v.id;
+      if (!gruposCredVistos[gk]) {
+        gruposCredVistos[gk] = true;
+        v.crediario.parcelas.forEach(function(p){ if(p.status!=='Pago') credPendente+=p.valor; });
+      }
+    }
+  });
   // Receita vencendo (próximos 30 dias)
   var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var em30 = new Date(Date.now()+30*86400000).toISOString().slice(0,10);
