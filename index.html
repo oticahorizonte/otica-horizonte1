@@ -2405,14 +2405,13 @@ function instalarApp() {
 <!-- Card vendas de hoje -->
 <div id="vendas-hoje-card" style="margin-bottom:16px;display:none"></div>
 <div class="card" id="card-registro-vendas" style="margin-bottom:16px;display:none">
-<div class="card-header" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px" onclick="toggleRegistroVendas()">
-<h3 style="color:#e8c96a!important;margin:0;font-size:16px;font-weight:700;padding-left:0!important">📋 Registro de Vendas</h3>
-<div style="display:flex;align-items:center;gap:8px;flex:1" onclick="event.stopPropagation()">
-<div class="search-bar" style="margin:0;background:rgba(255,255,255,.1);border-radius:8px;flex:1">
-<input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar..." type="text" style="color:white;background:transparent;width:100%"/>
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px 14px 0 0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:2px solid rgba(201,168,76,.3)" onclick="toggleRegistroVendas()">
+<span style="color:#e8c96a;font-size:16px;font-weight:700;white-space:nowrap">📋 Registro de Vendas</span>
+<div style="display:flex;align-items:center;gap:8px;flex:1;margin:0 12px" onclick="event.stopPropagation()">
+<input id="search-vendas" oninput="renderVendas()" placeholder="🔍 Buscar por nº, cliente ou produto..." type="text" 
+  style="width:100%;padding:6px 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:white;font-size:13px;outline:none"/>
 </div>
-</div>
-<span id="registro-icon" style="color:#e8c96a!important;font-size:18px;flex-shrink:0;font-weight:700">▼</span>
+<span id="registro-icon" style="color:#e8c96a;font-size:18px;font-weight:700;flex-shrink:0">▼</span>
 </div>
 <div id="registro-vendas-body">
 <div class="card-body" style="padding:0">
