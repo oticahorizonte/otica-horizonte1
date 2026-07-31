@@ -4817,36 +4817,43 @@ async function syncLocalToCloud() {
 async function syncFirebaseToLocal() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
   showToast('☁️ Baixando dados da nuvem...','success');
-  var ok = await window._fb.syncFromCloud(KEYS);
   try {
-    var usuariosCloud = await window._fb.loadCollection('usuarios');
-    if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) { localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud)); ok++; }
-    var entradasCloud = await window._fb.loadCollection('entradas');
-    if (entradasCloud && Array.isArray(entradasCloud) && entradasCloud.length > 0) { localStorage.setItem('otica_entradas', JSON.stringify(entradasCloud)); ok++; }
-    var metasCloud = await window._fb.loadCollection('metas_vendas');
-    if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) { localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud)); ok++; }
-    var cfgCloud = await window._fb.loadCollection('config_comissao');
-    if (cfgCloud && typeof cfgCloud === 'object' && Object.keys(cfgCloud).length > 0) { localStorage.setItem('otica_config_comissao', JSON.stringify(cfgCloud)); ok++; }
-    // Fotos Cloudinary
+    // syncFromCloud já baixa todos os módulos do KEYS (inclui usuarios, entradas, metas, config)
+    var ok = await window._fb.syncFromCloud(KEYS);
+    // Apenas fotos Cloudinary — não estão no KEYS
     var fotosCloud = await window._fb.loadCollection('fotos_produtos');
     if (fotosCloud && typeof fotosCloud === 'object' && !Array.isArray(fotosCloud) && Object.keys(fotosCloud).length > 0) {
       var prodsLocal = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
+      var atualizado = false;
       prodsLocal = prodsLocal.map(function(p) {
         if (fotosCloud[p.cod] && fotosCloud[p.cod].foto) {
+          atualizado = true;
           return Object.assign({}, p, {foto: fotosCloud[p.cod].foto, catalogo: fotosCloud[p.cod].catalogo});
         }
         return p;
       });
-      localStorage.setItem('otica_produtos', JSON.stringify(prodsLocal));
-      ok++;
+      if (atualizado) { localStorage.setItem('otica_produtos', JSON.stringify(prodsLocal)); ok++; }
+      console.log('🖼️ Fotos restauradas:', Object.keys(fotosCloud).length, 'produtos com foto');
     }
-  } catch(e) { console.warn('Erro módulos extras:', e.message); }
-  if (ok > 0) {
-    showToast('✅ ' + ok + ' módulos sincronizados da nuvem!','success');
-    var secAtiva = document.querySelector('.section.active');
-    if (secAtiva) { var id = secAtiva.id.replace('sec-',''); if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); }
-    if (typeof renderDashboard === 'function') renderDashboard();
-  } else { showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning'); }
+    // Meta de faturamento — não está no KEYS padrão
+    var metaFatCloud = await window._fb.loadCollection('meta_faturamento');
+    if (metaFatCloud && metaFatCloud.valor) { localStorage.setItem('otica_meta_faturamento', metaFatCloud.valor); ok++; }
+
+    localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+    if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+
+    if (ok > 0) {
+      showToast('✅ ' + ok + ' módulos baixados da nuvem!','success');
+      var secAtiva = document.querySelector('.section.active');
+      if (secAtiva) { var id = secAtiva.id.replace('sec-',''); if(window['render'+id.charAt(0).toUpperCase()+id.slice(1)]) window['render'+id.charAt(0).toUpperCase()+id.slice(1)](); }
+      if (typeof renderDashboard === 'function') renderDashboard();
+    } else {
+      showToast('⚠️ Nenhum dado na nuvem ainda. Use "Enviar Nuvem" primeiro.','warning');
+    }
+  } catch(e) {
+    console.error('Erro ao baixar da nuvem:', e);
+    showToast('⚠️ Erro ao baixar dados. Tente novamente.','error');
+  }
 }
 
 // Ao Firebase ficar pronto, sincronizar automaticamente
