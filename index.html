@@ -2453,6 +2453,54 @@ function instalarApp() {
     table { min-width: 0; }
   }
 </style>
+<style>
+  /* ===== RECEITAS MÉDICAS MOBILE — FORÇAR OCULTAÇÃO ===== */
+  @media screen and (max-width: 768px) {
+    /* Ocultar colunas 3(Médico), 4(Data), 7(Perto OD), 8(Perto OE), 9(Adição) */
+    #tb-receitas th:nth-child(3),
+    #tb-receitas td:nth-child(3),
+    #tb-receitas th:nth-child(4),
+    #tb-receitas td:nth-child(4),
+    #tb-receitas th:nth-child(7),
+    #tb-receitas td:nth-child(7),
+    #tb-receitas th:nth-child(8),
+    #tb-receitas td:nth-child(8),
+    #tb-receitas th:nth-child(9),
+    #tb-receitas td:nth-child(9) {
+      display: none !important;
+    }
+    
+    /* Clientes — ocultar CPF(3), Cidade(5), Última Compra(6) */
+    #tb-clientes th:nth-child(3),
+    #tb-clientes td:nth-child(3),
+    #tb-clientes th:nth-child(5),
+    #tb-clientes td:nth-child(5),
+    #tb-clientes th:nth-child(6),
+    #tb-clientes td:nth-child(6) {
+      display: none !important;
+    }
+    
+    /* OS — ocultar Técnico/Lab(5) */
+    #tb-os th:nth-child(5),
+    #tb-os td:nth-child(5) {
+      display: none !important;
+    }
+    
+    /* Vendas — ocultar Pagamento(6) */
+    #tb-vendas th:nth-child(6),
+    #tb-vendas td:nth-child(6) {
+      display: none !important;
+    }
+    
+    /* Agendamentos — ocultar Profissional(6) e Observações(7) */
+    #tb-agendamentos th:nth-child(6),
+    #tb-agendamentos td:nth-child(6),
+    #tb-agendamentos th:nth-child(7),
+    #tb-agendamentos td:nth-child(7) {
+      display: none !important;
+    }
+  }
+</style>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
