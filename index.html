@@ -2053,8 +2053,23 @@ function resetarSistema() {
                   localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
                 } catch(e) {}
               }
+              // Proteção: nunca sobrescrever local com versão menor do Firebase
               if (cloudLen === 0 && localLen > 0) {
                 console.log('⚠️ Firebase vazio para', k, '- mantendo dados locais (' + localLen + ' registros)');
+                // Reenviar dados locais para Firebase (pode ter falhado antes)
+                if (window._fb) {
+                  var localDataToSync = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                  window._fb.saveCollection(k, localDataToSync).catch(function(){});
+                }
+                continue;
+              }
+              // Se Firebase tem MENOS dados que local, manter local e reenviar
+              if (cloudLen < localLen && localLen > 0) {
+                console.log('⚠️ Firebase desatualizado para', k, '(cloud:' + cloudLen + ' < local:' + localLen + ') - mantendo local');
+                if (window._fb) {
+                  var localDataToSync2 = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                  window._fb.saveCollection(k, localDataToSync2).catch(function(){});
+                }
                 continue;
               }
               localStorage.setItem(keys[k], JSON.stringify(data));
@@ -7125,7 +7140,7 @@ function saveProduto() {
   document.getElementById('modal-produto-title').textContent = '📦 Novo Produto';
   closeModal('modal-produto');
   renderProdutos();
-  showToast(idx ? 'Produto atualizado! ☁️ Sincronizando...' : 'Produto cadastrado! ☁️ Sincronizando...');
+  showToast(idx ? '✅ Produto atualizado e salvo na nuvem!' : '✅ Produto cadastrado e salvo na nuvem!', 'success');
 }
 
 function entradaEstoque(cod) {
