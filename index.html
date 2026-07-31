@@ -2309,6 +2309,70 @@ function instalarApp() {
     .fin-tab { flex: 1; min-width: 80px; font-size: 11px; padding: 8px 6px; }
   }
 </style>
+<style>
+  /* ===== CORREÇÕES MOBILE ESPECÍFICAS ===== */
+
+  /* Proteger grid parcelas+status — sempre lado a lado */
+  .parc-status-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* Botão Ver Registro — sempre visível */
+  @media (max-width: 768px) {
+    #venda-col-dir .btn[onclick*="verRegistroVendas"],
+    button[onclick*="verRegistroVendas"] {
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+  }
+
+  /* Modais de receita e produto — scroll interno */
+  #modal-receita .modal-body,
+  #modal-produto .modal-body,
+  #modal-os .modal-body,
+  #modal-agend .modal-body,
+  #modal-cliente .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modais — largura máxima no mobile */
+  @media (max-width: 768px) {
+    .modal-overlay { padding: 8px; align-items: flex-start; padding-top: 60px; }
+    .modal { width: 100% !important; max-width: 100% !important; max-height: 85vh; overflow-y: auto; }
+    .modal-body { padding: 12px !important; }
+
+    /* Grids de 2 colunas em formulários — manter 2 colunas se couber */
+    .form-group + .form-group { margin-top: 0; }
+
+    /* Tabela de receitas — scroll horizontal */
+    #tb-receitas { min-width: 600px; }
+
+    /* Ocultar colunas de receitas no mobile */
+    #tb-receitas th:nth-child(7),
+    #tb-receitas td:nth-child(7),
+    #tb-receitas th:nth-child(8),
+    #tb-receitas td:nth-child(8),
+    #tb-receitas th:nth-child(9),
+    #tb-receitas td:nth-child(9) { display: none; }
+
+    /* Dashboard — Meta de Faturamento compacta */
+    #dash-meta-otica .card-header { padding: 8px 12px; }
+    #dash-meta-otica-body > div { flex: 1; min-width: 80px; }
+
+    /* Painel financeiro — 2 colunas no mobile */
+    #dash-fin-cards { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+    #dash-fin-cards > div:last-child { grid-column: span 2; }
+  }
+
+  /* ===== HIDE-MOBILE GLOBAL ===== */
+  @media (max-width: 768px) {
+    .hide-mobile { display: none !important; }
+  }
+  @media (min-width: 769px) {
+    .hide-mobile { display: table-cell !important; }
+  }
+</style>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -2567,7 +2631,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>ID</th><th>Nome</th><th>CPF</th><th>Telefone</th><th>Cidade</th><th>Última Compra</th><th>Total Gasto</th><th>Status</th><th>Ações</th></tr></thead>
+<table><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-clientes"></tbody></table>
 </div>
 </div>
@@ -2658,7 +2722,7 @@ function instalarApp() {
 </div>
 <div id="registro-vendas-body">
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
+<table><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile col-custo-prod">Custo</th><th class="hide-mobile">Venda</th><th class="hide-mobile col-margem-prod">Margem</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-vendas"></tbody></table>
 </div>
 </div>
@@ -3867,7 +3931,7 @@ function instalarApp() {
           </select>
         </div>
         <!-- Parcelas + Status -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" class="parc-status-grid">
           <div>
             <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">Parcelas</label>
             <select id="venda-parcelas" style="width:100%;padding:7px 6px;background:#0d2b4e;border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:11px;outline:none;cursor:pointer">
@@ -6711,9 +6775,9 @@ function renderClientes() {
   );
   document.getElementById('tb-clientes').innerHTML = data.length ? data.map(c => `
     <tr>
-      <td>${c.id}</td><td><strong>${c.nome}</strong></td><td>${c.cpf||'-'}</td>
-      <td>${c.tel||'-'}</td><td>${c.cidade||'-'}${c.bairro?' — '+c.bairro:''}</td>
-      <td>${fmtDate(c.ultimaCompra)}</td>
+      <td>${c.id}</td><td><strong>${c.nome}</strong></td><td class="hide-mobile">${c.cpf||'-'}</td>
+      <td>${c.tel||'-'}</td><td class="hide-mobile">${c.cidade||'-'}${c.bairro?' — '+c.bairro:''}</td>
+      <td class="hide-mobile">${fmtDate(c.ultimaCompra)}</td>
       <td class="fw-bold text-success">${fmtMoney(c.totalGasto)}</td>
       <td>${statusBadge(c.status)}</td>
       <td><div class="flex gap-2">
