@@ -6902,7 +6902,7 @@ function exportarRelatorioPDF() {
     +'<h2>📋 Detalhamento de Vendas</h2>'
     +'<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Vendedor</th><th>Pagamento</th><th>Total</th><th>Status</th></tr></thead><tbody>'
     +[...vendasFiltradas].reverse().map(function(v){
-      return '<tr><td>'+v.id+'</td><td>'+fmtDate(v.data)+'</td><td>'+(clMap[v.clienteId]||'—')+'</td><td>'+(v.vendedor||'—')+'</td><td>'+v.pag+'</td><td style="font-weight:700;color:#16a34a">'+fmtMoney(calcTotal(v))+'</td><td>'+v.status+'</td></tr>';
+      return '<tr><td>'+v.id+'</td><td>'+fmtDate(v.data)+(v.hora?' '+v.hora:'')+'</td><td>'+(clMap[v.clienteId]||'—')+'</td><td>'+(v.vendedor||'—')+'</td><td>'+v.pag+'</td><td style="font-weight:700;color:#16a34a">'+fmtMoney(calcTotal(v))+'</td><td>'+v.status+'</td></tr>';
     }).join('')
     +'</tbody></table>'
     +'<div class="total">Total: '+fmtMoney(totalVendas)+'</div>'
@@ -9919,7 +9919,7 @@ function renderComissoes() {
   document.getElementById('tb-comissoes-det').innerHTML = [...vendasSemAdmin].reverse().map(v => `
     <tr>
       <td><strong>${v.id}</strong></td>
-      <td>${fmtDate(v.data)}</td>
+      <td>${fmtDate(v.data)}${v.hora?" "+v.hora:""}</td>
       <td>${v.vendedor||'Não informado'}</td>
       <td>${clMap[v.clienteId]||'-'}</td>
       <td>
@@ -10080,7 +10080,7 @@ function imprimirRecibo(id) {
   setEl('rec-data-emissao', 'Emitido em: ' + now);
   setEl('rec-cliente-nome', clMap[v.clienteId]||'-');
   setEl('rec-cli-ass', clMap[v.clienteId]||'-');
-  setEl('rec-data-venda', fmtDate(v.data));
+  setEl('rec-data-venda', fmtDate(v.data) + (v.hora ? ' às ' + v.hora : ''));
   setEl('rec-vendedor', v.vendedor||'-');
   setEl('rec-pagamento', v.pag);
   setEl('rec-parcelas', (v.parcelas||1) > 1 ? v.parcelas + 'x' : 'À vista');
@@ -13494,6 +13494,7 @@ function initVendaModal() {
   }
 
   var vdEl = document.getElementById('venda-data'); if(vdEl) vdEl.value = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  var vhEl = document.getElementById('venda-hora'); if(vhEl) { var hn=new Date(); vhEl.value=String(hn.getHours()).padStart(2,'0')+':'+String(hn.getMinutes()).padStart(2,'0'); }
   var vqEl = document.getElementById('venda-qtd'); if(vqEl) vqEl.value = 1;
   var vdescEl = document.getElementById('venda-desc'); if(vdescEl) vdescEl.value = 0;
   var vpEl = document.getElementById('venda-preco'); if(vpEl) vpEl.value = '';
