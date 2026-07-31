@@ -7288,7 +7288,102 @@ function exportarRelatorioPDF() {
     +'<div class="no-print" style="text-align:center;margin-top:20px">'
     +'<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>'
     +'<button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-left:10px">✕ Fechar</button>'
-    +'</div></body></html>';
+    +'</div>
+<style id="mobile-override">
+/* ============================================================
+   MOBILE OVERRIDE — MÁXIMA PRIORIDADE
+   Inserido antes do </body> para garantir precedência
+   ============================================================ */
+@media only screen and (max-width: 768px) {
+
+  /* RECEITAS MÉDICAS — ocultar Médico(3), Data(4), Perto OD(7), Perto OE(8), Adição(9) */
+  table#tb-receitas > thead > tr > th:nth-child(3),
+  table#tb-receitas > thead > tr > th:nth-child(4),
+  table#tb-receitas > thead > tr > th:nth-child(7),
+  table#tb-receitas > thead > tr > th:nth-child(8),
+  table#tb-receitas > thead > tr > th:nth-child(9),
+  table#tb-receitas > tbody > tr > td:nth-child(3),
+  table#tb-receitas > tbody > tr > td:nth-child(4),
+  table#tb-receitas > tbody > tr > td:nth-child(7),
+  table#tb-receitas > tbody > tr > td:nth-child(8),
+  table#tb-receitas > tbody > tr > td:nth-child(9) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* PRODUTOS — ocultar Categoria(3), Marca(4), Mín(6), Custo(7), Venda(8), Margem(9) */
+  #tb-produtos-table > thead > tr > th:nth-child(3),
+  #tb-produtos-table > thead > tr > th:nth-child(4),
+  #tb-produtos-table > thead > tr > th:nth-child(6),
+  #tb-produtos-table > thead > tr > th:nth-child(7),
+  #tb-produtos-table > thead > tr > th:nth-child(8),
+  #tb-produtos-table > thead > tr > th:nth-child(9),
+  #tb-produtos-table > tbody > tr > td:nth-child(3),
+  #tb-produtos-table > tbody > tr > td:nth-child(4),
+  #tb-produtos-table > tbody > tr > td:nth-child(6),
+  #tb-produtos-table > tbody > tr > td:nth-child(7),
+  #tb-produtos-table > tbody > tr > td:nth-child(8),
+  #tb-produtos-table > tbody > tr > td:nth-child(9) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* CLIENTES — ocultar CPF(3), Cidade(5), Última Compra(6) */
+  #tb-clientes > thead > tr > th:nth-child(3),
+  #tb-clientes > thead > tr > th:nth-child(5),
+  #tb-clientes > thead > tr > th:nth-child(6),
+  #tb-clientes > tbody > tr > td:nth-child(3),
+  #tb-clientes > tbody > tr > td:nth-child(5),
+  #tb-clientes > tbody > tr > td:nth-child(6) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* OS — ocultar Técnico/Lab(5) */
+  #tb-os > thead > tr > th:nth-child(5),
+  #tb-os > tbody > tr > td:nth-child(5) {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* VENDAS — ocultar Pagamento(6) */
+  #tb-vendas > thead > tr > th:nth-child(6),
+  #tb-vendas > tbody > tr > td:nth-child(6) {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* AGENDAMENTOS — ocultar Profissional(6) e Observações(7) */
+  #tb-agendamentos > thead > tr > th:nth-child(6),
+  #tb-agendamentos > thead > tr > th:nth-child(7),
+  #tb-agendamentos > tbody > tr > td:nth-child(6),
+  #tb-agendamentos > tbody > tr > td:nth-child(7) {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Tabelas sem min-width no mobile */
+  table { min-width: 0 !important; }
+  #tb-produtos-table, #tb-receitas, #tb-clientes, #tb-os, #tb-vendas, #tb-agendamentos {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+</style>
+
+</body></html>';
 
 
   var win = window.open('','_blank','width=900,height=700');
