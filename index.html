@@ -2051,7 +2051,7 @@ function resetarSistema() {
             } catch(e2) { console.warn('syncFromCloud retry failed:', k); }
           }
         }
-        console.log('☁️ Dados carregados do Firebase:', ok, 'modulos');
+        console.log('☁️ Dados carregados do Firebase:', ok, 'módulos (clientes, receitas, produtos, vendas, OS, agendamentos, orçamentos, estoque, despesas, entradas, usuários, metas, comissão)');
         // Mesclar fotos da colecao separada (nunca sobrescrita)
         try {
           var fotosMap = await window._fb.loadCollection('fotos_produtos');
@@ -4844,7 +4844,7 @@ window.addEventListener('firebaseReady', function() {
         if (cfgFR && typeof cfgFR === 'object' && Object.keys(cfgFR).length > 0) {
           localStorage.setItem('otica_config_comissao', JSON.stringify(cfgFR));
         }
-        if (ok > 0) { console.log('☁️ Dados carregados do Firebase:', ok); if(typeof renderDashboard==='function') renderDashboard(); }
+        if (ok > 0) { console.log('☁️ Dados carregados do Firebase:', ok, 'módulos (clientes, receitas, produtos, vendas, OS, agendamentos, orçamentos, estoque, despesas, entradas, usuários, metas, comissão)'); if(typeof renderDashboard==='function') renderDashboard(); }
       }
     }, 1500);
   }
@@ -5213,6 +5213,7 @@ function finalizarLogin(userObj, usuarios) {
             window._fb.loadCollection('meta_faturamento').then(function(metaFat) {
               if (metaFat && metaFat.valor) {
                 localStorage.setItem('otica_meta_faturamento', metaFat.valor);
+                console.log('🎯 Meta de faturamento carregada: R$', metaFat.valor);
               }
             }).catch(function(){});
             // Carregar config comissão
