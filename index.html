@@ -361,7 +361,7 @@
   }
 
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th {
     background: linear-gradient(135deg, #0d2b4e 0%, #1a4a7a 100%);
     padding: 10px 12px; text-align: left;
@@ -2434,6 +2434,41 @@ function instalarApp() {
     box-sizing: border-box;
   }
 </style>
+<style>
+  /* ===== TABELAS MOBILE — SEM MIN-WIDTH FORÇADO ===== */
+  @media (max-width: 768px) {
+    table { min-width: 0 !important; width: 100% !important; }
+    #tb-produtos-table { min-width: 0 !important; }
+    #tb-receitas { min-width: 0 !important; }
+    
+    /* hide-mobile funciona corretamente */
+    .hide-mobile { display: none !important; }
+    
+    /* Colunas visíveis no mobile ficam com largura automática */
+    th:not(.hide-mobile),
+    td:not(.hide-mobile) { 
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+    
+    /* Coluna de ações não corta */
+    th:last-child, td:last-child { 
+      white-space: nowrap;
+      max-width: none;
+    }
+    
+    /* Coluna de descrição pode ter mais espaço */
+    #tb-produtos-table td:nth-child(2) { max-width: 150px; }
+  }
+  
+  /* No PC — mostrar todas as colunas */
+  @media (min-width: 769px) {
+    .hide-mobile { display: table-cell !important; }
+    table { min-width: 0; }
+  }
+</style>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -2748,7 +2783,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
-<table id="tb-produtos-table" style="min-width:700px;width:100%"><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="col-custo-prod hide-mobile">Custo</th><th class="hide-mobile">Venda</th><th class="col-margem-prod hide-mobile">Margem</th><th class="hide-mobile">Status</th><th>Ações</th></tr></thead>
+<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="col-custo-prod hide-mobile">Custo</th><th class="hide-mobile">Venda</th><th class="col-margem-prod hide-mobile">Margem</th><th class="hide-mobile">Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
