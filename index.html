@@ -5912,9 +5912,10 @@ function renderMetasIndividuais() {
   var usuarios = getUsuarios ? getUsuarios() : [];
   
   // Quem mostrar: admin vê todos, vendedor vê só o próprio
+  var userLogin = user ? (user.login || '') : '';
   var usuariosParaMeta = adminDash 
-    ? usuarios.filter(u => u.status === 'Ativo' && u.login !== 'admin')
-    : usuarios.filter(u => u.login === user.login);
+    ? usuarios.filter(u => u.status === 'Ativo' && u.nivel !== 'Admin')
+    : usuarios.filter(u => u.login === userLogin);
 
   var body = document.getElementById('dash-metas-ind-body');
   if (!body) return;
@@ -6059,6 +6060,7 @@ function renderCrediarioDash() {
 }
 
 function renderDashboard() {
+  try {
   if(!document.getElementById('dash-cards')) return;
   // Declarar adminDash no inicio para uso em toda a funcao
   var adminDash = isAdmin();
@@ -6202,6 +6204,7 @@ function renderDashboard() {
         '<div class="stat-card '+(baixoEstoque>0?'red':'green')+'"><div class="label">Estoque Baixo</div><div class="value">'+baixoEstoque+'</div><div class="sub">produtos</div></div>';
     }
   }
+  } catch(e) { console.warn("Erro ao renderizar dashboard:", e); }
 }
 
 function getFiltroVendasAdmin(filtro) {
