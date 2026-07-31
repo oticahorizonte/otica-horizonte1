@@ -2465,6 +2465,13 @@ function instalarApp() {
 <div class="topbar">
 <h1>💰 Vendas &amp; Caixa</h1>
 <div class="topbar-actions">
+<select id="vendas-periodo" onchange="renderVendas()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="hoje">Hoje</option>
+<option value="semana">Esta Semana</option>
+<option selected value="mes">Este Mês</option>
+<option value="mes_ant">Mês Anterior</option>
+<option value="tudo">Todo o Período</option>
+</select>
 </div>
 </div>
 <div class="cards-grid" id="vendas-cards" style="display:none"></div>
@@ -2532,6 +2539,13 @@ function instalarApp() {
 <div class="topbar">
 <h1>🔧 Ordens de Serviço</h1>
 <div class="topbar-actions">
+<select id="os-periodo" onchange="renderOS()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="hoje">Hoje</option>
+<option value="semana">Esta Semana</option>
+<option selected value="mes">Este Mês</option>
+<option value="mes_ant">Mês Anterior</option>
+<option value="tudo">Todo o Período</option>
+</select>
 <button class="btn btn-primary" id="btn-nova-os" onclick="openModal('modal-os')">➕ Nova OS</button>
 </div>
 </div>
@@ -3659,11 +3673,16 @@ function instalarApp() {
   <div id="venda-col-dir" class="aba-oculta" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
     <!-- Campos de venda - Data, Pagamento, Vendedor, Status -->
     <div style="background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.1);padding:12px 14px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-bottom:8px">
         <!-- Data -->
         <div>
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">📅 Data</label>
           <input id="venda-data" type="date" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
+        </div>
+        <!-- Hora -->
+        <div>
+          <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">🕐 Hora</label>
+          <input id="venda-hora" type="time" style="width:80px;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
         </div>
         <!-- Vendedor -->
         <div>
@@ -6121,7 +6140,7 @@ function renderDashboard() {
   document.getElementById('dash-vendas').innerHTML = vendasUnicasD.slice(-4).reverse().map(v => `
     <tr style="cursor:pointer" onclick="showSection('vendas')" onmouseover="this.style.background='#f8faff'" onmouseout="this.style.background=''">
       <td><strong style="color:#0d2b4e">${v.id}</strong></td>
-      <td style="color:#5a6a8a;font-size:12px">${fmtDate(v.data)}</td>
+      <td style="color:#5a6a8a;font-size:12px">${fmtDate(v.data) + (v.hora ? " " + v.hora : "")}</td>
       <td><strong style="color:#0d2b4e">${clMap[v.clienteId]||'-'}</strong></td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#5a6a8a">${
         (function() {
@@ -7323,6 +7342,38 @@ function toggleCard(bodyId, iconId) {
   if (icon) icon.textContent = oculto ? '▼' : '▶';
 }
 
+
+// ===== HELPER: FILTRO DE PERÍODO =====
+function getDataInicioPeriodo(periodo) {
+  var hoje = new Date();
+  var ano = hoje.getFullYear();
+  var mes = hoje.getMonth();
+  var dia = hoje.getDate();
+  switch(periodo) {
+    case 'hoje':
+      return new Date(ano, mes, dia).toISOString().slice(0,10);
+    case 'semana':
+      return new Date(hoje.getTime() - 7*86400000).toISOString().slice(0,10);
+    case 'mes':
+      return new Date(ano, mes, 1).toISOString().slice(0,10);
+    case 'mes_ant':
+      return new Date(ano, mes-1, 1).toISOString().slice(0,10);
+    case 'tudo':
+    default:
+      return '2000-01-01';
+  }
+}
+function getDataFimPeriodo(periodo) {
+  var hoje = new Date();
+  var ano = hoje.getFullYear();
+  var mes = hoje.getMonth();
+  if (periodo === 'mes_ant') {
+    // Último dia do mês anterior
+    return new Date(ano, mes, 0).toISOString().slice(0,10);
+  }
+  return '2099-12-31';
+}
+
 function renderVendas() {
   // Renderizar crediário
   renderContasCrediario();
@@ -7339,7 +7390,14 @@ function renderVendas() {
   var userVendas = loadUser();
   var meuNomeVendas = userVendas ? (userVendas.nome||'').toLowerCase() : '';
   var adminVendasReg = isAdmin();
+  // Filtro de período
+  var periodoVendas = (document.getElementById('vendas-periodo')||{}).value || 'mes';
+  var dataInicioVendas = getDataInicioPeriodo(periodoVendas);
+  var dataFimVendas = getDataFimPeriodo(periodoVendas);
   const todasVendas = load('vendas').filter(v => {
+    // Filtro de período
+    var dataV = (v.data||'').slice(0,10);
+    if (dataV < dataInicioVendas || dataV > dataFimVendas) return false;
     // Apenas vendas PAGAS na lista de vendas (pendentes ficam em Vendas Pendentes)
     if (v.status === 'Pendente' || v.status === 'Cancelado') return false;
     // Vendedor vê apenas suas próprias vendas
@@ -7521,6 +7579,7 @@ function saveVenda() {
   const prods = load('produtos');
   const clis = load('clientes');
   const data = document.getElementById('venda-data').value;
+  const hora = (document.getElementById('venda-hora')||{}).value || new Date().toTimeString().slice(0,5);
   const pag = document.getElementById('venda-pag').value;
   const parcelas = document.getElementById('venda-parcelas').value;
   const status = document.getElementById('venda-status').value;
@@ -7764,8 +7823,15 @@ function renderOS() {
   var meuNomeOS = userOS ? (userOS.nome||'').toLowerCase() : '';
   const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   const q = (document.getElementById('search-os')||{}).value||'';
+  // Filtro de período
+  var periodoOS = (document.getElementById('os-periodo')||{}).value || 'mes';
+  var dataInicioOS = getDataInicioPeriodo(periodoOS);
+  var dataFimOS = getDataFimPeriodo(periodoOS);
   // Vendedor vê apenas OS das suas próprias vendas
-  var todasOS = load('os');
+  var todasOS = load('os').filter(function(o){
+    var dataO = (o.abertura||'').slice(0,10);
+    return dataO >= dataInicioOS && dataO <= dataFimOS;
+  });
   var minhasVendas = new Set();
   if (!adminOS2) {
     load('vendas').filter(function(v){ return (v.vendedor||'').toLowerCase()===meuNomeOS; })
