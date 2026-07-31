@@ -2301,22 +2301,28 @@ function instalarApp() {
 <!-- 4. GRÁFICO MISTO + TOP PRODUTOS -->
 <div id="dash-grafico-avancado" style="display:none;margin-bottom:16px">
   <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
-    <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-      <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">📊 Vendas e Receita — Últimos 7 dias</div>
-      <div id="dash-grafico-misto" style="height:160px;position:relative"></div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header"><h3>📊 Vendas e Receita — Últimos 7 dias</h3></div>
+      <div class="card-body">
+        <div id="dash-grafico-misto" style="height:160px;position:relative"></div>
+      </div>
     </div>
-    <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-      <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">🏆 Top Produtos do Mês</div>
-      <div id="dash-top-produtos-novo"></div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header"><h3>🏆 Top Produtos do Mês</h3></div>
+      <div class="card-body">
+        <div id="dash-top-produtos-novo"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- 5. CREDIÁRIO A RECEBER -->
 <div id="dash-crediario-receber" style="display:none;margin-bottom:16px">
-  <div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
-    <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:12px">💳 Crediário a Receber</div>
-    <div id="dash-crediario-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-header"><h3>💳 Crediário a Receber</h3></div>
+    <div class="card-body">
+      <div id="dash-crediario-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+    </div>
   </div>
 </div>
 
@@ -2350,7 +2356,7 @@ function instalarApp() {
 
 <!-- 10. ANIVERSARIANTES -->
 <div class="card" id="aniversariantes-box" style="margin-bottom:20px;display:none">
-<div class="card-header" style="background:#fef3c7"><h3>🎂 Aniversariantes do Mês</h3></div>
+<div class="card-header"><h3>🎂 Aniversariantes do Mês</h3></div>
 <div class="card-body" style="padding:0">
 <table><thead><tr><th>Cliente</th><th>Data</th><th>Telefone</th><th>Ação</th></tr></thead>
 <tbody id="tb-aniversariantes"></tbody></table>
