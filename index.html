@@ -4794,26 +4794,24 @@ function _fbAutoSync(k, v) {
 async function syncLocalToCloud() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
   showToast('☁️ Enviando TODOS os dados para a nuvem...','success');
-  var ok = await window._fb.syncToCloud(KEYS);
-  // Módulos extras não incluídos no KEYS
-  var usuarios = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-  if (usuarios.length > 0) { await window._fb.saveCollection('usuarios', usuarios); ok++; }
-  var entradas = JSON.parse(localStorage.getItem('otica_entradas')||'[]');
-  if (entradas.length > 0) { await window._fb.saveCollection('entradas', entradas); ok++; }
-  // Metas de vendas
-  var metas = JSON.parse(localStorage.getItem('otica_metas_vendas')||'{}');
-  if (Object.keys(metas).length > 0) { await window._fb.saveCollection('metas_vendas', metas); ok++; }
-  // Config comissão
-  var cfg = JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-  if (Object.keys(cfg).length > 0) { await window._fb.saveCollection('config_comissao', cfg); ok++; }
-  // Fotos Cloudinary
-  var fotosMap = {};
-  var prods = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
-  prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
-  if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
-  localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-  if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-  showToast('✅ ' + ok + ' módulos sincronizados! Celular e PC atualizados.','success');
+  try {
+    // syncToCloud já envia todos os módulos do KEYS (inclui usuarios, entradas, metas, config)
+    var ok = await window._fb.syncToCloud(KEYS);
+    // Apenas fotos Cloudinary — não estão no KEYS
+    var fotosMap = {};
+    var prods = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
+    prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
+    if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
+    // Meta de faturamento — não está no KEYS padrão
+    var metaFat = localStorage.getItem('otica_meta_faturamento');
+    if (metaFat) { await window._fb.saveCollection('meta_faturamento', {valor: metaFat}); ok++; }
+    localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+    if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+    showToast('✅ ' + ok + ' módulos enviados para a nuvem!','success');
+  } catch(e) {
+    console.error('Erro no sync para nuvem:', e);
+    showToast('⚠️ Erro ao enviar dados. Tente novamente.','error');
+  }
 }
 
 async function syncFirebaseToLocal() {
