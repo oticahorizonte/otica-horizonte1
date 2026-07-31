@@ -2373,6 +2373,67 @@ function instalarApp() {
     .hide-mobile { display: table-cell !important; }
   }
 </style>
+<style>
+  /* ===== MODAL NOVA VENDA — TELA CHEIA ===== */
+  #modal-venda {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+  #modal-venda .modal {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* ===== BARRA SUPERIOR NOVA VENDA — RESPONSIVA ===== */
+  @media (max-width: 768px) {
+    /* Barra superior — empilhar em 2 linhas no mobile */
+    #modal-venda > .modal > div:first-child {
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    /* Título Nova Venda */
+    #modal-venda > .modal > div:first-child h3 {
+      font-size: 16px !important;
+      flex-shrink: 0;
+    }
+    /* Campo busca cliente — linha inteira no mobile */
+    #modal-venda > .modal > div:first-child > div[style*="flex:1"] {
+      order: 3;
+      flex-basis: 100%;
+      width: 100%;
+    }
+    /* Botão Ver Registro — menor no mobile */
+    #modal-venda > .modal > div:first-child > button {
+      font-size: 11px !important;
+      padding: 6px 10px !important;
+    }
+    /* Input busca — fonte adequada para mobile */
+    #venda-cliente-busca {
+      font-size: 14px !important;
+    }
+  }
+
+  /* ===== COLUNA DIREITA — VENDEDOR NÃO CORTADO ===== */
+  #venda-col-dir {
+    min-width: 0;
+    overflow-y: auto;
+  }
+  /* Vendedor — não cortar texto */
+  #venda-col-dir select,
+  #venda-col-dir input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+</style>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
