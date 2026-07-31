@@ -6467,6 +6467,18 @@ function atualizarSyncIndicator() {
   } else { icon.textContent = '☁️⏳'; text.textContent = 'Conectando...'; }
 }
 setInterval(atualizarSyncIndicator, 60000);
+  // Atualizar hora em nova venda em tempo real (a cada segundo)
+  setInterval(function() {
+    var horaEl = document.getElementById('venda-hora');
+    if (!horaEl) return;
+    // Só atualiza se o modal de venda estiver aberto E o usuário não estiver editando a hora
+    var modalVenda = document.getElementById('modal-venda');
+    if (!modalVenda || modalVenda.style.display === 'none') return;
+    // Não sobrescrever se o usuário clicou no campo (focused)
+    if (document.activeElement === horaEl) return;
+    var agora = new Date();
+    horaEl.value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+  }, 1000);
 
 function aplicarControleAcesso() {
   var admin = isAdmin();
