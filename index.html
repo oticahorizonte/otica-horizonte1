@@ -3968,7 +3968,8 @@ function instalarApp() {
   <div id="venda-col-dir" class="aba-oculta" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
     <!-- Campos de venda - Data, Pagamento, Vendedor, Status -->
     <div style="background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.1);padding:12px 14px">
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-bottom:8px">
+      <!-- Data + Hora na mesma linha -->
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px">
         <!-- Data -->
         <div>
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">📅 Data</label>
@@ -3979,10 +3980,12 @@ function instalarApp() {
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">🕐 Hora</label>
           <input id="venda-hora" type="time" style="width:80px;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
         </div>
-        <!-- Vendedor -->
+      </div>
+      <!-- Vendedor — linha inteira -->
+      <div style="margin-bottom:8px">
         <div>
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">🏷️ Vendedor</label>
-          <input id="venda-vendedor" placeholder="Vendedor" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;font-weight:600;outline:none"/>
+          <input id="venda-vendedor" placeholder="Vendedor" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;font-weight:600;outline:none;box-sizing:border-box"/>
         </div>
         <!-- Pagamento -->
         <div>
