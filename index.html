@@ -2261,30 +2261,19 @@ function instalarApp() {
   /* ===== TABELAS ESPECÍFICAS — ocultar colunas menos importantes no mobile ===== */
   @media (max-width: 768px) {
     /* Clientes — ocultar CPF e Cidade */
-    #tb-clientes th:nth-child(3),
-    #tb-clientes td:nth-child(3),
-    #tb-clientes th:nth-child(5),
-    #tb-clientes td:nth-child(5) { display: none; }
+/* clientes: hide-mobile controla visibilidade */
 
     /* Receitas — ocultar colunas de grau intermediárias */
-    #tb-receitas th:nth-child(7),
-    #tb-receitas td:nth-child(7),
-    #tb-receitas th:nth-child(8),
-    #tb-receitas td:nth-child(8) { display: none; }
+/* receitas: hide-mobile controla visibilidade */
 
     /* OS — ocultar Técnico/Lab */
-    #tb-os th:nth-child(5),
-    #tb-os td:nth-child(5) { display: none; }
+/* hide-mobile controla visibilidade */
 
     /* Agendamentos — ocultar Profissional e Observações */
-    #tb-agendamentos th:nth-child(6),
-    #tb-agendamentos td:nth-child(6),
-    #tb-agendamentos th:nth-child(7),
-    #tb-agendamentos td:nth-child(7) { display: none; }
+/* hide-mobile controla visibilidade */
 
     /* Vendas — ocultar Pagamento */
-    #tb-vendas th:nth-child(6),
-    #tb-vendas td:nth-child(6) { display: none; }
+/* hide-mobile controla visibilidade */
   }
 
   /* ===== SIDEBAR RESPONSIVA ===== */
@@ -2346,15 +2335,10 @@ function instalarApp() {
     .form-group + .form-group { margin-top: 0; }
 
     /* Tabela de receitas — scroll horizontal */
-    #tb-receitas { min-width: 600px; }
+    #tb-receitas { min-width: 0; }
 
     /* Ocultar colunas de receitas no mobile */
-    #tb-receitas th:nth-child(7),
-    #tb-receitas td:nth-child(7),
-    #tb-receitas th:nth-child(8),
-    #tb-receitas td:nth-child(8),
-    #tb-receitas th:nth-child(9),
-    #tb-receitas td:nth-child(9) { display: none; }
+/* receitas: hide-mobile controla visibilidade */
 
     /* Dashboard — Meta de Faturamento compacta */
     #dash-meta-otica .card-header { padding: 8px 12px; }
