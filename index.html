@@ -2737,9 +2737,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr>
-<th>Data</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Motivo</th><th>Referência</th>
-</tr></thead><tbody id="tb-historico-estoque"></tbody></table>
+<table><thead><tr><th>Nº</th><th>Cliente</th><th class="hide-mobile">Médico</th><th class="hide-mobile">Data</th><th>Longe OD</th><th>Longe OE</th><th class="hide-mobile">Perto OD</th><th class="hide-mobile">Perto OE</th><th class="hide-mobile">Adição</th><th>Ações</th></tr></thead><tbody id="tb-historico-estoque"></tbody></table>
 </div>
 </div>
 <div class="card">
@@ -6961,7 +6959,7 @@ function renderReceitas() {
     return `
     <tr>
       <td>${r.id}</td><td><strong>${clMap[r.clienteId]||'-'}</strong></td>
-      <td>${r.medico||'-'}</td><td>${fmtDate(r.data)}</td>
+      <td class="hide-mobile">${r.medico||'-'}</td><td class="hide-mobile">${fmtDate(r.data)}</td>
       <td style="font-size:11px">${fmtGrau(lOdE)} / ${fmtGrau(lOdC)} / ${r.longeOdEixo||0}°</td>
       <td style="font-size:11px">${fmtGrau(lOeE)} / ${fmtGrau(lOeC)} / ${r.longeOeEixo||0}°</td>
       <td style="font-size:11px">${fmtGrau(r.pertoOdEsf||0)} / ${fmtGrau(r.pertoOdCil||0)} / ${r.pertoOdEixo||0}°</td>
@@ -7300,13 +7298,13 @@ function renderProdutos() {
     const status = (p.cat === 'Serviço') ? 'Serviço' : (p.qtd <= p.min ? 'Repor' : 'OK');
     return `<tr>
       <td><strong>${p.cod}</strong></td><td>${p.foto?`<img src="${p.foto}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle"/>`:''}${p.desc}</td>
-      <td><span class="badge badge-info">${p.cat}</span></td>
-      <td class=\"hide-mobile\">${p.marca}</td>
+      <td class="hide-mobile"><span class="badge badge-info">${p.cat}</span></td>
+      <td class="hide-mobile">${p.marca}</td>
       <td class="${p.qtd<=p.min?'text-danger fw-bold':'fw-bold'}">${p.qtd}</td>
-      <td class=\"hide-mobile\">${p.min}</td>
-      ${isAdmin()?`<td>${fmtMoney(p.custo)}</td>`:''}
-      <td class=\"hide-mobile\">${fmtMoney(p.venda)}</td>
-      ${isAdmin()?`<td>${fmtPct(margem)}</td>`:''}
+      <td class="hide-mobile">${p.min}</td>
+      ${isAdmin()?`<td class="hide-mobile">${fmtMoney(p.custo)}</td>`:''}
+      <td class="hide-mobile">${fmtMoney(p.venda)}</td>
+      ${isAdmin()?`<td class="hide-mobile">${fmtPct(margem)}</td>`:''}
       <td>${status==='Serviço'?'<span class="badge badge-info">🔧 Serviço</span>':statusBadge(status)}</td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm" onclick="visualizarProduto('${p.cod}')" data-tip="Visualizar produto" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer">👁️ Ver</button>
