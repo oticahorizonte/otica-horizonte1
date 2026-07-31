@@ -4737,7 +4737,7 @@ function updatePrintDate() {
 window.addEventListener('beforeprint', updatePrintDate);
 
 // ── Storage helpers ──────────────────────────────────────────────
-const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', entradas:'otica_entradas', usuarios:'otica_usuarios', metas_vendas:'otica_metas_vendas', config_comissao:'otica_config_comissao' }; // usuarios gerenciado separadamente
+const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', entradas:'otica_entradas', usuarios:'otica_usuarios', metas_vendas:'otica_metas_vendas', config_comissao:'otica_config_comissao', meta_faturamento:'otica_meta_faturamento' }; // usuarios gerenciado separadamente
 
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
@@ -4858,7 +4858,7 @@ const save = function(k, v) {
   // 1. Salvar no localStorage imediatamente
   _saveBase(k, v);
   // 2. Salvar no Firebase
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao'];
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento'];
   if (criticos.indexOf(k) === -1) return;
   // Cancelar save anterior pendente para este módulo (debounce 800ms)
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
@@ -5207,6 +5207,12 @@ function finalizarLogin(userObj, usuarios) {
             window._fb.loadCollection('metas_vendas').then(function(metasCloud) {
               if (metasCloud && typeof metasCloud === 'object' && Object.keys(metasCloud).length > 0) {
                 localStorage.setItem('otica_metas_vendas', JSON.stringify(metasCloud));
+              }
+            }).catch(function(){});
+            // Carregar meta de faturamento
+            window._fb.loadCollection('meta_faturamento').then(function(metaFat) {
+              if (metaFat && metaFat.valor) {
+                localStorage.setItem('otica_meta_faturamento', metaFat.valor);
               }
             }).catch(function(){});
             // Carregar config comissão
@@ -5803,7 +5809,10 @@ function editarMetaOtica() {
   var atual = localStorage.getItem('otica_meta_faturamento') || '5000';
   var novo = prompt('Meta de faturamento mensal da ótica (R$):', atual);
   if (novo && !isNaN(parseFloat(novo))) {
-    localStorage.setItem('otica_meta_faturamento', parseFloat(novo).toString());
+    var val = parseFloat(novo).toString();
+    localStorage.setItem('otica_meta_faturamento', val);
+    // Sincronizar com Firebase
+    if (window._fb) window._fb.saveCollection('meta_faturamento', {valor: val}).catch(function(){});
     renderMetaOtica();
     showToast('✅ Meta atualizada: ' + fmtMoney(parseFloat(novo)), 'success');
   }
