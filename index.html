@@ -303,19 +303,19 @@
     transition: all .25s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden;
   }
   .stat-card::before {
-    content: ''; position: absolute; top: -10px; right: -10px;
-    width: 70px; height: 70px; border-radius: 50%;
-    background: rgba(201,168,76,.08); 
+    content: ''; position: absolute; top: -15px; right: -15px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,255,255,.08);
   }
   .stat-card::after {
     content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-    height: 2px; background: linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);
+    height: 2px; background: linear-gradient(90deg,transparent,rgba(232,201,106,.4),transparent);
   }
   .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
   .stat-card.green { background: linear-gradient(135deg, #166534 0%, #16a34a 100%); }
-  .stat-card.green::before { background: rgba(22,163,74,.08); }
+  .stat-card.green::before { background: rgba(255,255,255,.1); }
   .stat-card.orange { background: linear-gradient(135deg, #92400e 0%, #d97706 100%); }
-  .stat-card.orange::before { background: rgba(217,119,6,.08); }
+  .stat-card.orange::before { background: rgba(255,255,255,.1); }
   .stat-card.red { background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%); }
   .stat-card.red::before { background: rgba(220,38,38,.08); }
   .stat-card .label { font-size: 10px; color: rgba(255,255,255,.7); font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px; }
@@ -6011,6 +6011,41 @@ function renderDashboard() {
   renderMetaOtica();
   renderMetasIndividuais();
   renderGraficoMisto(load('vendas') || []);
+  // Mostrar bloco gráfico + top produtos
+  var grafAvEl = document.getElementById('dash-grafico-avancado');
+  if (grafAvEl) grafAvEl.style.display = 'block';
+  // Renderizar Top Produtos
+  (function() {
+    var topEl = document.getElementById('dash-top-produtos-novo');
+    if (!topEl) return;
+    var vendas2 = load('vendas');
+    var prodCount = {};
+    vendas2.forEach(function(v) {
+      var itens = v.itens && v.itens.length > 0 ? v.itens : [{cod:v.produto, desc:v.desc_prod||v.produto, preco:v.preco||0, qtd:v.qtd||1}];
+      itens.forEach(function(it) {
+        if (!it.cod || it.cod === 'OCULOS-COMPLETO') return;
+        prodCount[it.cod] = prodCount[it.cod] || {desc: it.desc||it.cod, qtd:0, total:0};
+        prodCount[it.cod].qtd += (it.qtd||1);
+        prodCount[it.cod].total += (it.preco||0)*(it.qtd||1);
+      });
+    });
+    var top5 = Object.entries(prodCount).sort(function(a,b){return b[1].total-a[1].total;}).slice(0,5);
+    var maxVal = top5.length ? top5[0][1].total : 1;
+    topEl.innerHTML = top5.length ? top5.map(function(entry, i) {
+      var cod = entry[0], d = entry[1];
+      var pct = maxVal > 0 ? (d.total/maxVal*100) : 0;
+      var cores = ['#e8c96a','#c9a84c','#a07830','#0d2b4e','#1a4a7a'];
+      return '<div style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">' +
+          '<span style="font-weight:600;color:#0d2b4e">' + (i+1) + '. ' + (d.desc||cod).substring(0,25) + '</span>' +
+          '<span style="color:#64748b">' + fmtMoney(d.total) + '</span>' +
+        '</div>' +
+        '<div style="background:#e2e8f0;border-radius:4px;height:6px">' +
+          '<div style="height:100%;border-radius:4px;background:' + cores[i] + ';width:' + pct.toFixed(0) + '%"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('') : '<div style="color:#94a3b8;font-size:12px;text-align:center;padding:20px">Sem vendas no período</div>';
+  })();
   renderCrediarioDash();
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const clientes = load('clientes').filter(c=>c.status!=='Inativo'), produtos = load('produtos'), vendas = load('vendas'), os = load('os');
@@ -6037,12 +6072,12 @@ function renderDashboard() {
   var saldoHoje = receitaHoje + entradaHoje - saidaHoje;
   var corSaldo = saldoHoje >= 0 ? 'green' : 'red';
   document.getElementById('dash-cards').innerHTML = `
-    <div class="stat-card"><div class="label">Clientes Ativos</div><div class="value">${clientes.length}</div><div class="sub">cadastrados</div></div>
-    <div class="stat-card green"><div class="label">Receita do Mês</div><div class="value">${fmtMoney(receitaMes)}</div><div class="sub">${vendasMes.length} vendas</div></div>
-    <div class="stat-card"><div class="label">Ticket Médio</div><div class="value">${fmtMoney(ticketMedio)}</div><div class="sub">por venda</div></div>
+    <div class="stat-card"><div class="label">👥 Clientes Ativos</div><div class="value">${clientes.length}</div><div class="sub">cadastrados</div></div>
+    <div class="stat-card green"><div class="label">💰 Receita do Mês</div><div class="value">${fmtMoney(receitaMes)}</div><div class="sub">${vendasMes.length} vendas</div></div>
+    <div class="stat-card"><div class="label">🎯 Ticket Médio</div><div class="value">${fmtMoney(ticketMedio)}</div><div class="sub">por venda</div></div>
     <div class="stat-card ${corSaldo}"><div class="label">💵 Saldo Hoje</div><div class="value">${fmtMoney(saldoHoje)}</div><div class="sub">${vendasHoje2.length} vendas hoje</div></div>
-    <div class="stat-card" style="border-left:3px solid #c9a84c"><div class="label" style="color:#0d2b4e">🔧 OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
-    <div class="stat-card"><div class="label">Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
+    <div class="stat-card orange"><div class="label">🔧 OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
+    <div class="stat-card ${baixoEstoque>0?'red':''}"><div class="label">📦 Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
   `;
   // Últimas vendas
   const clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
