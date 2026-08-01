@@ -10536,7 +10536,7 @@ function renderComissoes() {
     var minhaComissao = totalGeral * (comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0)/100;
     document.getElementById('comissao-cards').innerHTML = `
       <div class="stat-card green"><div class="label">Minhas Vendas</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} vendas</div></div>
-      <div class="stat-card orange"><div class="label">Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${cfg[meuNome]||pct}%</div></div>
+      <div class="stat-card orange"><div class="label">Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0}%</div></div>
     `;
   }
 
