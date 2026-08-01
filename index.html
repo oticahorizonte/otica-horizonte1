@@ -10480,7 +10480,15 @@ function renderComissoes() {
   if (cardConfig) cardConfig.style.display = admin ? '' : 'none';
   // select de comissao removido - nao precisa mais ocultar
 
-  const pct = 5; // Fallback - comissao real vem do cadastro de cada vendedor
+  // Carregar usuários para buscar comissão correta por nome ou login
+  var usuariosComissao = getUsuarios ? getUsuarios() : [];
+  // Criar mapa: nome_lower → comissao e login_lower → comissao
+  var comissaoMap = {};
+  usuariosComissao.forEach(function(u) {
+    var pctU = parseFloat(u.comissao) || 0;
+    if (u.nome) comissaoMap[(u.nome||'').toLowerCase()] = pctU;
+    if (u.login) comissaoMap[(u.login||'').toLowerCase()] = pctU;
+  });
   var todasVendas = load('vendas');
   // Vendedor vê apenas suas próprias vendas
   var vendas = admin ? todasVendas : todasVendas.filter(function(v){ return (v.vendedor||'').toLowerCase() === meuNome; });
@@ -10534,7 +10542,9 @@ function renderComissoes() {
 
   document.getElementById('tb-comissoes').innerHTML = Object.entries(vendedores).map(function(entry) {
     var vend = entry[0]; var d = entry[1];
-    var pctVend = cfg[vend.toLowerCase()]||pct;
+    // Buscar comissão: primeiro pelo nome, depois pelo login, depois pelo cfg
+    var cfg2 = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+    var pctVend = comissaoMap[vend.toLowerCase()] || parseFloat(cfg2[vend.toLowerCase()]) || 0;
     return '<tr>'
       +'<td><strong>'+vend+'</strong></td>'
       +'<td>'+d.qtd+'</td>'
