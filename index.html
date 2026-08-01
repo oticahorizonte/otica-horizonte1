@@ -14930,54 +14930,108 @@ function alterarPagamentoPendente(chave) {
   });
   if (!vendasGrupo.length) return;
   var v = vendasGrupo[0];
-  
-  // Criar modal de alteração
+
   var modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-  
+
   var inner = document.createElement('div');
   inner.style.cssText = 'background:white;border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)';
-  
-  inner.innerHTML = '<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:16px 20px;display:flex;align-items:center;justify-content:space-between">' +
-    '<span style="color:#e8c96a;font-weight:700;font-size:15px">🔄 Alterar Pagamento</span>' +
-    '<button onclick="this.closest('[style*=fixed]').remove()" style="background:rgba(255,255,255,.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px">✕</button>' +
-    '</div>' +
-    '<div style="padding:20px">' +
-    '<div style="margin-bottom:14px">' +
-    '<label style="font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px">💳 Nova Forma de Pagamento</label>' +
-    '<select id="alt-pag-forma" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">' +
-    '<option value="PIX"' + (v.pag==='PIX'?' selected':'') + '>PIX</option>' +
-    '<option value="Dinheiro"' + (v.pag==='Dinheiro'?' selected':'') + '>Dinheiro</option>' +
-    '<option value="Cartão Crédito"' + (v.pag==='Cartão Crédito'?' selected':'') + '>Cartão Crédito</option>' +
-    '<option value="Cartão Débito"' + (v.pag==='Cartão Débito'?' selected':'') + '>Cartão Débito</option>' +
-    '<option value="Crediário Próprio"' + (v.pag==='Crediário Próprio'?' selected':'') + '>Crediário Próprio</option>' +
-    '</select></div>' +
-    '<div id="alt-pag-parcelas-div" style="margin-bottom:14px;display:none">' +
-    '<label style="font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px">📋 Parcelas</label>' +
-    '<select id="alt-pag-parcelas" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">' +
-    '<option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option>' +
-    '<option value="4">4x</option><option value="5">5x</option><option value="6">6x</option>' +
-    '</select></div>' +
-    '<div style="margin-bottom:14px">' +
-    '<label style="font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px">📊 Novo Status</label>' +
-    '<select id="alt-pag-status" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">' +
-    '<option value="Pago">Pago</option>' +
-    '<option value="Pendente" selected>Pendente</option>' +
-    '</select></div>' +
-    '<div style="display:flex;gap:10px">' +
-    '<button onclick="confirmarAlteracaoPagamento('' + chave + '');this.closest('[style*=fixed]').remove()" style="flex:1;padding:12px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✅ Confirmar</button>' +
-    '<button onclick="this.closest('[style*=fixed]').remove()" style="padding:12px 20px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:14px;cursor:pointer">Cancelar</button>' +
-    '</div></div>';
-  
+
+  // Header
+  var header = document.createElement('div');
+  header.style.cssText = 'background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:16px 20px;display:flex;align-items:center;justify-content:space-between';
+  var title = document.createElement('span');
+  title.style.cssText = 'color:#e8c96a;font-weight:700;font-size:15px';
+  title.textContent = '🔄 Alterar Pagamento';
+  var btnClose = document.createElement('button');
+  btnClose.style.cssText = 'background:rgba(255,255,255,.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px';
+  btnClose.textContent = '✕';
+  btnClose.onclick = function() { modal.remove(); };
+  header.appendChild(title);
+  header.appendChild(btnClose);
+
+  // Body
+  var body = document.createElement('div');
+  body.style.cssText = 'padding:20px';
+
+  // Select forma de pagamento
+  var lblForma = document.createElement('label');
+  lblForma.style.cssText = 'font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px';
+  lblForma.textContent = '💳 Nova Forma de Pagamento';
+  var selForma = document.createElement('select');
+  selForma.id = 'alt-pag-forma';
+  selForma.style.cssText = 'width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px';
+  ['PIX','Dinheiro','Cartão Crédito','Cartão Débito','Crediário Próprio'].forEach(function(op) {
+    var opt = document.createElement('option');
+    opt.value = op; opt.textContent = op;
+    if (v.pag === op) opt.selected = true;
+    selForma.appendChild(opt);
+  });
+
+  // Div parcelas (condicional)
+  var divParc = document.createElement('div');
+  divParc.id = 'alt-pag-parcelas-div';
+  divParc.style.cssText = 'display:none;margin-bottom:14px';
+  var lblParc = document.createElement('label');
+  lblParc.style.cssText = 'font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px';
+  lblParc.textContent = '📋 Parcelas';
+  var selParc = document.createElement('select');
+  selParc.id = 'alt-pag-parcelas';
+  selParc.style.cssText = 'width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px';
+  ['À vista','2x','3x','4x','5x','6x'].forEach(function(op, i) {
+    var opt = document.createElement('option');
+    opt.value = i+1; opt.textContent = op;
+    selParc.appendChild(opt);
+  });
+  divParc.appendChild(lblParc);
+  divParc.appendChild(selParc);
+
+  selForma.addEventListener('change', function() {
+    divParc.style.display = this.value === 'Cartão Crédito' ? 'block' : 'none';
+  });
+
+  // Select status
+  var lblStatus = document.createElement('label');
+  lblStatus.style.cssText = 'font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px';
+  lblStatus.textContent = '📊 Novo Status';
+  var selStatus = document.createElement('select');
+  selStatus.id = 'alt-pag-status';
+  selStatus.style.cssText = 'width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:16px';
+  ['Pago','Pendente'].forEach(function(op) {
+    var opt = document.createElement('option');
+    opt.value = op; opt.textContent = op;
+    if (op === 'Pago') opt.selected = true;
+    selStatus.appendChild(opt);
+  });
+
+  // Botões
+  var divBtns = document.createElement('div');
+  divBtns.style.cssText = 'display:flex;gap:10px';
+  var btnConfirmar = document.createElement('button');
+  btnConfirmar.style.cssText = 'flex:1;padding:12px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer';
+  btnConfirmar.textContent = '✅ Confirmar';
+  btnConfirmar.onclick = function() { confirmarAlteracaoPagamento(chave); modal.remove(); };
+  var btnCancelar = document.createElement('button');
+  btnCancelar.style.cssText = 'padding:12px 20px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:14px;cursor:pointer';
+  btnCancelar.textContent = 'Cancelar';
+  btnCancelar.onclick = function() { modal.remove(); };
+  divBtns.appendChild(btnConfirmar);
+  divBtns.appendChild(btnCancelar);
+
+  body.appendChild(lblForma);
+  body.appendChild(selForma);
+  body.appendChild(divParc);
+  body.appendChild(lblStatus);
+  body.appendChild(selStatus);
+  body.appendChild(divBtns);
+
+  inner.appendChild(header);
+  inner.appendChild(body);
   modal.appendChild(inner);
   document.body.appendChild(modal);
-  
-  // Mostrar parcelas se cartão crédito
-  document.getElementById('alt-pag-forma').addEventListener('change', function() {
-    var parcDiv = document.getElementById('alt-pag-parcelas-div');
-    parcDiv.style.display = this.value === 'Cartão Crédito' ? 'block' : 'none';
-  });
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
 }
+
 
 function confirmarAlteracaoPagamento(chave) {
   var novaForma = (document.getElementById('alt-pag-forma')||{}).value || 'PIX';
