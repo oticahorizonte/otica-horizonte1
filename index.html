@@ -9117,7 +9117,7 @@ function renderRelatorios() {
       var vendedores=usuarios.filter(u=>u.nivel!=='Admin');
       var totalComissao=0;
       comEl.innerHTML=vendedores.map(u=>{
-        var pct=u.comissao||cfg[u.login]||0;
+        var pct = parseFloat(u.comissao) || parseFloat(cfg[u.login]) || parseFloat(cfg[u.nome]) || 0;
         var uvs=todasVendasPeriodo.filter(v=>(v.vendedor||'').toLowerCase()===(u.nome||'').toLowerCase()||(v.vendedor||'').toLowerCase()===u.login);
         var rec=calcReceitaGrupos(uvs);
         var com=rec*(pct/100);
@@ -9808,7 +9808,7 @@ function saveUsuarios(arr) {
   localStorage.setItem('otica_usuarios', JSON.stringify(arr));
   // Atualizar config de comissão
   var cfg = {};
-  arr.forEach(function(u) { cfg[u.login] = u.comissao||0; });
+  arr.forEach(function(u) { cfg[u.login] = parseFloat(u.comissao)||0; cfg[u.nome] = parseFloat(u.comissao)||0; });
   window._comissaoVendedor = cfg;
   localStorage.setItem('otica_config_comissao', JSON.stringify(cfg));
   // Salvar no Firebase com retry
@@ -12522,11 +12522,30 @@ function toggleGrupo(grupoId) {
 
 function delVendaGrupo(chave) {
   confirmar('Excluir esta venda?\nTodos os itens serão removidos.', function() {
-  const vendas = load('vendas');
-  const novas = vendas.filter(v => (v.grupoVenda || v.id) !== chave);
-  save('vendas', novas);
-  renderVendas();
-  showToast('Venda excluída!', 'warning');
+    // Remover vendas do grupo
+    const vendas = load('vendas');
+    const vendasRemovidas = vendas.filter(v => (v.grupoVenda || v.id) === chave);
+    const novas = vendas.filter(v => (v.grupoVenda || v.id) !== chave);
+    save('vendas', novas);
+
+    // Remover OS de montagem vinculadas a essas vendas
+    const todasOS = load('os');
+    const idsVendasRemovidas = new Set(vendasRemovidas.map(v => v.id));
+    const novasOS = todasOS.filter(function(o) {
+      // Remover OS de montagem que referenciam vendas excluídas
+      if (o.tipoOS === 'montagem' && o.vendaRef && idsVendasRemovidas.has(o.vendaRef)) return false;
+      if (o.tipoOS === 'montagem' && o.grupoVenda && o.grupoVenda === chave) return false;
+      return true;
+    });
+    if (novasOS.length !== todasOS.length) {
+      save('os', novasOS);
+      showToast('Venda e OS vinculada excluídas!', 'warning');
+    } else {
+      showToast('Venda excluída!', 'warning');
+    }
+    renderVendas();
+    if (typeof renderOS === 'function') renderOS();
+    if (typeof renderDashboard === 'function') renderDashboard();
   });
 }
 
