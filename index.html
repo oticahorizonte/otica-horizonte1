@@ -2573,6 +2573,35 @@ function instalarApp() {
 
 }
 </style>
+<style>
+  /* ===== SIDEBAR MOBILE — OVERLAY E SCROLL ===== */
+  @media (max-width: 768px) {
+    /* Overlay escuro quando sidebar está aberta */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 149;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    /* Sidebar não deve mostrar scrollbar sobre o conteúdo */
+    .sidebar {
+      z-index: 150;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(201,168,76,.3) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 2px; }
+
+    /* Quando sidebar está aberta, bloquear scroll do body */
+    body.sidebar-open { overflow: hidden; }
+  }
+</style>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -2700,6 +2729,7 @@ function instalarApp() {
   </div>
 
 </aside>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="fecharSidebar()"></div>
 <!-- Main -->
 <main class="main">
 <!-- ── DASHBOARD ── -->
@@ -11133,17 +11163,26 @@ function toggleSidebarVisibility() {
   var sidebar = document.getElementById('sidebar');
   var overlay = document.getElementById('sidebar-overlay');
   if (!sidebar) return;
-  _sidebarVisible = !_sidebarVisible;
-  if (_sidebarVisible) {
-    sidebar.classList.add('sidebar-visible');
-    sidebar.classList.remove('sidebar-hidden');
-    if (overlay) overlay.classList.add('active');
-  } else {
+  var isVisible = sidebar.classList.contains('sidebar-visible');
+  if (isVisible) {
     sidebar.classList.remove('sidebar-visible');
-    sidebar.classList.add('sidebar-hidden');
     if (overlay) overlay.classList.remove('active');
+    document.body.classList.remove('sidebar-open');
+  } else {
+    sidebar.classList.add('sidebar-visible');
+    if (overlay) overlay.classList.add('active');
+    document.body.classList.add('sidebar-open');
   }
 }
+
+function fecharSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('sidebar-visible');
+  if (overlay) overlay.classList.remove('active');
+  document.body.classList.remove('sidebar-open');
+}
+
 
 function closeSidebarAuto() {
   var sidebar = document.getElementById('sidebar');
