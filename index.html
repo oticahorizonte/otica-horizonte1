@@ -7074,7 +7074,7 @@ function renderReceitas() {
       <td class="hide-mobile" style="font-size:11px">${fmtGrau(lOeE)} / ${fmtGrau(lOeC)} / ${r.longeOeEixo||0}°</td>
       <td class="hide-mobile" style="font-size:11px">${fmtGrau(r.pertoOdEsf||0)} / ${fmtGrau(r.pertoOdCil||0)} / ${r.pertoOdEixo||0}°</td>
       <td class="hide-mobile" style="font-size:11px">${fmtGrau(r.pertoOeEsf||0)} / ${fmtGrau(r.pertoOeCil||0)} / ${r.pertoOeEixo||0}°</td>
-      <td>${r.adicao||0}</td>
+      <td class="hide-mobile">${r.adicao||0}</td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-info" onclick="verReceita(${r.id})" style="background:#0ea5e9;color:white" data-tip="Visualizar receita">👁️</button>
         <button class="btn btn-sm btn-outline" onclick="editReceita(${r.id})" data-tip="Editar receita">✏️</button>
