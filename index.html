@@ -7070,8 +7070,8 @@ function renderReceitas() {
     <tr>
       <td>${r.id}</td><td><strong>${clMap[r.clienteId]||'-'}</strong></td>
       <td class="hide-mobile">${r.medico||'-'}</td><td>${fmtDate(r.data)}</td>
-      <td style="font-size:11px">${fmtGrau(lOdE)} / ${fmtGrau(lOdC)} / ${r.longeOdEixo||0}°</td>
-      <td style="font-size:11px">${fmtGrau(lOeE)} / ${fmtGrau(lOeC)} / ${r.longeOeEixo||0}°</td>
+      <td class="hide-mobile" style="font-size:11px">${fmtGrau(lOdE)} / ${fmtGrau(lOdC)} / ${r.longeOdEixo||0}°</td>
+      <td class="hide-mobile" style="font-size:11px">${fmtGrau(lOeE)} / ${fmtGrau(lOeC)} / ${r.longeOeEixo||0}°</td>
       <td style="font-size:11px">${fmtGrau(r.pertoOdEsf||0)} / ${fmtGrau(r.pertoOdCil||0)} / ${r.pertoOdEixo||0}°</td>
       <td style="font-size:11px">${fmtGrau(r.pertoOeEsf||0)} / ${fmtGrau(r.pertoOeCil||0)} / ${r.pertoOeEixo||0}°</td>
       <td>${r.adicao||0}</td>
@@ -14836,16 +14836,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <style id="mobile-override">
 @media only screen and (max-width: 768px) {
-  table#tb-receitas > thead > tr > th:nth-child(3),
-  table#tb-receitas > thead > tr > th:nth-child(4),
-  table#tb-receitas > thead > tr > th:nth-child(7),
-  table#tb-receitas > thead > tr > th:nth-child(8),
-  table#tb-receitas > thead > tr > th:nth-child(9),
-  table#tb-receitas > tbody > tr > td:nth-child(3),
-  table#tb-receitas > tbody > tr > td:nth-child(4),
-  table#tb-receitas > tbody > tr > td:nth-child(7),
-  table#tb-receitas > tbody > tr > td:nth-child(8),
-  table#tb-receitas > tbody > tr > td:nth-child(9) { display:none!important; width:0!important; padding:0!important; }
+/* receitas: controlado por mobile-override */
   #tb-produtos-table > thead > tr > th:nth-child(3),
   #tb-produtos-table > thead > tr > th:nth-child(4),
   #tb-produtos-table > thead > tr > th:nth-child(6),
