@@ -5710,8 +5710,9 @@ function seedData() {
     save('receitas', receitasExistentes);
   }
 
-  save('vendas', []); // Vendas zeradas para testes reais
-  save('os', []); // OS zeradas para testes reais
+  // Não zerar vendas e OS se já existirem dados reais
+  if (load('vendas').length === 0) save('vendas', []);
+  if (load('os').length === 0) save('os', []);
 }
 
 // ── Auth ─────────────────────────────────────────────────────────
