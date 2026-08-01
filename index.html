@@ -2542,6 +2542,35 @@ function instalarApp() {
   #tb-agendamentos > tbody > tr > td:nth-child(6),
   #tb-agendamentos > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
   table { min-width:0!important; }
+
+  /* ===== REMOVER SCROLL HORIZONTAL NAS TABELAS COM COLUNAS OCULTAS ===== */
+  @media only screen and (max-width: 768px) {
+    /* Tabelas com colunas ocultas por nth-child NÃO devem ter scroll horizontal */
+    #tb-receitas,
+    #tb-produtos-table,
+    #tb-clientes,
+    #tb-os,
+    #tb-vendas,
+    #tb-agendamentos {
+      overflow-x: visible !important;
+    }
+    /* O container dessas tabelas também não deve ter scroll */
+    #tb-receitas,
+    #tb-produtos-table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+    /* Forçar que o card-body das seções com tabelas ocultas não faça scroll */
+    #sec-receitas .card-body,
+    #sec-produtos .card-body,
+    #sec-clientes .card-body,
+    #sec-os .card-body,
+    #sec-vendas .card-body,
+    #sec-agendamentos .card-body {
+      overflow-x: hidden !important;
+    }
+  }
+
 }
 </style>
 </head>
