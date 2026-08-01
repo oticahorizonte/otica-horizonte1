@@ -10576,7 +10576,7 @@ function renderComissoes() {
           (v.exame>0?' | Exame: '+fmtMoney(v.exame):'')+'</div>':''}
       </td>
       <td class="fw-bold">${fmtMoney(calcTotal(v))}</td>
-      <td class="fw-bold text-success">${fmtMoney(calcTotal(v)*pct/100)}</td>
+      <td class="fw-bold text-success">${fmtMoney(calcTotal(v)*(comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0)/100)}</td>
     </tr>
   `).join('') || '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
 }
