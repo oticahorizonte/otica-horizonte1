@@ -2984,7 +2984,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Cliente</th><th>Médico</th><th>Data</th><th>Longe OD</th><th>Longe OE</th><th>Perto OD</th><th>Perto OE</th><th>Adição</th><th>Ações</th></tr></thead>
+<table><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile admin-only">Última Compra</th><th class="admin-only">Total</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-receitas"></tbody></table>
 </div>
 </div>
@@ -5879,19 +5879,19 @@ function finalizarLogin(userObj, usuarios) {
             }).catch(function(){});
             if (loadingEl) loadingEl.style.display = 'none';
             // Renderizar dashboard com dados ja carregados
-            showSection('dashboard');
+            var _u3=loadUser(); showSection(_u3&&_u3.nivel!=='Admin'?'comissoes':'dashboard');
             aplicarControleAcesso();
             // Forcar re-render do modulo ativo
             if (typeof renderDashboard === 'function') renderDashboard();
-          }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
-        }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
-      }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; showSection('dashboard'); });
+          }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; var _u2=loadUser(); showSection(_u2&&_u2.nivel!=='Admin'?'comissoes':'dashboard'); });
+        }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; var _u2=loadUser(); showSection(_u2&&_u2.nivel!=='Admin'?'comissoes':'dashboard'); });
+      }).catch(function() { if (loadingEl) loadingEl.style.display = 'none'; var _u2=loadUser(); showSection(_u2&&_u2.nivel!=='Admin'?'comissoes':'dashboard'); });
     } else if (tentativas > 0) {
       setTimeout(function() { aguardarFirebaseESync(tentativas - 1); }, 500);
     } else {
       var loadingEl = document.getElementById('app-loading-overlay');
       if (loadingEl) loadingEl.style.display = 'none';
-      showSection('dashboard');
+      var _u3=loadUser(); showSection(_u3&&_u3.nivel!=='Admin'?'comissoes':'dashboard');
       aplicarControleAcesso();
     }
   }
@@ -5914,7 +5914,7 @@ function finalizarLogin(userObj, usuarios) {
   // Ocultar botão Nova OS para vendedor
   var btnNovaOS = document.getElementById('btn-nova-os');
   if (btnNovaOS) btnNovaOS.style.display = isAdmin() ? '' : 'none';
-  showSection('dashboard');
+  var _u3=loadUser(); showSection(_u3&&_u3.nivel!=='Admin'?'comissoes':'dashboard');
   initDark();
   checkOSAtrasadas();
   checkReceitasVencendo();
