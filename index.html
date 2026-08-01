@@ -10521,7 +10521,7 @@ function renderComissoes() {
 
   const totalGeral = Object.values(vendedores).reduce((s,v)=>s+v.total,0);
   const totalComissao = Object.entries(vendedores).reduce(function(s,[vend,d]){
-    var p = cfg[vend.toLowerCase()]||pct;
+    var p = comissaoMap[vend.toLowerCase()] || parseFloat(cfg2[vend.toLowerCase()]) || 0;
     return s + d.total*(p/100);
   },0);
 
@@ -10533,7 +10533,7 @@ function renderComissoes() {
       <div class="stat-card"><div class="label">Vendedores</div><div class="value">${Object.keys(vendedores).length}</div><div class="sub">ativos</div></div>
     `;
   } else {
-    var minhaComissao = totalGeral * (cfg[meuNome]||pct)/100;
+    var minhaComissao = totalGeral * (comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0)/100;
     document.getElementById('comissao-cards').innerHTML = `
       <div class="stat-card green"><div class="label">Minhas Vendas</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} vendas</div></div>
       <div class="stat-card orange"><div class="label">Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${cfg[meuNome]||pct}%</div></div>
@@ -12542,17 +12542,20 @@ function delVendaGrupo(chave) {
     const todasOS = load('os');
     const idsVendasRemovidas = new Set(vendasRemovidas.map(v => v.id));
     const novasOS = todasOS.filter(function(o) {
-      // Remover OS de montagem que referenciam vendas excluídas
       if (o.tipoOS === 'montagem' && o.vendaRef && idsVendasRemovidas.has(o.vendaRef)) return false;
       if (o.tipoOS === 'montagem' && o.grupoVenda && o.grupoVenda === chave) return false;
       return true;
     });
-    if (novasOS.length !== todasOS.length) {
-      save('os', novasOS);
-      showToast('Venda e OS vinculada excluídas!', 'warning');
-    } else {
-      showToast('Venda excluída!', 'warning');
+    save('os', novasOS);
+
+    // Sincronizar com Firebase imediatamente
+    if (window._fb) {
+      window._fb.saveCollection('vendas', novas).catch(function(){});
+      window._fb.saveCollection('os', novasOS).catch(function(){});
     }
+
+    var msg = novasOS.length !== todasOS.length ? 'Venda e OS vinculada excluídas!' : 'Venda excluída!';
+    showToast(msg, 'warning');
     renderVendas();
     if (typeof renderOS === 'function') renderOS();
     if (typeof renderDashboard === 'function') renderDashboard();
