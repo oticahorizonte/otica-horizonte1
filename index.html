@@ -2777,7 +2777,7 @@ function instalarApp() {
       <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ OPERAÇÕES</span>
       <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
     </div>
-    <div class="nav-item" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-item" onclick="showSection('vendas')"><span class="icon">💰</span> Vendas &amp; Caixa</div>
     <div class="nav-item" onclick="showSection('os')"><span class="icon">🔧</span> Ordens de Serviço <span class="nav-badge" id="badge-os" style="display:none">0</span></div>
     <div class="nav-item" onclick="showSection('agendamentos')"><span class="icon">📅</span> Agendamentos <span class="nav-badge" id="badge-agend" style="display:none">0</span></div>
@@ -2800,7 +2800,7 @@ function instalarApp() {
     </div>
     <div class="nav-item" onclick="showSection('comissoes')"><span class="icon">💈</span> Comissões</div>
     <div class="nav-item" onclick="showSection('despesas')"><span class="icon">💰</span> Financeiro</div>
-    <div class="nav-item" onclick="showSection('relatorios')"><span class="icon">📈</span> Relatórios</div>
+    <div class="nav-item" id="nav-relatorios" onclick="showSection('relatorios')"><span class="icon">📈</span> Relatórios</div>
     <div class="nav-item" id="nav-usuarios" onclick="showSection('usuarios')" style="display:none"><span class="icon">👤</span> Usuários</div>
 
   </nav>
@@ -5990,6 +5990,18 @@ function doLogout() {
 // ── Navigation ───────────────────────────────────────────────────
 function showSection(id) {
   try {
+  // Controle de acesso por seção
+  var _user = loadUser();
+  var _admin = _user && _user.nivel === 'Admin';
+  var _soAdmin = ['relatorios', 'usuarios', 'despesas'];
+  if (!_admin && _soAdmin.indexOf(id) !== -1) {
+    showToast('Acesso restrito a administradores', 'warning');
+    id = 'vendas'; // Redirecionar para vendas
+  }
+  // Dashboard — vendedor vai para vendas
+  if (!_admin && id === 'dashboard') {
+    id = 'vendas';
+  }
   // Fechar sidebar automaticamente em telas pequenas/médias
   if (window.innerWidth <= 1024) { try { closeSidebarAuto(); } catch(e) {} }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -7066,7 +7078,7 @@ function aplicarControleAcesso() {
   var meuNome = user ? (user.nome||'').toLowerCase() : '';
 
   // Módulos exclusivos do admin
-  var modulosSoAdmin = ['despesas','usuarios'];
+  var modulosSoAdmin = ['despesas','usuarios','relatorios'];
   modulosSoAdmin.forEach(function(mod) {
     document.querySelectorAll('.nav-item').forEach(function(el) {
       var oc = el.getAttribute('onclick') || '';
@@ -7077,6 +7089,14 @@ function aplicarControleAcesso() {
   // Módulo Usuários — só admin
   var navU = document.getElementById('nav-usuarios');
   if (navU) navU.style.display = admin ? 'flex' : 'none';
+
+  // Módulo Relatórios — só admin
+  var navRel = document.getElementById('nav-relatorios');
+  if (navRel) navRel.style.display = admin ? '' : 'none';
+
+  // Dashboard — ocultar para vendedor (redirecionar para vendas)
+  var navDash = document.getElementById('nav-dashboard');
+  if (navDash) navDash.style.display = admin ? '' : 'none';
 
   // Módulo Receitas — oculto para vendedor
   var navRec = document.getElementById('nav-receitas');
