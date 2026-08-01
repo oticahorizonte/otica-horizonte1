@@ -2847,7 +2847,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Cliente</th><th class="hide-mobile">Médico</th><th>Data</th><th class="hide-mobile">Longe OD</th><th class="hide-mobile">Longe OE</th><th class="hide-mobile">Perto OD</th><th class="hide-mobile">Perto OE</th><th class="hide-mobile">Adição</th><th>Ações</th></tr></thead><tbody id="tb-historico-estoque"></tbody></table>
+<table><thead><tr><th>Nº</th><th>Cliente</th><th>Médico</th><th>Data</th><th>Longe OD</th><th>Longe OE</th><th>Perto OD</th><th>Perto OE</th><th>Adição</th><th>Ações</th></tr></thead><tbody id="tb-historico-estoque"></tbody></table>
 </div>
 </div>
 <div class="card">
@@ -7069,12 +7069,12 @@ function renderReceitas() {
     return `
     <tr>
       <td>${r.id}</td><td><strong>${clMap[r.clienteId]||'-'}</strong></td>
-      <td class="hide-mobile">${r.medico||'-'}</td><td>${fmtDate(r.data)}</td>
-      <td class="hide-mobile" style="font-size:11px">${fmtGrau(lOdE)} / ${fmtGrau(lOdC)} / ${r.longeOdEixo||0}°</td>
-      <td class="hide-mobile" style="font-size:11px">${fmtGrau(lOeE)} / ${fmtGrau(lOeC)} / ${r.longeOeEixo||0}°</td>
-      <td class="hide-mobile" style="font-size:11px">${fmtGrau(r.pertoOdEsf||0)} / ${fmtGrau(r.pertoOdCil||0)} / ${r.pertoOdEixo||0}°</td>
-      <td class="hide-mobile" style="font-size:11px">${fmtGrau(r.pertoOeEsf||0)} / ${fmtGrau(r.pertoOeCil||0)} / ${r.pertoOeEixo||0}°</td>
-      <td class="hide-mobile">${r.adicao||0}</td>
+      <td>${r.medico||'-'}</td><td>${fmtDate(r.data)}</td>
+      <td style="font-size:11px">${fmtGrau(lOdE)} / ${fmtGrau(lOdC)} / ${r.longeOdEixo||0}°</td>
+      <td style="font-size:11px">${fmtGrau(lOeE)} / ${fmtGrau(lOeC)} / ${r.longeOeEixo||0}°</td>
+      <td style="font-size:11px">${fmtGrau(r.pertoOdEsf||0)} / ${fmtGrau(r.pertoOdCil||0)} / ${r.pertoOdEixo||0}°</td>
+      <td style="font-size:11px">${fmtGrau(r.pertoOeEsf||0)} / ${fmtGrau(r.pertoOeCil||0)} / ${r.pertoOeEixo||0}°</td>
+      <td>${r.adicao||0}</td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-info" onclick="verReceita(${r.id})" style="background:#0ea5e9;color:white" data-tip="Visualizar receita">👁️</button>
         <button class="btn btn-sm btn-outline" onclick="editReceita(${r.id})" data-tip="Editar receita">✏️</button>
