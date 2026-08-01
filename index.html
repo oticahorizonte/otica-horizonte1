@@ -7090,11 +7090,27 @@ function renderReceitas() {
     !q || (clMap[r.clienteId]||'').toLowerCase().includes(q.toLowerCase()) ||
     (r.medico||'').toLowerCase().includes(q.toLowerCase())
   );
+  var isMobileRec = window.innerWidth <= 768;
+  // Atualizar thead conforme dispositivo
+  var theadRec = document.querySelector('#tb-receitas').closest('table').querySelector('thead tr');
+  if (theadRec) {
+    if (isMobileRec) {
+      theadRec.innerHTML = '<th>Nº</th><th>Cliente</th><th>Data</th><th>Ações</th>';
+    } else {
+      theadRec.innerHTML = '<th>Nº</th><th>Cliente</th><th>Médico</th><th>Data</th><th>Longe OD</th><th>Longe OE</th><th>Perto OD</th><th>Perto OE</th><th>Adição</th><th>Ações</th>';
+    }
+  }
   document.getElementById('tb-receitas').innerHTML = data.length ? data.map(r => {
     const lOdE = r.longeOdEsf!==undefined?r.longeOdEsf:(r.odEsf||0);
     const lOdC = r.longeOdCil!==undefined?r.longeOdCil:(r.odCil||0);
     const lOeE = r.longeOeEsf!==undefined?r.longeOeEsf:(r.oeEsf||0);
     const lOeC = r.longeOeCil!==undefined?r.longeOeCil:(r.oeCil||0);
+    if (isMobileRec) {
+      return `<tr>
+        <td>${r.id}</td>
+        <td><strong>${clMap[r.clienteId]||'-'}</strong></td>
+        <td>${fmtDate(r.data)}</td>`;
+    }
     return `
     <tr>
       <td>${r.id}</td><td><strong>${clMap[r.clienteId]||'-'}</strong></td>
