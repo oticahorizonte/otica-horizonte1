@@ -6448,12 +6448,26 @@ function renderMetaOtica() {
 }
 
 function editarMetaOtica() {
-  var atual = localStorage.getItem('otica_meta_faturamento') || '5000';
+  // Ler valor atual — pode estar como string simples ou como JSON {"valor":"10000"}
+  var rawMeta = localStorage.getItem('otica_meta_faturamento') || '5000';
+  var atual = '5000';
+  try {
+    var parsed = JSON.parse(rawMeta);
+    if (parsed && parsed.valor) {
+      atual = parsed.valor;
+      // Corrigir o localStorage para guardar só o número
+      localStorage.setItem('otica_meta_faturamento', atual);
+    } else {
+      atual = rawMeta;
+    }
+  } catch(e) {
+    atual = rawMeta;
+  }
   var novo = prompt('Meta de faturamento mensal da ótica (R$):', atual);
   if (novo && !isNaN(parseFloat(novo))) {
     var val = parseFloat(novo).toString();
     localStorage.setItem('otica_meta_faturamento', val);
-    // Sincronizar com Firebase
+    // Sincronizar com Firebase — salvar apenas o número
     if (window._fb) window._fb.saveCollection('meta_faturamento', {valor: val}).catch(function(){});
     renderMetaOtica();
     showToast('✅ Meta atualizada: ' + fmtMoney(parseFloat(novo)), 'success');
