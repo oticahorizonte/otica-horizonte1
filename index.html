@@ -2602,6 +2602,117 @@ function instalarApp() {
     body.sidebar-open { overflow: hidden; }
   }
 </style>
+<style>
+  /* ===== MODAIS MOBILE — ELEGANTES E RESPONSIVOS ===== */
+  @media (max-width: 768px) {
+
+    /* Overlay — modal sobe da parte inferior */
+    .modal-overlay {
+      padding: 0 !important;
+      align-items: flex-end !important;
+    }
+
+    /* Modal — ocupa largura total, sobe da base */
+    .modal {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-radius: 20px 20px 0 0 !important;
+      max-height: 92vh !important;
+      margin: 0 !important;
+      animation: modalSlideUp .3s cubic-bezier(.34,1.56,.64,1) !important;
+    }
+
+    /* Animação de subir */
+    @keyframes modalSlideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Header do modal */
+    .modal-header {
+      padding: 14px 18px !important;
+      border-radius: 20px 20px 0 0 !important;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .modal-header h2,
+    .modal-header h3 { font-size: 15px !important; }
+
+    /* Body do modal — scroll interno */
+    .modal-body {
+      padding: 14px !important;
+      max-height: 65vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Footer do modal */
+    .modal-footer {
+      padding: 12px 14px !important;
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .modal-footer .btn {
+      flex: 1;
+      min-width: 100px;
+      justify-content: center;
+    }
+
+    /* Form groups no mobile */
+    .form-group { margin-bottom: 12px !important; }
+    .form-group label { font-size: 12px !important; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      font-size: 14px !important;
+      padding: 10px 12px !important;
+    }
+
+    /* Grids de 2 colunas em formulários — manter 2 colunas */
+    .modal-body .form-row,
+    .modal-body [style*="grid-template-columns:1fr 1fr"],
+    .modal-body [style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr 1fr !important;
+    }
+
+    /* Exceções — modais que devem ser diferentes */
+    /* Modal de venda — tela cheia */
+    #modal-venda .modal {
+      border-radius: 0 !important;
+      max-height: 100dvh !important;
+      height: 100dvh !important;
+    }
+
+    /* Modal de recibo — centralizado */
+    #modal-recibo {
+      align-items: center !important;
+      padding: 8px !important;
+    }
+    #modal-recibo .modal {
+      border-radius: 16px !important;
+      max-height: 90vh !important;
+    }
+
+    /* Modal de zoom foto — tela cheia */
+    #modal-zoom-foto .modal {
+      border-radius: 0 !important;
+      max-height: 100vh !important;
+    }
+
+    /* Botão fechar modal — maior para toque */
+    .modal-close {
+      width: 36px !important;
+      height: 36px !important;
+      font-size: 18px !important;
+    }
+  }
+</style>
 </head>
 <body>
 <!-- ══════════════════════════════════════════════════════════════ -->
