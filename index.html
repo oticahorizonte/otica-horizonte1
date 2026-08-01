@@ -2781,6 +2781,7 @@ function instalarApp() {
     <div class="nav-item" onclick="showSection('vendas')"><span class="icon">💰</span> Vendas &amp; Caixa</div>
     <div class="nav-item" onclick="showSection('os')"><span class="icon">🔧</span> Ordens de Serviço <span class="nav-badge" id="badge-os" style="display:none">0</span></div>
     <div class="nav-item" onclick="showSection('agendamentos')"><span class="icon">📅</span> Agendamentos <span class="nav-badge" id="badge-agend" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-comissoes" onclick="showSection('comissoes')"><span class="icon">💈</span> Comissões</div>
 
     <!-- ◈ CADASTROS -->
     <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
@@ -2798,7 +2799,7 @@ function instalarApp() {
       <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ GESTÃO</span>
       <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
     </div>
-    <div class="nav-item" onclick="showSection('comissoes')"><span class="icon">💈</span> Comissões</div>
+    <!-- Comissões movido para OPERAÇÕES -->
     <div class="nav-item" onclick="showSection('despesas')"><span class="icon">💰</span> Financeiro</div>
     <div class="nav-item" id="nav-relatorios" onclick="showSection('relatorios')"><span class="icon">📈</span> Relatórios</div>
     <div class="nav-item" id="nav-usuarios" onclick="showSection('usuarios')" style="display:none"><span class="icon">👤</span> Usuários</div>
@@ -2962,7 +2963,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead>
+<table><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile admin-only">Última Compra</th><th class="admin-only">Total</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-clientes"></tbody></table>
 </div>
 </div>
@@ -5993,7 +5994,7 @@ function showSection(id) {
   // Controle de acesso por seção
   var _user = loadUser();
   var _admin = _user && _user.nivel === 'Admin';
-  var _soAdmin = ['relatorios', 'usuarios', 'despesas'];
+  var _soAdmin = ['relatorios', 'usuarios', 'despesas', 'dashboard'];
   if (!_admin && _soAdmin.indexOf(id) !== -1) {
     showToast('Acesso restrito a administradores', 'warning');
     id = 'vendas'; // Redirecionar para vendas
@@ -7106,6 +7107,15 @@ function aplicarControleAcesso() {
   var btnNovaOS = document.getElementById('btn-nova-os');
   if (btnNovaOS) btnNovaOS.style.display = admin ? '' : 'none';
 
+  // Colunas admin-only — ocultar para vendedor
+  document.querySelectorAll('.admin-only').forEach(function(el) {
+    el.style.display = admin ? '' : 'none';
+  });
+
+  // Comissões — visível para todos mas conteúdo filtrado
+  var navCom = document.getElementById('nav-comissoes');
+  if (navCom) navCom.style.display = '';
+
   // Botão Novo Produto — só admin
   var btnNovoProd = document.getElementById('btn-novo-produto');
   if (btnNovoProd) btnNovoProd.style.display = admin ? '' : 'none';
@@ -7154,8 +7164,8 @@ function renderClientes() {
     <tr>
       <td>${c.id}</td><td><strong>${c.nome}</strong></td><td class="hide-mobile">${c.cpf||'-'}</td>
       <td>${c.tel||'-'}</td><td class="hide-mobile">${c.cidade||'-'}${c.bairro?' — '+c.bairro:''}</td>
-      <td class="hide-mobile">${fmtDate(c.ultimaCompra)}</td>
-      <td class="fw-bold text-success">${fmtMoney(c.totalGasto)}</td>
+      <td class="hide-mobile admin-only">${fmtDate(c.ultimaCompra)}</td>
+      <td class="fw-bold text-success admin-only">${fmtMoney(c.totalGasto)}</td>
       <td>${statusBadge(c.status)}</td>
       <td><div class="flex gap-2">
         ${isAdmin()?`<button class="btn btn-sm btn-info" onclick="verHistorico(${c.id})" style="background:#0ea5e9;color:white" data-tip="Ver histórico do cliente">🔍</button>`:''}
@@ -14861,7 +14871,132 @@ function verDetalhesPendente(chave) {
   inner.appendChild(bodyDiv);
   modal.appendChild(inner);
   document.body.appendChild(modal);
+  // Botões de ação (só admin)
+  if (isAdmin()) {
+    var botoesDiv = document.createElement('div');
+    botoesDiv.style.cssText = 'padding:16px;display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px';
+    
+    // Botão Marcar como Pago
+    var btnPago = document.createElement('button');
+    btnPago.style.cssText = 'flex:1;padding:10px;background:#16a34a;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;min-width:120px';
+    btnPago.innerHTML = '✅ Marcar como Pago';
+    btnPago.onclick = function() { modal.remove(); marcarPagoVenda(chave); };
+    
+    // Botão Alterar Pagamento
+    var btnAlterar = document.createElement('button');
+    btnAlterar.style.cssText = 'flex:1;padding:10px;background:#0d2b4e;color:#e8c96a;border:1px solid #c9a84c;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;min-width:120px';
+    btnAlterar.innerHTML = '🔄 Alterar Pagamento';
+    btnAlterar.onclick = function() { modal.remove(); alterarPagamentoPendente(chave); };
+    
+    // Botão Cancelar Venda
+    var btnCancelar = document.createElement('button');
+    btnCancelar.style.cssText = 'padding:10px 16px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer';
+    btnCancelar.innerHTML = '❌ Cancelar';
+    btnCancelar.onclick = function() { modal.remove(); };
+    
+    botoesDiv.appendChild(btnPago);
+    botoesDiv.appendChild(btnAlterar);
+    botoesDiv.appendChild(btnCancelar);
+    inner.appendChild(botoesDiv);
+  }
+  
+  modal.appendChild(inner);
+  document.body.appendChild(modal);
   modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+}
+
+// Marcar venda pendente como paga (mantém forma de pagamento)
+function marcarPagoVenda(chave) {
+  confirmar('Confirmar pagamento desta venda?', function() {
+    var vendas = load('vendas');
+    var atualizadas = vendas.map(function(v) {
+      if ((v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data)) === chave) {
+        return Object.assign({}, v, {status: 'Pago'});
+      }
+      return v;
+    });
+    save('vendas', atualizadas);
+    showToast('✅ Venda marcada como paga!', 'success');
+    renderVendas();
+    if (typeof renderDashboard === 'function') renderDashboard();
+  });
+}
+
+// Alterar forma de pagamento de venda pendente
+function alterarPagamentoPendente(chave) {
+  var vendas = load('vendas');
+  var vendasGrupo = vendas.filter(function(v) {
+    return (v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data)) === chave;
+  });
+  if (!vendasGrupo.length) return;
+  var v = vendasGrupo[0];
+  
+  // Criar modal de alteração
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:white;border-radius:16px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)';
+  
+  inner.innerHTML = '<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);padding:16px 20px;display:flex;align-items:center;justify-content:space-between">' +
+    '<span style="color:#e8c96a;font-weight:700;font-size:15px">🔄 Alterar Pagamento</span>' +
+    '<button onclick="this.closest('[style*=fixed]').remove()" style="background:rgba(255,255,255,.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px">✕</button>' +
+    '</div>' +
+    '<div style="padding:20px">' +
+    '<div style="margin-bottom:14px">' +
+    '<label style="font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px">💳 Nova Forma de Pagamento</label>' +
+    '<select id="alt-pag-forma" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">' +
+    '<option value="PIX"' + (v.pag==='PIX'?' selected':'') + '>PIX</option>' +
+    '<option value="Dinheiro"' + (v.pag==='Dinheiro'?' selected':'') + '>Dinheiro</option>' +
+    '<option value="Cartão Crédito"' + (v.pag==='Cartão Crédito'?' selected':'') + '>Cartão Crédito</option>' +
+    '<option value="Cartão Débito"' + (v.pag==='Cartão Débito'?' selected':'') + '>Cartão Débito</option>' +
+    '<option value="Crediário Próprio"' + (v.pag==='Crediário Próprio'?' selected':'') + '>Crediário Próprio</option>' +
+    '</select></div>' +
+    '<div id="alt-pag-parcelas-div" style="margin-bottom:14px;display:none">' +
+    '<label style="font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px">📋 Parcelas</label>' +
+    '<select id="alt-pag-parcelas" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">' +
+    '<option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option>' +
+    '<option value="4">4x</option><option value="5">5x</option><option value="6">6x</option>' +
+    '</select></div>' +
+    '<div style="margin-bottom:14px">' +
+    '<label style="font-size:12px;font-weight:700;color:#0d2b4e;display:block;margin-bottom:6px">📊 Novo Status</label>' +
+    '<select id="alt-pag-status" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">' +
+    '<option value="Pago">Pago</option>' +
+    '<option value="Pendente" selected>Pendente</option>' +
+    '</select></div>' +
+    '<div style="display:flex;gap:10px">' +
+    '<button onclick="confirmarAlteracaoPagamento('' + chave + '');this.closest('[style*=fixed]').remove()" style="flex:1;padding:12px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✅ Confirmar</button>' +
+    '<button onclick="this.closest('[style*=fixed]').remove()" style="padding:12px 20px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:14px;cursor:pointer">Cancelar</button>' +
+    '</div></div>';
+  
+  modal.appendChild(inner);
+  document.body.appendChild(modal);
+  
+  // Mostrar parcelas se cartão crédito
+  document.getElementById('alt-pag-forma').addEventListener('change', function() {
+    var parcDiv = document.getElementById('alt-pag-parcelas-div');
+    parcDiv.style.display = this.value === 'Cartão Crédito' ? 'block' : 'none';
+  });
+}
+
+function confirmarAlteracaoPagamento(chave) {
+  var novaForma = (document.getElementById('alt-pag-forma')||{}).value || 'PIX';
+  var novoParcelas = (document.getElementById('alt-pag-parcelas')||{}).value || '1';
+  var novoStatus = (document.getElementById('alt-pag-status')||{}).value || 'Pago';
+  
+  var vendas = load('vendas');
+  var atualizadas = vendas.map(function(v) {
+    if ((v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data)) === chave) {
+      var updated = Object.assign({}, v, {pag: novaForma, status: novoStatus});
+      if (novaForma === 'Cartão Crédito') updated.parcelas = novoParcelas;
+      return updated;
+    }
+    return v;
+  });
+  save('vendas', atualizadas);
+  showToast('✅ Pagamento alterado para ' + novaForma + ' — ' + novoStatus + '!', 'success');
+  renderVendas();
+  if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 function marcarContaPaga(chave) {
