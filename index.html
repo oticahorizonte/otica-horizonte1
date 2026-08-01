@@ -2065,15 +2065,10 @@ function resetarSistema() {
                 }
                 continue;
               }
-              // Se Firebase tem MENOS dados que local, manter local e reenviar
-              if (cloudLen < localLen && localLen > 0) {
-                console.log('⚠️ Firebase desatualizado para', k, '(cloud:' + cloudLen + ' < local:' + localLen + ') - mantendo local');
-                if (window._fb) {
-                  var localDataToSync2 = JSON.parse(localStorage.getItem(keys[k])||'[]');
-                  window._fb.saveCollection(k, localDataToSync2).catch(function(){});
-                }
-                continue;
-              }
+              // Nota: removida proteção cloudLen < localLen
+              // Motivo: quando usuário exclui dados localmente, Firebase pode ter mais registros
+              // e a proteção impedia que a exclusão fosse refletida ao baixar da nuvem
+              // O Firebase é a fonte de verdade após qualquer save()
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
             }
