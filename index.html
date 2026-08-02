@@ -2532,10 +2532,10 @@ function instalarApp() {
   #tb-os > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
   #tb-vendas > thead > tr > th:nth-child(6),
   #tb-vendas > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
-  #tb-agend > thead > tr > th:nth-child(6),
-  #tb-agend > thead > tr > th:nth-child(7),
-  #tb-agend > tbody > tr > td:nth-child(6),
-  #tb-agend > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
+  #tb-agend-table > thead > tr > th:nth-child(6),
+  #tb-agend-table > thead > tr > th:nth-child(7),
+  #tb-agend-table > tbody > tr > td:nth-child(6),
+  #tb-agend-table > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
   table { min-width:0!important; }
 
   /* ===== REMOVER SCROLL HORIZONTAL NAS TABELAS COM COLUNAS OCULTAS ===== */
@@ -3344,7 +3344,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead id="tb-agend-head"><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Cliente</th><th>Tipo</th><th>Profissional</th><th>Observações</th><th>Status</th><th>Ações</th></tr></thead>
+<table id="tb-agend-table"><thead><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Cliente</th><th>Tipo</th><th>Profissional</th><th>Observações</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-agend"></tbody></table>
 </div>
 </div>
@@ -4320,7 +4320,7 @@ function instalarApp() {
 
 
     <!-- Painel Interno (Admin) com toggle -->
-    <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1)">
+    <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1);display:none">
       <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="togglePainelInternoVenda()">
         <span style="font-size:10px;font-weight:700;color:#e8c96a;text-transform:uppercase">📊 Painel Interno</span>
         <span id="venda-painel-toggle-icon" style="color:#e8c96a;font-size:12px">▶</span>
@@ -15407,16 +15407,16 @@ document.addEventListener('DOMContentLoaded', function() {
   #tb-os > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
   #tb-vendas > thead > tr > th:nth-child(6),
   #tb-vendas > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
-  #tb-agend > thead > tr > th:nth-child(6),
-  #tb-agend > thead > tr > th:nth-child(7),
-  #tb-agend > tbody > tr > td:nth-child(6),
-  #tb-agend > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
+  #tb-agend-table > thead > tr > th:nth-child(6),
+  #tb-agend-table > thead > tr > th:nth-child(7),
+  #tb-agend-table > tbody > tr > td:nth-child(6),
+  #tb-agend-table > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
   table { min-width:0!important; }
   /* Agendamentos — ocultar Profissional(6) e Observações(7) */
-  #tb-agend > thead > tr > th:nth-child(6),
-  #tb-agend > thead > tr > th:nth-child(7),
-  #tb-agend > tbody > tr > td:nth-child(6),
-  #tb-agend > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
+  #tb-agend-table > thead > tr > th:nth-child(6),
+  #tb-agend-table > thead > tr > th:nth-child(7),
+  #tb-agend-table > tbody > tr > td:nth-child(6),
+  #tb-agend-table > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
 }
 </style>
 </body>
