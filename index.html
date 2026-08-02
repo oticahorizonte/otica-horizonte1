@@ -3181,7 +3181,7 @@ function instalarApp() {
 <div class="card-body" id="rel-bloco-meses">
 <div id="rel-grafico-meses" style="display:flex;align-items:flex-end;gap:12px;height:180px;padding:10px 0"></div>
 <div id="rel-grafico-labels" style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--text-muted)"></div>
-<table style="margin-top:16px"><thead><tr><th>Mês</th><th>Nº Vendas</th><th>Receita</th><th>Ticket Médio</th></tr></thead><tbody id="rel-meses-tabela"></tbody></table>
+<table style="margin-top:16px"><thead><tr><th>Nº OS</th><th>Abertura</th><th>Previsão</th><th>Cliente</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="rel-meses-tabela"></tbody></table>
 </div>
 </div>
 
@@ -8516,6 +8516,17 @@ function delVenda(id) {
 
 // ── OS ───────────────────────────────────────────────────────────
 function renderOS() {
+  // Atualizar thead conforme nível
+  var _userOS = loadUser();
+  var adminOS_thead = _userOS && _userOS.nivel === 'Admin';
+  var theadOS = document.querySelector('#tb-os thead tr');
+  if (theadOS) {
+    if (adminOS_thead) {
+      theadOS.innerHTML = '<th>Nº OS</th><th>Abertura</th><th>Previsão</th><th>Cliente</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Ações</th>';
+    } else {
+      theadOS.innerHTML = '<th>Nº OS</th><th>Abertura</th><th>Previsão</th><th>Cliente</th><th>Tipo</th><th>Status</th><th>Ações</th>';
+    }
+  }
   if(!document.getElementById('tb-os')) return;
   var adminOS = isAdmin();
   var adminOS2 = adminOS; // alias para compatibilidade
