@@ -9154,8 +9154,9 @@ function renderRelatorios() {
   var cliMap={};
   var cliNomeMap=Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
   vendas.forEach(v=>{
-    var cid=v.cliente||'';if(!cid)return;
-    var nome=v.clienteNome||cliNomeMap[cid]||cid;
+    // Usar clienteId (número) como chave principal
+    var cid=v.clienteId||v.cliente||'';if(!cid)return;
+    var nome=v.clienteNome||cliNomeMap[cid]||cliNomeMap[parseInt(cid)]||cid;
     cliMap[cid]=cliMap[cid]||{nome:nome,compras:0,total:0,ultima:''};
     cliMap[cid].compras++;cliMap[cid].total+=calcTotal(v);
     if((v.data||'')>cliMap[cid].ultima)cliMap[cid].ultima=v.data||'';
@@ -9187,8 +9188,19 @@ function renderRelatorios() {
   var cliCompEl=document.getElementById('rel-clientes-completo');
   if(cliCompEl){
     var cliVendas={};
-    todasVendas.forEach(v=>{var cid=v.cliente||v.clienteNome||'';if(!cid)return;cliVendas[cid]=cliVendas[cid]||{compras:0,total:0,ultima:''};cliVendas[cid].compras++;cliVendas[cid].total+=calcTotal(v);if((v.data||'')>cliVendas[cid].ultima)cliVendas[cid].ultima=v.data||'';});
-    var cliList=clientes.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+    todasVendas.forEach(v=>{
+      var cid=v.clienteId||v.cliente||'';if(!cid)return;
+      cliVendas[cid]=cliVendas[cid]||{compras:0,total:0,ultima:''};
+      cliVendas[cid].compras++;cliVendas[cid].total+=calcTotal(v);
+      if((v.data||'')>cliVendas[cid].ultima)cliVendas[cid].ultima=v.data||'';
+    });
+    // Mostrar apenas os 5 últimos clientes que compraram
+    var cliComCompras=clientes.filter(c=>cliVendas[c.id]&&cliVendas[c.id].compras>0)
+      .sort((a,b)=>(cliVendas[b.id]?.ultima||'').localeCompare(cliVendas[a.id]?.ultima||''))
+      .slice(0,5);
+    var cliSemCompras=clientes.filter(c=>!cliVendas[c.id]||cliVendas[c.id].compras===0)
+      .sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+    var cliList=[...cliComCompras,...cliSemCompras];
     cliCompEl.innerHTML=cliList.map(c=>{
       var cv=cliVendas[c.id]||{compras:0,total:0,ultima:''};
       var statusCor=c.status==='Inativo'?'color:#f87171':'color:#34d399';
@@ -9272,7 +9284,45 @@ function renderRelatorios() {
       var usuarios2=getUsuarios?getUsuarios():[];
       var admins2=usuarios2.filter(u=>u.nivel==='Admin').map(u=>(u.nome||'').toLowerCase());
       var totRec=0,totCusto=0,totCom=0,totLucro=0;
-      finEl.innerHTML=vendas.map(v=>{
+      // Agrupar vendas por grupoVenda
+      var gruposFinMap={};var gruposFinArr=[];
+      [...vendas].reverse().forEach(function(v){
+        var gk=v.grupoVenda||v.id;
+        if(!gruposFinMap[gk]){gruposFinMap[gk]={v:v,total:0,custo:0,com:0};gruposFinArr.push(gruposFinMap[gk]);}
+        gruposFinMap[gk].total+=calcTotal(v);
+        var custo=v.itens&&v.itens.length>0?v.itens.reduce((s,it)=>s+(it.custo||0)*(it.qtd||1),0):(v.custo||0);
+        gruposFinMap[gk].custo+=custo;
+      });
+      // Mostrar apenas os 5 últimos
+      var gruposFinShow=gruposFinArr.slice(0,5);
+      finEl.innerHTML=gruposFinShow.map(function(grupo){
+        var v=grupo.v;
+        var rec=grupo.total;
+        var custo=grupo.custo;
+        var vend=(v.vendedor||'').toLowerCase();
+        var isAdminVend=admins2.indexOf(vend)!==-1;
+        var pct=0;
+        if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
+        var com=rec*(pct/100);
+        var lucro=rec-custo-com;
+        var margem=rec>0?lucro/rec*100:0;
+        totRec+=rec;totCusto+=custo;totCom+=com;totLucro+=lucro;
+        return `<tr>
+          <td style="font-weight:700;color:#0d2b4e">${v.id}</td>
+          <td>${v.data?new Date(v.data+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+          <td>${v.clienteNome||cliNomeMap[v.clienteId]||'-'}</td>
+          <td>${v.vendedor||'-'}</td>
+          <td style="text-align:right">${fmtMoney(rec)}</td>
+          <td style="text-align:right;color:#fbbf24">${fmtMoney(custo)}</td>
+          <td style="text-align:right;color:#fb923c">${fmtMoney(com)}</td>
+          <td style="text-align:right;color:${lucro>=0?'#16a34a':'#dc2626'};font-weight:700">${fmtMoney(lucro)}</td>
+          <td style="text-align:right">${margem.toFixed(1)}%</td>
+        </tr>`;
+      }).join('')||'<tr><td colspan="9" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+      // Linha de totais
+      if(finFoot){var totMarg=totRec>0?totLucro/totRec*100:0;finFoot.innerHTML=`<tr style="background:#0f2744;color:white;font-weight:700"><td colspan="4">TOTAL (5 últimos)</td><td style="text-align:right">${fmtMoney(totRec)}</td><td style="text-align:right;color:#fbbf24">${fmtMoney(totCusto)}</td><td style="text-align:right;color:#fb923c">${fmtMoney(totCom)}</td><td style="text-align:right;color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td><td style="text-align:right">${totMarg.toFixed(1)}%</td></tr>`;}
+      // Linha fake para compatibilidade
+      if(false){var v={};finEl.innerHTML=vendas.map(v=>{
         var rec=calcTotal(v);
         var custo=v.itens&&v.itens.length>0?v.itens.reduce((s,it)=>s+(it.custo||0)*(it.qtd||1),0):(v.custo||0);
         var vend=(v.vendedor||'').toLowerCase();
