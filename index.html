@@ -2517,12 +2517,11 @@ function instalarApp() {
   #tb-produtos-table > tbody > tr > td:nth-child(3),
   #tb-produtos-table > tbody > tr > td:nth-child(4),
   #tb-produtos-table > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; border:none!important; }
+  /* Clientes: ocultar CPF(3) e Cidade(5) — manter ID, Nome, Telefone, Status, Ações */
   #tb-clientes > thead > tr > th:nth-child(3),
   #tb-clientes > thead > tr > th:nth-child(5),
-  #tb-clientes > thead > tr > th:nth-child(6),
   #tb-clientes > tbody > tr > td:nth-child(3),
-  #tb-clientes > tbody > tr > td:nth-child(5),
-  #tb-clientes > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; border:none!important; }
+  #tb-clientes > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; border:none!important; }
   #tb-os > thead > tr > th:nth-child(5),
   #tb-os > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
   #tb-vendas > thead > tr > th:nth-child(6),
@@ -2552,10 +2551,14 @@ function instalarApp() {
     }
     /* Forçar que o card-body das seções com tabelas ocultas não faça scroll */
     #sec-receitas .card-body,
-    #sec-produtos .card-body,
     #sec-clientes .card-body {
       overflow-x: hidden !important;
+    }    /* Produtos precisa de scroll horizontal no portrait */
+    #sec-produtos .card-body {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
     }
+
     /* Registro de Vendas precisa de scroll horizontal no portrait */
     #sec-vendas .card-body {
       overflow-x: auto !important;
@@ -2985,7 +2988,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Cliente</th><th>Médico</th><th>Data</th><th>Longe OD</th><th>Longe OE</th><th>Perto OD</th><th>Perto OE</th><th>Adição</th><th>Ações</th></tr></thead>
+<table><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-receitas"></tbody></table>
 </div>
 </div>
@@ -3020,7 +3023,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
-<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile">Venda</th><th>Status</th><th>Ações</th></tr></thead>
+<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th>Venda</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
