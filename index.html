@@ -1951,6 +1951,25 @@ function resetarSistema() {
     location.reload();
   });
 }
+
+async function zerarVendasOS() {
+  confirmar('⚠️ ATENÇÃO!\nIsso vai APAGAR PERMANENTEMENTE todas as vendas e OS.\nEssa ação NÃO pode ser desfeita!\n\nDeseja continuar?', async function() {
+    // Zerar localmente
+    save('vendas', []);
+    save('os', []);
+    // Zerar no Firebase
+    if (window._firebaseReady && window._fb) {
+      await window._fb.saveCollection('vendas', []);
+      await window._fb.saveCollection('os', []);
+      showToast('✅ Vendas e OS zeradas com sucesso!', 'success');
+    } else {
+      showToast('✅ Vendas e OS zeradas localmente!', 'success');
+    }
+    renderVendas();
+    if (typeof renderOS === 'function') renderOS();
+    if (typeof renderDashboard === 'function') renderDashboard();
+  });
+}
 </script>
 <script>
 // ── Restauração de sessão IMEDIATA (antes do DOM) ──────────────────────────
