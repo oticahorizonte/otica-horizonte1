@@ -210,7 +210,10 @@ function renderCatalogo() {
   
   const lista = _produtos.filter(p => {
     if (_filtroAtivo !== 'todos') {
-      if (!(p.cat || '').toLowerCase().includes(_filtroAtivo)) return false;
+      // Filtro flexível — 'serviço' captura 'Serviço', 'Serviço OS', etc.
+      const catLower = (p.cat || '').toLowerCase();
+      const filtroLower = _filtroAtivo.toLowerCase();
+      if (!catLower.includes(filtroLower) && !filtroLower.includes(catLower)) return false;
     }
     if (busca) {
       const txt = [(p.desc||''),(p.marca||''),(p.modelo||''),(p.cor||''),(p.cod||'')].join(' ').toLowerCase();
