@@ -10650,7 +10650,7 @@ function renderComissoes() {
   var vendasSemAdmin = vendas.filter(function(v) {
     return adminsNomes.indexOf((v.vendedor||'').toLowerCase()) === -1;
   });
-  document.getElementById('tb-comissoes-det').// Agrupar vendas por grupoVenda para exibição
+  // Agrupar vendas por grupoVenda
   var gruposVistosC = {};
   var vendasAgrupadasC = [];
   var pctComissaoV = comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0;
@@ -10660,12 +10660,11 @@ function renderComissoes() {
       gruposVistosC[gk] = {v:v, itens:[], total:0, comissao:0};
       vendasAgrupadasC.push(gruposVistosC[gk]);
     }
-    var tot = calcTotal(v);
     gruposVistosC[gk].itens.push(v);
-    gruposVistosC[gk].total += tot;
-    gruposVistosC[gk].comissao += tot * pctComissaoV / 100;
+    gruposVistosC[gk].total += calcTotal(v);
+    gruposVistosC[gk].comissao += calcTotal(v) * pctComissaoV / 100;
   });
-  innerHTML = vendasAgrupadasC.length ? vendasAgrupadasC.map(function(grupo) {
+  document.getElementById('tb-comissoes-det').innerHTML = vendasAgrupadasC.length ? vendasAgrupadasC.map(function(grupo) {
     var v = grupo.v;
     var temMultiplos = grupo.itens.length > 1;
     var descricao = temMultiplos
@@ -10686,116 +10685,7 @@ function renderComissoes() {
       '<td class="fw-bold">' + fmtMoney(grupo.total) + '</td>' +
       '<td class="fw-bold text-success">' + fmtMoney(grupo.comissao) + '</td>' +
     '</tr>';
-  }).join('') : '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';function renderComissoes() {
-  if(!document.getElementById('tb-comissoes')) return;
-  var admin = isAdmin();
-  var user = loadUser();
-  var meuNome = user ? (user.nome||'').toLowerCase() : '';
-
-  // Ocultar elementos exclusivos do admin
-  var cardConfig = document.getElementById('card-config-comissao');
-  if (cardConfig) cardConfig.style.display = admin ? '' : 'none';
-  // select de comissao removido - nao precisa mais ocultar
-
-  // Carregar usuários para buscar comissão correta por nome ou login
-  var usuariosComissao = getUsuarios ? getUsuarios() : [];
-  // Criar mapa: nome_lower → comissao e login_lower → comissao
-  var comissaoMap = {};
-  usuariosComissao.forEach(function(u) {
-    var pctU = parseFloat(u.comissao) || 0;
-    if (u.nome) comissaoMap[(u.nome||'').toLowerCase()] = pctU;
-    if (u.login) comissaoMap[(u.login||'').toLowerCase()] = pctU;
-  });
-  var todasVendas = load('vendas');
-  // Vendedor vê apenas suas próprias vendas
-  var vendas = admin ? todasVendas : todasVendas.filter(function(v){ return (v.vendedor||'').toLowerCase() === meuNome; });
-
-  const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
-  const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
-  var cfg = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-
-  // Agrupar por vendedor
-  const vendedores = {};
-  // Mapear usuários admins para excluir das comissões
-  var usuariosArr = getUsuarios ? getUsuarios() : [];
-  var adminsNomes = usuariosArr
-    .filter(function(u){ return u.nivel === 'Admin'; })
-    .map(function(u){ return (u.nome||'').toLowerCase(); });
-  // Sempre incluir 'administrador' e 'admin' como admins
-  if (adminsNomes.indexOf('administrador') === -1) adminsNomes.push('administrador');
-  if (adminsNomes.indexOf('admin') === -1) adminsNomes.push('admin');
-
-  vendas.forEach(v => {
-    const vend = v.vendedor || 'Não informado';
-    // Excluir todos os admins das comissoes
-    if (adminsNomes.indexOf(vend.toLowerCase()) !== -1) return;
-    if (!vendedores[vend]) vendedores[vend] = {qtd:0, total:0, vendas:[]};
-    const tot = calcTotal(v);
-    vendedores[vend].qtd++;
-    vendedores[vend].total += tot;
-    vendedores[vend].vendas.push(v);
-  });
-
-  const totalGeral = Object.values(vendedores).reduce((s,v)=>s+v.total,0);
-  const totalComissao = Object.entries(vendedores).reduce(function(s,[vend,d]){
-    var p = comissaoMap[vend.toLowerCase()] || parseFloat(cfg2[vend.toLowerCase()]) || 0;
-    return s + d.total*(p/100);
-  },0);
-
-  // Cards — vendedor vê apenas suas próprias informações
-  if (admin) {
-    document.getElementById('comissao-cards').innerHTML = `
-      <div class="stat-card green"><div class="label">Receita Total</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} vendas</div></div>
-      <div class="stat-card orange"><div class="label">Total Comissões</div><div class="value">${fmtMoney(totalComissao)}</div><div class="sub">a pagar</div></div>
-      <div class="stat-card"><div class="label">Vendedores</div><div class="value">${Object.keys(vendedores).length}</div><div class="sub">ativos</div></div>
-    `;
-  } else {
-    var minhaComissao = totalGeral * (comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0)/100;
-    document.getElementById('comissao-cards').innerHTML = `
-      <div class="stat-card green"><div class="label">Minhas Vendas</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} vendas</div></div>
-      <div class="stat-card orange"><div class="label">Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0}%</div></div>
-    `;
-  }
-
-  document.getElementById('tb-comissoes').innerHTML = Object.entries(vendedores).map(function(entry) {
-    var vend = entry[0]; var d = entry[1];
-    // Buscar comissão: primeiro pelo nome, depois pelo login, depois pelo cfg
-    var cfg2 = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-    var pctVend = comissaoMap[vend.toLowerCase()] || parseFloat(cfg2[vend.toLowerCase()]) || 0;
-    return '<tr>'
-      +'<td><strong>'+vend+'</strong></td>'
-      +'<td>'+d.qtd+'</td>'
-      +'<td class="fw-bold">'+fmtMoney(d.total)+'</td>'
-      +'<td>'+pctVend+'%</td>'
-      +'<td class="fw-bold text-success">'+fmtMoney(d.total*pctVend/100)+'</td>'
-      +'<td><span class="badge badge-info">'+fmtPct(totalGeral?d.total/totalGeral*100:0)+' do total</span></td>'
-      +'</tr>';
-  }).join('') || '<tr><td colspan="6" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda registrada</td></tr>';
-
-  // Filtrar vendas de admins nas vendas detalhadas
-  var vendasSemAdmin = vendas.filter(function(v) {
-    return adminsNomes.indexOf((v.vendedor||'').toLowerCase()) === -1;
-  });
-  document.getElementById('tb-comissoes-det').innerHTML = [...vendasSemAdmin].reverse().map(v => `
-    <tr>
-      <td><strong>${v.id}</strong></td>
-      <td>${fmtDate(v.data)}</td>
-      <td>${v.vendedor||'Não informado'}</td>
-      <td>${clMap[v.clienteId]||'-'}</td>
-      <td>
-        <div style="font-weight:600">
-          ${v.tipo==='oculos-completo'||v.produto==='OCULOS-COMPLETO'?'🕶️ ':''}
-          ${v.descricaoCompleta||(v.produto==='OCULOS-COMPLETO'?'Óculos de Grau Completo':(v.produto==='COMPOSICAO'?'Composição':(prodMap[v.produto]||v.produto)))}
-        </div>
-        ${(v.tipo==='oculos-completo'||v.produto==='OCULOS-COMPLETO')&&v.detalhes?
-          '<div style="font-size:11px;color:#94a3b8;font-style:italic;margin-top:2px">'+
-          v.detalhes.map(d=>d.nome||d.cod).join(' | ')+
-          (v.exame>0?' | Exame: '+fmtMoney(v.exame):'')+'</div>':''}
-      </td>
-      <td class="fw-bold">${fmtMoney(calcTotal(v))}</td>
-      <td class="fw-bold text-success">${fmtMoney(calcTotal(v)*(comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0)/100)}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
+  }).join('') : '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
 }
 
 // ── HISTÓRICO DO CLIENTE ─────────────────────────────────────────
