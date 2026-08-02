@@ -9321,30 +9321,7 @@ function renderRelatorios() {
       }).join('')||'<tr><td colspan="9" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
       // Linha de totais
       if(finFoot){var totMarg=totRec>0?totLucro/totRec*100:0;finFoot.innerHTML=`<tr style="background:#0f2744;color:white;font-weight:700"><td colspan="4">TOTAL (5 últimos)</td><td style="text-align:right">${fmtMoney(totRec)}</td><td style="text-align:right;color:#fbbf24">${fmtMoney(totCusto)}</td><td style="text-align:right;color:#fb923c">${fmtMoney(totCom)}</td><td style="text-align:right;color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td><td style="text-align:right">${totMarg.toFixed(1)}%</td></tr>`;}
-      // Linha fake para compatibilidade
-      if(false){var v={};finEl.innerHTML=vendas.map(v=>{
-        var rec=calcTotal(v);
-        var custo=v.itens&&v.itens.length>0?v.itens.reduce((s,it)=>s+(it.custo||0)*(it.qtd||1),0):(v.custo||0);
-        var vend=(v.vendedor||'').toLowerCase();
-        var isAdminVend=admins2.indexOf(vend)!==-1;
-        var pct=0;
-        if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
-        var com=rec*(pct/100);
-        var lucro=rec-custo-com;
-        var margem=rec>0?lucro/rec*100:0;
-        totRec+=rec;totCusto+=custo;totCom+=com;totLucro+=lucro;
-        return `<tr>
-          <td style="font-weight:700;color:#0d2b4e">${v.num||v.id||'-'}</td>
-          <td>${v.data?new Date(v.data+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
-          <td>${v.clienteNome||v.cliente||'-'}</td>
-          <td>${v.vendedor||'-'}</td>
-          <td style="text-align:right">${fmtMoney(rec)}</td>
-          <td style="text-align:right;color:#fbbf24">${fmtMoney(custo)}</td>
-          <td style="text-align:right;color:#fb923c">${fmtMoney(com)}</td>
-          <td style="text-align:right;color:${lucro>=0?'#16a34a':'#dc2626'};font-weight:700">${fmtMoney(lucro)}</td>
-          <td style="text-align:right">${margem.toFixed(1)}%</td>
-        </tr>`;}).join('')||'<tr><td colspan="9" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
-      if(finFoot){var totMarg=totRec>0?totLucro/totRec*100:0;finFoot.innerHTML=`<tr style="background:#0f2744;color:white;font-weight:700"><td colspan="4">TOTAL</td><td style="text-align:right">${fmtMoney(totRec)}</td><td style="text-align:right;color:#fbbf24">${fmtMoney(totCusto)}</td><td style="text-align:right;color:#fb923c">${fmtMoney(totCom)}</td><td style="text-align:right;color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td><td style="text-align:right">${totMarg.toFixed(1)}%</td></tr>`;}
+
     }
   } else {
     var comAdminEl2=document.getElementById('rel-comissoes-admin');
