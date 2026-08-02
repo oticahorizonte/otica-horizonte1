@@ -12548,24 +12548,44 @@ function imprimirOrcamentoById(id) {
   const dataOrc = c.data ? new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR') : now;
 
   // Montar linhas dos itens
-  // Agrupar óculos completo com descrição completa
+  // Agrupar TODOS os itens oculos-completo em UMA linha
   var prodMapOrc = Object.fromEntries(load('produtos').map(function(p){return [p.cod, p.desc||p.cod];}));
   var itensAgrupados = [];
+  var oculosGroup = {partes:[], totalPreco:0, exame:0, encontrou:false};
+  
   itens.forEach(function(item) {
-    var tipo = (item.tipo||item.cod||'').toUpperCase();
-    if (tipo === 'OCULOS-COMPLETO' || tipo === 'OCULOS_COMPLETO') {
-      var partes = [];
+    var tipo = (item.tipo||item.cod||'').toUpperCase().replace(/_/g,'-');
+    if (tipo === 'OCULOS-COMPLETO') {
+      oculosGroup.encontrou = true;
+      oculosGroup.totalPreco += (item.preco||0) * (item.qtd||1);
+      // Coletar partes dos detalhes
       if (item.detalhes && item.detalhes.length > 0) {
-        item.detalhes.forEach(function(d){ partes.push(prodMapOrc[d.cod]||d.nome||d.cod); });
+        item.detalhes.forEach(function(d){ 
+          var nome = prodMapOrc[d.cod]||d.nome||d.cod;
+          if (nome && oculosGroup.partes.indexOf(nome) === -1) oculosGroup.partes.push(nome);
+        });
       }
-      if (item.exame > 0) partes.push('Exame de Vista');
-      var descCompleta = '\ud83d\udd76\ufe0f \u00d3culos Completo' + (partes.length > 0 ? ' \u2014 ' + partes.join(' + ') : '');
-      itensAgrupados.push({nome: descCompleta, qtd: item.qtd||1, preco: item.preco||0});
+      if (item.exame > 0) oculosGroup.exame += item.exame;
+      // Se o item tem nome/descricaoCompleta próprio, usar como parte
+      if (!item.detalhes || item.detalhes.length === 0) {
+        var nome = item.descricaoCompleta || item.nome || prodMapOrc[item.cod] || '';
+        if (nome && nome !== 'Óculos Completo' && oculosGroup.partes.indexOf(nome) === -1) {
+          oculosGroup.partes.push(nome);
+        }
+      }
     } else {
-      var nome = item.descricaoCompleta || prodMapOrc[item.cod] || item.nome || item.cod || '\u2014';
+      var nome = item.descricaoCompleta || prodMapOrc[item.cod] || item.nome || item.cod || '—';
       itensAgrupados.push({nome: nome, qtd: item.qtd||1, preco: item.preco||0});
     }
   });
+  
+  // Adicionar óculos completo agrupado (UMA linha)
+  if (oculosGroup.encontrou) {
+    if (oculosGroup.exame > 0) oculosGroup.partes.push('Exame de Vista');
+    var descOculos = '🕶️ Óculos Completo' + (oculosGroup.partes.length > 0 ? ' — ' + oculosGroup.partes.join(' + ') : '');
+    itensAgrupados.unshift({nome: descOculos, qtd: 1, preco: oculosGroup.totalPreco});
+  }
+  
   var itensHtml = itensAgrupados.map(function(item) {
     var valorItem = (item.preco||0) * (item.qtd||1);
     return '<tr style=\"border-bottom:1px solid #e2e8f0\">' +
