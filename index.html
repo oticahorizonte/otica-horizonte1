@@ -2559,10 +2559,14 @@ function instalarApp() {
     #sec-receitas .card-body,
     #sec-produtos .card-body,
     #sec-clientes .card-body,
-    #sec-os .card-body,
-    #sec-vendas .card-body,
-    #sec-agendamentos .card-body {
+    #sec-vendas .card-body {
       overflow-x: hidden !important;
+    }
+    /* Agendamentos e OS precisam de scroll horizontal no portrait */
+    #sec-os .card-body,
+    #sec-agendamentos .card-body {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
     }
   }
 
