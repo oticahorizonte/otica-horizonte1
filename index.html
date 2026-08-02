@@ -7153,12 +7153,15 @@ function aplicarControleAcesso() {
 
 function renderClientes() {
   // Atualizar thead conforme nível
-  var adminCli = isAdmin();
+  var _userCli = loadUser();
+  var adminCli = _userCli && _userCli.nivel === 'Admin';
   var theadCli = document.querySelector('#tb-clientes thead tr');
   if (theadCli) {
-    theadCli.innerHTML = adminCli
-      ? '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">\u00daltima Compra</th><th>Total</th><th>Status</th><th>A\u00e7\u00f5es</th>'
-      : '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>A\u00e7\u00f5es</th>';
+    if (adminCli) {
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th>Total</th><th>Status</th><th>Ações</th>';
+    } else {
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th>';
+    }
   }
 
   if(!document.getElementById('tb-clientes')) return;
