@@ -12548,14 +12548,31 @@ function imprimirOrcamentoById(id) {
   const dataOrc = c.data ? new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR') : now;
 
   // Montar linhas dos itens
-  var itensHtml = itens.map(function(item) {
-    var nome = item.descricaoCompleta || item.nome || item.cod || '—';
+  // Agrupar óculos completo com descrição completa
+  var prodMapOrc = Object.fromEntries(load('produtos').map(function(p){return [p.cod, p.desc||p.cod];}));
+  var itensAgrupados = [];
+  itens.forEach(function(item) {
+    var tipo = (item.tipo||item.cod||'').toUpperCase();
+    if (tipo === 'OCULOS-COMPLETO' || tipo === 'OCULOS_COMPLETO') {
+      var partes = [];
+      if (item.detalhes && item.detalhes.length > 0) {
+        item.detalhes.forEach(function(d){ partes.push(prodMapOrc[d.cod]||d.nome||d.cod); });
+      }
+      if (item.exame > 0) partes.push('Exame de Vista');
+      var descCompleta = '\ud83d\udd76\ufe0f \u00d3culos Completo' + (partes.length > 0 ? ' \u2014 ' + partes.join(' + ') : '');
+      itensAgrupados.push({nome: descCompleta, qtd: item.qtd||1, preco: item.preco||0});
+    } else {
+      var nome = item.descricaoCompleta || prodMapOrc[item.cod] || item.nome || item.cod || '\u2014';
+      itensAgrupados.push({nome: nome, qtd: item.qtd||1, preco: item.preco||0});
+    }
+  });
+  var itensHtml = itensAgrupados.map(function(item) {
     var valorItem = (item.preco||0) * (item.qtd||1);
-    return '<tr style="border-bottom:1px solid #e2e8f0">' +
-      '<td style="padding:8px 12px;font-size:13px">' + nome + '</td>' +
-      '<td style="padding:8px 12px;text-align:center;font-size:13px">' + (item.qtd||1) + '</td>' +
-      '<td style="padding:8px 12px;text-align:right;font-size:13px">' + fmtMoney(item.preco||0) + '</td>' +
-      '<td style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700">' + fmtMoney(valorItem) + '</td>' +
+    return '<tr style=\"border-bottom:1px solid #e2e8f0\">' +
+      '<td style=\"padding:8px 12px;font-size:13px\">' + item.nome + '</td>' +
+      '<td style=\"padding:8px 12px;text-align:center;font-size:13px\">' + (item.qtd||1) + '</td>' +
+      '<td style=\"padding:8px 12px;text-align:right;font-size:13px\">' + fmtMoney(item.preco||0) + '</td>' +
+      '<td style=\"padding:8px 12px;text-align:right;font-size:13px;font-weight:700\">' + fmtMoney(valorItem) + '</td>' +
       '</tr>';
   }).join('');
 
