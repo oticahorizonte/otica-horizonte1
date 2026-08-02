@@ -2794,7 +2794,7 @@ function instalarApp() {
     <div class="nav-item" onclick="showSection('produtos')"><span class="icon">📦</span> Produtos &amp; Estoque <span class="nav-badge" id="badge-estoque" style="display:none">0</span></div>
 
     <!-- ◈ GESTÃO -->
-    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
+    <div id="nav-grupo-gestao" style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
       <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
       <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ GESTÃO</span>
       <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
@@ -7128,6 +7128,10 @@ function aplicarControleAcesso() {
   // Comissões — visível para todos mas conteúdo filtrado
   var navCom = document.getElementById('nav-comissoes');
   if (navCom) navCom.style.display = '';
+
+  // Grupo GESTÃO — ocultar para vendedor (não tem itens visíveis)
+  var navGestao = document.getElementById('nav-grupo-gestao');
+  if (navGestao) navGestao.style.display = admin ? '' : 'none';
 
   // Botão Novo Produto — só admin
   var btnNovoProd = document.getElementById('btn-novo-produto');
