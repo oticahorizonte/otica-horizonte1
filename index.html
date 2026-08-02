@@ -10668,9 +10668,33 @@ function renderComissoes() {
     `;
   } else {
     var minhaComissao = totalGeral * (comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0)/100;
+    // Buscar meta individual do vendedor
+    var metas = JSON.parse(localStorage.getItem('otica_metas_vendas') || '{}');
+    var userLogado = loadUser();
+    var nomeCompleto = userLogado ? (userLogado.nome || '') : '';
+    var metaVendedor = parseFloat(metas[nomeCompleto] || metas[meuNome] || 0);
+    var pctMeta = metaVendedor > 0 ? Math.min(100, totalGeral / metaVendedor * 100) : 0;
+    var corMeta = pctMeta >= 100 ? '#16a34a' : pctMeta >= 70 ? '#f59e0b' : '#e11d48';
+    var faltaMeta = Math.max(0, metaVendedor - totalGeral);
+    var metaHtml = metaVendedor > 0
+      ? `<div style="margin-top:6px">
+          <div style="background:rgba(255,255,255,.2);border-radius:6px;height:8px;overflow:hidden;margin-bottom:4px">
+            <div style="height:100%;border-radius:6px;background:${corMeta};width:${pctMeta.toFixed(1)}%;transition:width .5s"></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.8);display:flex;justify-content:space-between">
+            <span>${pctMeta.toFixed(1)}% da meta</span>
+            <span>${faltaMeta > 0 ? 'Faltam ' + fmtMoney(faltaMeta) : '✅ Meta atingida!'}</span>
+          </div>
+        </div>`
+      : '<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px">Meta não definida pelo admin</div>';
     document.getElementById('comissao-cards').innerHTML = `
-      <div class="stat-card green"><div class="label">Minhas Vendas</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} vendas</div></div>
-      <div class="stat-card orange"><div class="label">Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0}%</div></div>
+      <div class="stat-card green"><div class="label">💰 Minhas Vendas</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} venda(s) este mês</div></div>
+      <div class="stat-card orange"><div class="label">💈 Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0}% sobre vendas</div></div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#1e3a5c,#0d2b4e);grid-column:span 2">
+        <div class="label">🎯 Minha Meta Mensal</div>
+        <div class="value" style="font-size:18px">${metaVendedor > 0 ? fmtMoney(metaVendedor) : 'Não definida'}</div>
+        ${metaHtml}
+      </div>
     `;
   }
 
