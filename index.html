@@ -5375,6 +5375,41 @@ window.addEventListener('beforeprint', updatePrintDate);
 // ── Storage helpers ──────────────────────────────────────────────
 const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', entradas:'otica_entradas', usuarios:'otica_usuarios', metas_vendas:'otica_metas_vendas', config_comissao:'otica_config_comissao', meta_faturamento:'otica_meta_faturamento' }; // usuarios gerenciado separadamente
 
+// ─── Storage helpers ─────────────────────────────────────────────────────────
+const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
+const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
+var _saveDebounceTimers = {};
+const save = function(k, v) {
+  _saveBase(k, v);
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento'];
+  if (criticos.indexOf(k) === -1) return;
+  if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
+  _saveDebounceTimers[k] = setTimeout(function() {
+    delete _saveDebounceTimers[k];
+    tentarSalvarFirebaseDebounced(k, v, 5);
+  }, 800);
+};
+function tentarSalvarFirebaseDebounced(k, v, tentativas) {
+  function tentarSalvarFirebase(t) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection(k, v).then(function(ok) {
+        if (ok) {
+          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+        } else if (t > 0) {
+          setTimeout(function() { tentarSalvarFirebase(t-1); }, 2000);
+        }
+      }).catch(function(e) {
+        if (t > 0) setTimeout(function() { tentarSalvarFirebase(t-1); }, 2000);
+      });
+    } else if (t > 0) {
+      setTimeout(function() { tentarSalvarFirebase(t-1); }, 2000);
+    }
+  }
+  tentarSalvarFirebase(tentativas);
+}
+
+
 // ── Firebase Sync automático ───────────────────────────────────────────────
 var _fbSyncTimer = null;
 function _fbAutoSync(k, v) {
