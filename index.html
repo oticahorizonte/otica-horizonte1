@@ -10650,7 +10650,8 @@ function renderComissoes() {
   var vendasSemAdmin = vendas.filter(function(v) {
     return adminsNomes.indexOf((v.vendedor||'').toLowerCase()) === -1;
   });
-  document.getElementById('tb-comissoes-det').// Agrupar vendas por grupoVenda
+  document.getElementById('tb-comissoes-det').innerHTML = (function() {
+  // Agrupar vendas por grupoVenda
   var gruposVistosC = {};
   var vendasAgrupadasC = [];
   var pctComissaoV = comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0;
@@ -10685,7 +10686,8 @@ function renderComissoes() {
       '<td class="fw-bold">' + fmtMoney(grupo.total) + '</td>' +
       '<td class="fw-bold text-success">' + fmtMoney(grupo.comissao) + '</td>' +
     '</tr>';
-  }).join('') || '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';color:var(--text-muted)">Nenhuma venda</td></tr>';
+  }).join('') || '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
+  })()color:var(--text-muted)">Nenhuma venda</td></tr>';
 }
 
 // ── HISTÓRICO DO CLIENTE ─────────────────────────────────────────
