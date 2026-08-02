@@ -2534,10 +2534,10 @@ function instalarApp() {
   #tb-os > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
   #tb-vendas > thead > tr > th:nth-child(6),
   #tb-vendas > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
-  #tb-agendamentos > thead > tr > th:nth-child(6),
-  #tb-agendamentos > thead > tr > th:nth-child(7),
-  #tb-agendamentos > tbody > tr > td:nth-child(6),
-  #tb-agendamentos > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
+  #tb-agend > thead > tr > th:nth-child(6),
+  #tb-agend > thead > tr > th:nth-child(7),
+  #tb-agend > tbody > tr > td:nth-child(6),
+  #tb-agend > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
   table { min-width:0!important; }
 
   /* ===== REMOVER SCROLL HORIZONTAL NAS TABELAS COM COLUNAS OCULTAS ===== */
@@ -3346,7 +3346,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Cliente</th><th>Tipo</th><th>Profissional</th><th>Observações</th><th>Status</th><th>Ações</th></tr></thead>
+<table><thead id="tb-agend-head"><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Cliente</th><th>Tipo</th><th>Profissional</th><th>Observações</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-agend"></tbody></table>
 </div>
 </div>
@@ -15409,11 +15409,16 @@ document.addEventListener('DOMContentLoaded', function() {
   #tb-os > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
   #tb-vendas > thead > tr > th:nth-child(6),
   #tb-vendas > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
-  #tb-agendamentos > thead > tr > th:nth-child(6),
-  #tb-agendamentos > thead > tr > th:nth-child(7),
-  #tb-agendamentos > tbody > tr > td:nth-child(6),
-  #tb-agendamentos > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
+  #tb-agend > thead > tr > th:nth-child(6),
+  #tb-agend > thead > tr > th:nth-child(7),
+  #tb-agend > tbody > tr > td:nth-child(6),
+  #tb-agend > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
   table { min-width:0!important; }
+  /* Agendamentos — ocultar Profissional(6) e Observações(7) */
+  #tb-agend > thead > tr > th:nth-child(6),
+  #tb-agend > thead > tr > th:nth-child(7),
+  #tb-agend > tbody > tr > td:nth-child(6),
+  #tb-agend > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
 }
 </style>
 </body>
