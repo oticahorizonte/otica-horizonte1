@@ -183,7 +183,8 @@ async function carregarProdutos() {
     if (snap.exists()) {
       const raw = snap.data().data;
       const todos = JSON.parse(raw || '[]');
-      _produtos = todos.filter(p => p.catalogo === true && p.foto && p.foto.startsWith('https://'));
+      // Mostrar produtos marcados para catálogo (com ou sem foto Cloudinary)
+      _produtos = todos.filter(p => p.catalogo === true);
       renderCatalogo();
     } else {
       mostrarVazio('Nenhum produto cadastrado ainda.');
