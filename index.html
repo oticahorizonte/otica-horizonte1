@@ -2522,8 +2522,9 @@ function instalarApp() {
   #tb-clientes > thead > tr > th:nth-child(5),
   #tb-clientes > tbody > tr > td:nth-child(3),
   #tb-clientes > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; border:none!important; }
-  #tb-os > thead > tr > th:nth-child(5),
-  #tb-os > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
+  /* OS vendedor: ocultar Valor(6) para alinhar com thead de 7 colunas */
+  #tb-os > thead > tr > th:nth-child(6),
+  #tb-os > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
   #tb-vendas > thead > tr > th:nth-child(6),
   #tb-vendas > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
   #tb-agend-table > thead > tr > th:nth-child(6),
