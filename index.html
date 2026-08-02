@@ -2558,9 +2558,13 @@ function instalarApp() {
     /* Forçar que o card-body das seções com tabelas ocultas não faça scroll */
     #sec-receitas .card-body,
     #sec-produtos .card-body,
-    #sec-clientes .card-body,
-    #sec-vendas .card-body {
+    #sec-clientes .card-body {
       overflow-x: hidden !important;
+    }
+    /* Registro de Vendas precisa de scroll horizontal no portrait */
+    #sec-vendas .card-body {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
     }
     /* Agendamentos e OS precisam de scroll horizontal no portrait */
     #sec-os .card-body,
