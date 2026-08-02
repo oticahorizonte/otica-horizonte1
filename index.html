@@ -2055,11 +2055,17 @@ function resetarSistema() {
                   localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length;
                 } catch(e) {}
               }
-              // Proteção: nunca sobrescrever local com versão menor do Firebase
-              // cloudLen < localLen removido
-              // Nota: removida proteção cloudLen < localLen
-              // Motivo: quando usuário exclui dados localmente, Firebase pode ter mais registros
-              // e a proteção impedia que a exclusão fosse refletida ao baixar da nuvem
+              // NUNCA sobrescrever local com Firebase vazio
+              if (cloudLen === 0 && localLen > 0) {
+                console.log('⚠️ Firebase vazio para', k, '- mantendo dados locais (' + localLen + ' registros)');
+                if (window._fb) {
+                  var localDataToSync = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                  window._fb.saveCollection(k, localDataToSync).catch(function(){});
+                }
+                continue;
+              }
+              // Nota: proteção cloudLen < localLen removida intencionalmente
+              // Motivo: quando usuário exclui dados, Firebase pode ter mais registros
               // O Firebase é a fonte de verdade após qualquer save()
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
