@@ -7152,6 +7152,15 @@ function aplicarControleAcesso() {
 }
 
 function renderClientes() {
+  // Atualizar thead conforme nível do usuário
+  var theadCli = document.querySelector('#tb-clientes thead tr');
+  if (theadCli) {
+    if (isAdmin()) {
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th>Total</th><th>Status</th><th>Ações</th>';
+    } else {
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th>';
+    }
+  }
   if(!document.getElementById('tb-clientes')) return;
   const q = (document.getElementById('search-clientes')||{}).value||'';
   const data = load('clientes').filter(c =>
