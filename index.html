@@ -7169,6 +7169,67 @@ function renderClientes() {
     (c.email||'').toLowerCase().includes(q.toLowerCase()) ||
     (c.cidade||'').toLowerCase().includes(q.toLowerCase())
   );
+  document.getElementById('tb-clientes').innerHTML = (function() {
+    var adminCli = isAdmin();
+    // Atualizar thead
+    var theadCli = document.querySelector('#tb-clientes thead tr');
+    if (theadCli) {
+      if (adminCli) {
+        theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">\u00daltima Compra</th><th>Total</th><th>Status</th><th>A\u00e7\u00f5es</th>';
+      } else {
+        theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>A\u00e7\u00f5es</th>';
+      }
+    }
+    if (!data.length) return '<tr><td colspan="' + (adminCli?9:7) + '" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum cliente encontrado</td></tr>';
+    return data.map(function(c) {
+      if (adminCli) {
+        return '<tr>' +
+          '<td>' + c.id + '</td>' +
+          '<td><strong>' + c.nome + '</strong></td>' +
+          '<td class="hide-mobile">' + (c.cpf||'-') + '</td>' +
+          '<td>' + (c.tel||'-') + '</td>' +
+          '<td class="hide-mobile">' + (c.cidade||'-') + (c.bairro?' \u2014 '+c.bairro:'') + '</td>' +
+          '<td class="hide-mobile">' + fmtDate(c.ultimaCompra) + '</td>' +
+          '<td class="fw-bold text-success">' + fmtMoney(c.totalGasto) + '</td>' +
+          '<td>' + statusBadge(c.status) + '</td>' +
+          '<td><div class="flex gap-2">' +
+            '<button class="btn btn-sm btn-info" onclick="verHistorico(' + c.id + ')" style="background:#0ea5e9;color:white" data-tip="Ver hist\u00f3rico">\ud83d\udd0d</button>' +
+            '<button class="btn btn-sm btn-outline" onclick="editCliente(' + c.id + ')" data-tip="Editar">\u270f\ufe0f</button>' +
+            '<button class="btn btn-sm btn-danger" onclick="delCliente(' + c.id + ')" data-tip="Excluir">\ud83d\uddd1\ufe0f</button>' +
+          '</div></td>' +
+        '</tr>';
+      } else {
+        return '<tr>' +
+          '<td>' + c.id + '</td>' +
+          '<td><strong>' + c.nome + '</strong></td>' +
+          '<td class="hide-mobile">' + (c.cpf||'-') + '</td>' +
+          '<td>' + (c.tel||'-') + '</td>' +
+          '<td class="hide-mobile">' + (c.cidade||'-') + (c.bairro?' \u2014 '+c.bairro:'') + '</td>' +
+          '<td>' + statusBadge(c.status) + '</td>' +
+          '<td><div class="flex gap-2">' +
+            '<button class="btn btn-sm btn-outline" onclick="editCliente(' + c.id + ')" data-tip="Editar">\u270f\ufe0f</button>' +
+          '</div></td>' +
+        '</tr>';
+      }
+    }).join('')
+  })()unction renderClientes() {
+  // Atualizar thead conforme nível do usuário
+  var theadCli = document.querySelector('#tb-clientes thead tr');
+  if (theadCli) {
+    if (isAdmin()) {
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th>Total</th><th>Status</th><th>Ações</th>';
+    } else {
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th>';
+    }
+  }
+  if(!document.getElementById('tb-clientes')) return;
+  const q = (document.getElementById('search-clientes')||{}).value||'';
+  const data = load('clientes').filter(c =>
+    !q || c.nome.toLowerCase().includes(q.toLowerCase()) ||
+    (c.cpf||'').includes(q) || (c.tel||'').includes(q) ||
+    (c.email||'').toLowerCase().includes(q.toLowerCase()) ||
+    (c.cidade||'').toLowerCase().includes(q.toLowerCase())
+  );
   document.getElementById('tb-clientes').innerHTML = data.length ? data.map(c => `
     <tr>
       <td>${c.id}</td><td><strong>${c.nome}</strong></td><td class="hide-mobile">${c.cpf||'-'}</td>
