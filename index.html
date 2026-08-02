@@ -5388,27 +5388,40 @@ function _fbAutoSync(k, v) {
 }
 
 async function syncLocalToCloud() {
-  if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
-  showToast('☁️ Enviando TODOS os dados para a nuvem...','success');
+  if (!window._firebaseReady || !window._fb) {
+    showToast('Firebase conectando... tente em instantes.', 'warning'); return;
+  }
+  showToast('☁️ Enviando TODOS os dados para a nuvem...', 'success');
   try {
-    // syncToCloud já envia todos os módulos do KEYS (inclui usuarios, entradas, metas, config)
-    var ok = await window._fb.syncToCloud(KEYS);
-    // Apenas fotos Cloudinary — não estão no KEYS
+    var ok = 0;
+    // Enviar todos os módulos críticos
+    var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
+      'agendamentos','composicoes','historico_estoque','despesas','entradas',
+      'usuarios','metas_vendas','config_comissao'];
+    for (var k of modulosCriticos) {
+      try {
+        var data = JSON.parse(localStorage.getItem(KEYS[k] || ('otica_'+k)) || '[]');
+        var saved = await window._fb.saveCollection(k, data);
+        if (saved) ok++;
+      } catch(e) { console.warn('Erro ao enviar', k, e.message); }
+    }
+    // Fotos Cloudinary
+    var prods = JSON.parse(localStorage.getItem('otica_produtos') || '[]');
     var fotosMap = {};
-    var prods = JSON.parse(localStorage.getItem('otica_produtos')||'[]');
     prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
     if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
-    // Meta de faturamento — não está no KEYS padrão
+    // Meta de faturamento
     var metaFat = localStorage.getItem('otica_meta_faturamento');
     if (metaFat) { await window._fb.saveCollection('meta_faturamento', {valor: metaFat}); ok++; }
     localStorage.setItem('otica_ultimo_sync', Date.now().toString());
     if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-    showToast('✅ ' + ok + ' módulos enviados para a nuvem!','success');
+    showToast('✅ ' + ok + ' módulos enviados para a nuvem!', 'success');
   } catch(e) {
     console.error('Erro no sync para nuvem:', e);
-    showToast('⚠️ Erro ao enviar dados. Tente novamente.','error');
+    showToast('⚠️ Erro ao enviar dados. Tente novamente.', 'error');
   }
 }
+
 
 async function syncFirebaseToLocal() {
   if (!window._firebaseReady || !window._fb) { showToast('Firebase conectando... tente em instantes.','warning'); return; }
@@ -5909,7 +5922,7 @@ function finalizarLogin(userObj, usuarios) {
   var navU = document.getElementById('nav-usuarios');
   if (navU) navU.style.display = userObj.nivel==='Admin' ? 'flex' : 'none';
 
-  seedData();
+  // seedData removida
   aplicarControleAcesso();
   // Ocultar botão Nova OS para vendedor
   var btnNovaOS = document.getElementById('btn-nova-os');
