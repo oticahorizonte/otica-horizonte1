@@ -9130,14 +9130,14 @@ function renderRelatorios() {
   var pags={};
   vendas.forEach(v=>{pags[v.pag]=pags[v.pag]||{qtd:0,total:0};pags[v.pag].qtd++;pags[v.pag].total+=calcTotal(v);});
   var pagEl=document.getElementById('rel-pagamentos');
-  if(pagEl) pagEl.innerHTML=Object.entries(pags).sort((a,b)=>b[1].total-a[1].total).map(([p,d])=>`
+  if(pagEl) pagEl.innerHTML=Object.entries(pags).sort((a,b)=>b[1].total-a[1].total).slice(0,5).map(([p,d])=>`
     <tr><td>${p}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td><td>${totalVendas>0?(d.total/totalVendas*100).toFixed(1)+'%':'0%'}</td></tr>`).join('')||'<tr><td colspan="4" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── OS POR STATUS ──
   var osStatus={};
   os.forEach(o=>{osStatus[o.status]=(osStatus[o.status]||0)+1;});
   var osStatusEl=document.getElementById('rel-os-status');
-  if(osStatusEl) osStatusEl.innerHTML=Object.entries(osStatus).map(([s,n])=>`
+  if(osStatusEl) osStatusEl.innerHTML=Object.entries(osStatus).slice(0,5).map(([s,n])=>`
     <tr><td>${statusBadge(s)}</td><td>${n}</td><td>${os.length>0?(n/os.length*100).toFixed(1)+'%':'0%'}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── TOP PRODUTOS ──
@@ -9147,7 +9147,7 @@ function renderRelatorios() {
     itens.forEach(it=>{if(!it.cod)return;prodCount[it.cod]=prodCount[it.cod]||{desc:it.desc||it.cod,qtd:0,total:0};prodCount[it.cod].qtd+=(it.qtd||1);prodCount[it.cod].total+=(it.preco||0)*(it.qtd||1);});
   });
   var topProdEl=document.getElementById('rel-top-produtos');
-  if(topProdEl) topProdEl.innerHTML=Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).slice(0,10).map(([cod,d],i)=>`
+  if(topProdEl) topProdEl.innerHTML=Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).slice(0,5).map(([cod,d],i)=>`
     <tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${d.desc}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── TOP CLIENTES ──
@@ -9162,14 +9162,14 @@ function renderRelatorios() {
     if((v.data||'')>cliMap[cid].ultima)cliMap[cid].ultima=v.data||'';
   });
   var topCliEl=document.getElementById('rel-top-clientes');
-  if(topCliEl) topCliEl.innerHTML=Object.values(cliMap).sort((a,b)=>b.total-a.total).slice(0,10).map((c,i)=>`
+  if(topCliEl) topCliEl.innerHTML=Object.values(cliMap).sort((a,b)=>b.total-a.total).slice(0,5).map((c,i)=>`
     <tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${c.nome}</td><td>${c.compras}</td><td class="fw-bold">${fmtMoney(c.total)}</td><td>${c.ultima?new Date(c.ultima+'T12:00').toLocaleDateString('pt-BR'):'-'}</td></tr>`).join('')||'<tr><td colspan="4" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── OS COMPLETO ──
   var osCompEl=document.getElementById('rel-os-completo');
   var osCompFoot=document.getElementById('rel-os-completo-foot');
   if(osCompEl){
-    var osSorted=[...os].sort((a,b)=>(b.abertura||'').localeCompare(a.abertura||''));
+    var osSorted=[...os].sort((a,b)=>(b.abertura||'').localeCompare(a.abertura||'')).slice(0,5);
     var totalOSVal=os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
     osCompEl.innerHTML=osSorted.map(o=>`
       <tr>
@@ -9218,8 +9218,8 @@ function renderRelatorios() {
   var estEl=document.getElementById('rel-estoque');
   if(estEl){
     var cats={};
-    produtos.forEach(p=>{var cat=p.categoria||'Outros';cats[cat]=cats[cat]||{itens:0,qtd:0,custo:0,venda:0,margens:[]};cats[cat].itens++;cats[cat].qtd+=(p.qtd||0);cats[cat].custo+=(p.custo||0)*(p.qtd||0);cats[cat].venda+=(p.preco||0)*(p.qtd||0);if(p.custo>0&&p.preco>0)cats[cat].margens.push((p.preco-p.custo)/p.preco*100);});
-    estEl.innerHTML=Object.entries(cats).sort((a,b)=>b[1].venda-a[1].venda).map(([cat,d])=>{
+    produtos.forEach(p=>{var cat=p.cat||p.categoria||'Outros';cats[cat]=cats[cat]||{itens:0,qtd:0,custo:0,venda:0,margens:[]};cats[cat].itens++;cats[cat].qtd+=(p.qtd||0);cats[cat].custo+=(p.custo||0)*(p.qtd||0);cats[cat].venda+=(p.preco||0)*(p.qtd||0);if(p.custo>0&&p.preco>0)cats[cat].margens.push((p.preco-p.custo)/p.preco*100);});
+    estEl.innerHTML=Object.entries(cats).sort((a,b)=>b[1].venda-a[1].venda).slice(0,5).map(([cat,d])=>{
       var mg=d.margens.length?d.margens.reduce((s,v)=>s+v,0)/d.margens.length:0;
       return `<tr><td style="font-weight:600">${cat}</td><td>${d.itens}</td><td>${d.qtd}</td><td>${fmtMoney(d.custo)}</td><td class="fw-bold">${fmtMoney(d.venda)}</td><td style="color:${mg>30?'#16a34a':'#dc2626'};font-weight:700">${mg.toFixed(1)}%</td></tr>`;}).join('')||'<tr><td colspan="6" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
   }
