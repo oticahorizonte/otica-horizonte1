@@ -14459,6 +14459,10 @@ function initVendaModal() {
       limparRascunhoVenda();
     }
   }
+
+  // Painel interno — só admin vê
+  var painelWrap = document.getElementById('venda-painel-interno-wrap');
+  if (painelWrap) painelWrap.style.display = isAdmin() ? '' : 'none';
 }
 
 function onProdutoVenda() {
