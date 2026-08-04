@@ -7041,7 +7041,10 @@ function renderPainelFinanceiroAdmin() {
               <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6);font-size:11px"><span>✅ Já retirado no período</span><span style="color:#34d399">(${fmtMoney(prolaboreRetirado)})</span></div>
               <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6);font-size:11px"><span>💰 Saldo a retirar</span><span style="color:#c9a84c">${fmtMoney(Math.max(0,lucroLiquido*0.6-prolaboreRetirado))}</span></div>
             </div>` : ''}
-          </div>` : ''}\n        </div>\n      </div>\n    `;\n on checkEstoqueAlert() {
+          </div>` : ''}\n        </div>\n      </div>\n    `;
+}
+
+function checkEstoqueAlert() {
   const baixo = load('produtos').filter(p => p.qtd <= p.min);
   const el = document.getElementById('estoque-alert');
   if (baixo.length > 0) {
