@@ -2141,7 +2141,6 @@ async function zerarVendasOS() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-  initGitHubToken();
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ Service Worker registrado:', reg.scope);
     }).catch(function(e) { console.warn('SW error:', e); });
@@ -7674,174 +7673,7 @@ function exportarRelatorioPDF() {
     +'<div class="no-print" style="text-align:center;margin-top:20px">'
     +'<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>'
     +'<button onclick="window.close()" style="padding:12px 24px;background:#5a6a8a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-left:10px">✕ Fechar</button>'
-    +'</div>\n\n\n
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- MODAL PRÓ-LABORE -->
-<!-- ══════════════════════════════════════════════════════════════ -->
-<div id="modal-prolabore" class="modal-overlay" style="display:none" onclick="if(event.target===this)fecharModalProLabore()">
-  <div class="modal-box" style="max-width:480px;width:95%">
-    <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf)">
-      <span>💼 Registrar Retirada de Pró-labore</span>
-      <button class="modal-close" onclick="fecharModalProLabore()">✕</button>
-    </div>
-    <div class="modal-body" style="padding:20px">
-      <div style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px">💡 Divisão sugerida do lucro líquido atual:</div>
-        <div style="display:flex;gap:12px">
-          <div style="flex:1;background:rgba(201,168,76,.15);border:1px solid #c9a84c;border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:10px;color:#c9a84c;font-weight:700">🏦 Capital de Giro (40%)</div>
-            <div id="pl-sugestao-giro" style="font-size:18px;font-weight:800;color:#c9a84c">R$ 0,00</div>
-          </div>
-          <div style="flex:1;background:rgba(52,211,153,.15);border:1px solid #34d399;border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:10px;color:#34d399;font-weight:700">💼 Pró-labore (60%)</div>
-            <div id="pl-sugestao-prolabore" style="font-size:18px;font-weight:800;color:#34d399">R$ 0,00</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:grid;gap:12px">
-        <div>
-          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">📅 Data da Retirada</label>
-          <input type="date" id="pl-data" style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
-        </div>
-        <div>
-          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">💰 Valor Retirado (Pró-labore)</label>
-          <input type="number" id="pl-valor" placeholder="0,00" step="0.01" min="0" style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
-        </div>
-        <div>
-          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">📝 Referência (ex: Julho/2026)</label>
-          <input type="text" id="pl-ref" placeholder="Mês/Ano de referência" style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
-        </div>
-        <div>
-          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">🗒️ Observação (opcional)</label>
-          <input type="text" id="pl-obs" placeholder="Ex: Pagamento quinzena, adiantamento..." style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:16px">
-        <button onclick="salvarProLabore()" style="flex:1;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;color:white;padding:12px;font-size:13px;font-weight:700;cursor:pointer">✅ Registrar Retirada</button>
-        <button onclick="fecharModalProLabore()" style="background:#374151;border:none;border-radius:10px;color:white;padding:12px 16px;font-size:13px;cursor:pointer">Cancelar</button>
-      </div>
-      <!-- Histórico -->
-      <div id="pl-historico" style="margin-top:20px"></div>
-    </div>
-  </div>
-</div>
-<script>
-// ══════════════════════════════════════════════════════════════
-// PRÓ-LABORE — Funções
-// ══════════════════════════════════════════════════════════════
-function abrirModalProLabore() {
-  // Calcular lucro líquido atual (mês)
-  var vendas = load('vendas');
-  var hoje = new Date();
-  var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
-  var vendasMes = vendas.filter(function(v){ return (v.data||'') >= inicioMes; });
-  var receita = vendasMes.reduce(function(s,v){ return s + calcTotal(v); }, 0);
-  var custo = vendasMes.reduce(function(s,v){
-    var itens = v.itens || [];
-    if (itens.length > 0) return s + itens.reduce(function(si,it){ return si+(it.custo||0)*(it.qtd||1); },0);
-    if (v.custo && v.custo > 0) return s + (v.custo||0)*(v.qtd||1);
-    return s;
-  }, 0);
-  var despesas = load('despesas').filter(function(d){ return (d.data||'') >= inicioMes; });
-  var totalDesp = despesas.reduce(function(s,d){ return s+(d.valor||0); },0);
-  var lucro = receita - custo - totalDesp;
-  if (lucro < 0) lucro = 0;
-
-  // Preencher sugestões
-  var elGiro = document.getElementById('pl-sugestao-giro');
-  var elPL = document.getElementById('pl-sugestao-prolabore');
-  if (elGiro) elGiro.textContent = fmtMoney(lucro * 0.4);
-  if (elPL) elPL.textContent = fmtMoney(lucro * 0.6);
-
-  // Preencher data e referência padrão
-  var dataEl = document.getElementById('pl-data');
-  var refEl = document.getElementById('pl-ref');
-  if (dataEl) dataEl.value = hoje.toISOString().slice(0,10);
-  if (refEl) {
-    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    refEl.value = meses[hoje.getMonth()] + '/' + hoje.getFullYear();
-  }
-
-  // Preencher valor sugerido
-  var valorEl = document.getElementById('pl-valor');
-  if (valorEl) valorEl.value = (lucro * 0.6).toFixed(2);
-
-  // Renderizar histórico
-  renderHistoricoProLabore();
-
-  document.getElementById('modal-prolabore').style.display = 'flex';
-}
-
-function fecharModalProLabore() {
-  document.getElementById('modal-prolabore').style.display = 'none';
-}
-
-function salvarProLabore() {
-  var data = document.getElementById('pl-data').value;
-  var valor = parseFloat(document.getElementById('pl-valor').value) || 0;
-  var ref = document.getElementById('pl-ref').value.trim();
-  var obs = document.getElementById('pl-obs').value.trim();
-
-  if (!data) { showToast('Informe a data da retirada!', 'error'); return; }
-  if (valor <= 0) { showToast('Informe o valor da retirada!', 'error'); return; }
-  if (!ref) { showToast('Informe a referência (mês/ano)!', 'error'); return; }
-
-  var historico = load('prolabore') || [];
-  var novo = {
-    id: 'PL-' + Date.now(),
-    data: data,
-    valor: valor,
-    referencia: ref,
-    obs: obs,
-    criadoEm: new Date().toISOString()
-  };
-  historico.unshift(novo);
-  save('prolabore', historico);
-
-  // Limpar campos
-  document.getElementById('pl-valor').value = '';
-  document.getElementById('pl-obs').value = '';
-
-  showToast('✅ Retirada de pró-labore registrada!', 'success');
-  renderHistoricoProLabore();
-  renderPainelFinanceiroAdmin();
-}
-
-function excluirProLabore(id) {
-  if (!confirm('Excluir este registro de pró-labore?')) return;
-  var historico = (load('prolabore') || []).filter(function(p){ return p.id !== id; });
-  save('prolabore', historico);
-  renderHistoricoProLabore();
-  showToast('Registro excluído!', 'success');
-}
-
-function renderHistoricoProLabore() {
-  var el = document.getElementById('pl-historico');
-  if (!el) return;
-  var historico = load('prolabore') || [];
-  if (historico.length === 0) {
-    el.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.4);font-size:12px;padding:12px">Nenhuma retirada registrada ainda.</div>';
-    return;
-  }
-  var totalRetirado = historico.reduce(function(s,p){ return s+(p.valor||0); },0);
-  el.innerHTML = '<div style="border-top:1px solid rgba(255,255,255,.15);padding-top:14px;margin-top:4px">' +
-    '<div style="font-size:12px;font-weight:700;color:#c9a84c;margin-bottom:10px">📋 Histórico de Retiradas — Total: ' + fmtMoney(totalRetirado) + '</div>' +
-    historico.slice(0,10).map(function(p){
-      return '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px;margin-bottom:6px">' +
-        '<div>' +
-          '<div style="font-size:12px;font-weight:700;color:#34d399">' + fmtMoney(p.valor) + '</div>' +
-          '<div style="font-size:10px;color:rgba(255,255,255,.5)">' + p.referencia + ' • ' + (p.data||'').split('-').reverse().join('/') + (p.obs ? ' • ' + p.obs : '') + '</div>' +
-        '</div>' +
-        '<button onclick="excluirProLabore('' + p.id + '')" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:6px;color:#f87171;padding:4px 8px;font-size:10px;cursor:pointer">🗑️</button>' +
-      '</div>';
-    }).join('') +
-  '</div>';
-}
-
-// Adicionar 'prolabore' ao sistema de sync
-var _keysOriginalPL = null;
-</script>
-</body></html>';
+    +'</div>\n\n\n</html>';
 
 
   var win = window.open('','_blank','width=900,height=700');
@@ -16045,5 +15877,173 @@ document.addEventListener('DOMContentLoaded', function() {
   #tb-agend-table > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
 }
 </style>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MODAL PRÓ-LABORE -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="modal-prolabore" class="modal-overlay" style="display:none" onclick="if(event.target===this)fecharModalProLabore()">
+  <div class="modal-box" style="max-width:480px;width:95%">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf)">
+      <span>💼 Registrar Retirada de Pró-labore</span>
+      <button class="modal-close" onclick="fecharModalProLabore()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <div style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px">💡 Divisão sugerida do lucro líquido atual:</div>
+        <div style="display:flex;gap:12px">
+          <div style="flex:1;background:rgba(201,168,76,.15);border:1px solid #c9a84c;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;color:#c9a84c;font-weight:700">🏦 Capital de Giro (40%)</div>
+            <div id="pl-sugestao-giro" style="font-size:18px;font-weight:800;color:#c9a84c">R$ 0,00</div>
+          </div>
+          <div style="flex:1;background:rgba(52,211,153,.15);border:1px solid #34d399;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;color:#34d399;font-weight:700">💼 Pró-labore (60%)</div>
+            <div id="pl-sugestao-prolabore" style="font-size:18px;font-weight:800;color:#34d399">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div>
+          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">📅 Data da Retirada</label>
+          <input type="date" id="pl-data" style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">💰 Valor Retirado (Pró-labore)</label>
+          <input type="number" id="pl-valor" placeholder="0,00" step="0.01" min="0" style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">📝 Referência (ex: Julho/2026)</label>
+          <input type="text" id="pl-ref" placeholder="Mês/Ano de referência" style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
+        </div>
+        <div>
+          <label style="font-size:12px;color:rgba(255,255,255,.7);display:block;margin-bottom:4px">🗒️ Observação (opcional)</label>
+          <input type="text" id="pl-obs" placeholder="Ex: Pagamento quinzena, adiantamento..." style="width:100%;background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;box-sizing:border-box"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button onclick="salvarProLabore()" style="flex:1;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;color:white;padding:12px;font-size:13px;font-weight:700;cursor:pointer">✅ Registrar Retirada</button>
+        <button onclick="fecharModalProLabore()" style="background:#374151;border:none;border-radius:10px;color:white;padding:12px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+      </div>
+      <!-- Histórico -->
+      <div id="pl-historico" style="margin-top:20px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// PRÓ-LABORE — Funções
+// ══════════════════════════════════════════════════════════════
+function abrirModalProLabore() {
+  // Calcular lucro líquido atual (mês)
+  var vendas = load('vendas');
+  var hoje = new Date();
+  var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  var vendasMes = vendas.filter(function(v){ return (v.data||'') >= inicioMes; });
+  var receita = vendasMes.reduce(function(s,v){ return s + calcTotal(v); }, 0);
+  var custo = vendasMes.reduce(function(s,v){
+    var itens = v.itens || [];
+    if (itens.length > 0) return s + itens.reduce(function(si,it){ return si+(it.custo||0)*(it.qtd||1); },0);
+    if (v.custo && v.custo > 0) return s + (v.custo||0)*(v.qtd||1);
+    return s;
+  }, 0);
+  var despesas = load('despesas').filter(function(d){ return (d.data||'') >= inicioMes; });
+  var totalDesp = despesas.reduce(function(s,d){ return s+(d.valor||0); },0);
+  var lucro = receita - custo - totalDesp;
+  if (lucro < 0) lucro = 0;
+
+  // Preencher sugestões
+  var elGiro = document.getElementById('pl-sugestao-giro');
+  var elPL = document.getElementById('pl-sugestao-prolabore');
+  if (elGiro) elGiro.textContent = fmtMoney(lucro * 0.4);
+  if (elPL) elPL.textContent = fmtMoney(lucro * 0.6);
+
+  // Preencher data e referência padrão
+  var dataEl = document.getElementById('pl-data');
+  var refEl = document.getElementById('pl-ref');
+  if (dataEl) dataEl.value = hoje.toISOString().slice(0,10);
+  if (refEl) {
+    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    refEl.value = meses[hoje.getMonth()] + '/' + hoje.getFullYear();
+  }
+
+  // Preencher valor sugerido
+  var valorEl = document.getElementById('pl-valor');
+  if (valorEl) valorEl.value = (lucro * 0.6).toFixed(2);
+
+  // Renderizar histórico
+  renderHistoricoProLabore();
+
+  document.getElementById('modal-prolabore').style.display = 'flex';
+}
+
+function fecharModalProLabore() {
+  document.getElementById('modal-prolabore').style.display = 'none';
+}
+
+function salvarProLabore() {
+  var data = document.getElementById('pl-data').value;
+  var valor = parseFloat(document.getElementById('pl-valor').value) || 0;
+  var ref = document.getElementById('pl-ref').value.trim();
+  var obs = document.getElementById('pl-obs').value.trim();
+
+  if (!data) { showToast('Informe a data da retirada!', 'error'); return; }
+  if (valor <= 0) { showToast('Informe o valor da retirada!', 'error'); return; }
+  if (!ref) { showToast('Informe a referência (mês/ano)!', 'error'); return; }
+
+  var historico = load('prolabore') || [];
+  var novo = {
+    id: 'PL-' + Date.now(),
+    data: data,
+    valor: valor,
+    referencia: ref,
+    obs: obs,
+    criadoEm: new Date().toISOString()
+  };
+  historico.unshift(novo);
+  save('prolabore', historico);
+
+  // Limpar campos
+  document.getElementById('pl-valor').value = '';
+  document.getElementById('pl-obs').value = '';
+
+  showToast('✅ Retirada de pró-labore registrada!', 'success');
+  renderHistoricoProLabore();
+  renderPainelFinanceiroAdmin();
+}
+
+function excluirProLabore(id) {
+  if (!confirm('Excluir este registro de pró-labore?')) return;
+  var historico = (load('prolabore') || []).filter(function(p){ return p.id !== id; });
+  save('prolabore', historico);
+  renderHistoricoProLabore();
+  showToast('Registro excluído!', 'success');
+}
+
+function renderHistoricoProLabore() {
+  var el = document.getElementById('pl-historico');
+  if (!el) return;
+  var historico = load('prolabore') || [];
+  if (historico.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.4);font-size:12px;padding:12px">Nenhuma retirada registrada ainda.</div>';
+    return;
+  }
+  var totalRetirado = historico.reduce(function(s,p){ return s+(p.valor||0); },0);
+  el.innerHTML = '<div style="border-top:1px solid rgba(255,255,255,.15);padding-top:14px;margin-top:4px">' +
+    '<div style="font-size:12px;font-weight:700;color:#c9a84c;margin-bottom:10px">📋 Histórico de Retiradas — Total: ' + fmtMoney(totalRetirado) + '</div>' +
+    historico.slice(0,10).map(function(p){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px;margin-bottom:6px">' +
+        '<div>' +
+          '<div style="font-size:12px;font-weight:700;color:#34d399">' + fmtMoney(p.valor) + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,.5)">' + p.referencia + ' • ' + (p.data||'').split('-').reverse().join('/') + (p.obs ? ' • ' + p.obs : '') + '</div>' +
+        '</div>' +
+        '<button onclick="excluirProLabore('' + p.id + '')" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:6px;color:#f87171;padding:4px 8px;font-size:10px;cursor:pointer">🗑️</button>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
+// Adicionar 'prolabore' ao sistema de sync
+var _keysOriginalPL = null;
+</script>
 </body>
 </html>
