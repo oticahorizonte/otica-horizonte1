@@ -2099,7 +2099,7 @@ async function zerarVendasOS() {
             } catch(e2) { console.warn('syncFromCloud retry failed:', k); }
           }
         }
-        console.log('☁️ Dados carregados do Firebase:', ok, 'módulos (clientes, receitas, produtos, vendas, OS, agendamentos, orçamentos, estoque, despesas, entradas, usuários, metas, comissão)');
+        console.log('☁️ Dados carregados do Firebase:', ok, 'módulos (clientes, receitas, produtos, vendas, OS, agendamentos, orçamentos, estoque, despesas, entradas, usuários, metas, comissão, pró-labore)');
         // Mesclar fotos da colecao separada (nunca sobrescrita)
         try {
           var fotosMap = await window._fb.loadCollection('fotos_produtos');
@@ -5415,7 +5415,7 @@ const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 var _saveDebounceTimers = {};
 const save = function(k, v) {
   _saveBase(k, v);
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento'];
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore'];
   if (criticos.indexOf(k) === -1) return;
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
@@ -5466,7 +5466,7 @@ async function syncLocalToCloud() {
     // Enviar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
-      'usuarios','metas_vendas','config_comissao'];
+      'usuarios','metas_vendas','config_comissao','prolabore'];
     for (var k of modulosCriticos) {
       try {
         var data = JSON.parse(localStorage.getItem(KEYS[k] || ('otica_'+k)) || '[]');
@@ -5502,7 +5502,7 @@ async function syncFirebaseToLocal() {
     // Baixar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
-      'usuarios','metas_vendas','config_comissao'];
+      'usuarios','metas_vendas','config_comissao','prolabore'];
     for (var k of modulosCriticos) {
       try {
         var chave = KEYS[k] || ('otica_'+k);
