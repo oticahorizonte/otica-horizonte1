@@ -1968,6 +1968,7 @@ async function zerarVendasOS() {
     renderVendas();
     if (typeof renderOS === 'function') renderOS();
     if (typeof renderDashboard === 'function') renderDashboard();
+    carregarCustosPrecFirebase();
   });
 }
 </script>
@@ -9688,6 +9689,120 @@ function limparPrecificacao() {
   calcPrecificacao();
 }
 
+
+// ===== CUSTOS MENSAIS PARA PRECIFICAÇÃO =====
+var _custosPrec = [];
+
+function abaPrec(aba) {
+  document.getElementById('prec-tab-calc').style.display = aba==='calc' ? 'block' : 'none';
+  document.getElementById('prec-tab-custos').style.display = aba==='custos' ? 'block' : 'none';
+  document.getElementById('prec-aba-calc').style.background = aba==='calc' ? '#0d2b4e' : 'transparent';
+  document.getElementById('prec-aba-calc').style.color = aba==='calc' ? '#e8c96a' : '#64748b';
+  document.getElementById('prec-aba-custos').style.background = aba==='custos' ? '#0d2b4e' : 'transparent';
+  document.getElementById('prec-aba-custos').style.color = aba==='custos' ? '#e8c96a' : '#64748b';
+  if (aba==='custos') { carregarCustosPrec(); }
+}
+
+function carregarCustosPrec() {
+  // Carregar do localStorage primeiro, depois Firebase
+  var saved = localStorage.getItem('otica_custos_precificacao');
+  if (saved) {
+    try {
+      var data = JSON.parse(saved);
+      _custosPrec = data.custos || [];
+      var qtdEl = document.getElementById('prec-qtd-produtos');
+      if (qtdEl) qtdEl.value = data.qtdProdutos || '';
+    } catch(e) {}
+  }
+  renderCustosPrec();
+  calcRateio();
+}
+
+function renderCustosPrec() {
+  var lista = document.getElementById('prec-lista-custos');
+  if (!lista) return;
+  if (_custosPrec.length === 0) {
+    lista.innerHTML = '<div style="color:#94a3b8;font-size:12px;text-align:center;padding:12px">Nenhum custo cadastrado. Adicione seus custos mensais acima.</div>';
+    return;
+  }
+  lista.innerHTML = _custosPrec.map(function(c, i) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f8fafc;border-radius:8px;margin-bottom:6px">' +
+      '<span style="flex:1;font-size:13px;font-weight:600;color:#0d2b4e">' + c.nome + '</span>' +
+      '<span style="font-size:13px;font-weight:700;color:#16a34a">' + fmtMoney(c.valor) + '</span>' +
+      '<button onclick="removerCustoPrec(' + i + ')" style="background:#fee2e2;border:none;color:#dc2626;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+function adicionarCustoPrec() {
+  var nome = (document.getElementById('prec-novo-nome').value||'').trim();
+  var valor = parseFloat(document.getElementById('prec-novo-valor').value)||0;
+  if (!nome) { showToast('Informe o nome do custo', 'warning'); return; }
+  if (valor <= 0) { showToast('Informe um valor válido', 'warning'); return; }
+  _custosPrec.push({nome: nome, valor: valor});
+  document.getElementById('prec-novo-nome').value = '';
+  document.getElementById('prec-novo-valor').value = '';
+  renderCustosPrec();
+  calcRateio();
+}
+
+function removerCustoPrec(idx) {
+  _custosPrec.splice(idx, 1);
+  renderCustosPrec();
+  calcRateio();
+}
+
+function calcRateio() {
+  var totalMensal = _custosPrec.reduce(function(s,c){ return s+c.valor; }, 0);
+  var qtd = parseFloat(document.getElementById('prec-qtd-produtos')?.value)||0;
+  var custoPorProd = qtd > 0 ? totalMensal/qtd : 0;
+  var tmEl = document.getElementById('prec-total-mensal');
+  var qdEl = document.getElementById('prec-qtd-display');
+  var cpEl = document.getElementById('prec-custo-por-prod');
+  if (tmEl) tmEl.textContent = fmtMoney(totalMensal);
+  if (qdEl) qdEl.textContent = qtd || '0';
+  if (cpEl) cpEl.textContent = fmtMoney(custoPorProd);
+  window._precCustoPorProd = custoPorProd;
+}
+
+function aplicarRateio() {
+  var custoPorProd = window._precCustoPorProd || 0;
+  if (custoPorProd <= 0) { showToast('Configure seus custos e quantidade de produtos primeiro!', 'warning'); return; }
+  var varEl = document.getElementById('prec-variaveis');
+  if (varEl) {
+    varEl.value = custoPorProd.toFixed(2);
+    showToast('✅ Custo por produto R$ ' + fmtMoney(custoPorProd) + ' aplicado!', 'success');
+    abaPrec('calc');
+    calcPrecificacao();
+  }
+}
+
+async function salvarCustosPrec() {
+  var qtd = parseFloat(document.getElementById('prec-qtd-produtos')?.value)||0;
+  var data = {custos: _custosPrec, qtdProdutos: qtd};
+  // Salvar localmente
+  localStorage.setItem('otica_custos_precificacao', JSON.stringify(data));
+  // Salvar no Firebase
+  if (window._firebaseReady && window._fb) {
+    await window._fb.saveCollection('custos_precificacao', data);
+    showToast('✅ Custos salvos na nuvem!', 'success');
+  } else {
+    showToast('✅ Custos salvos localmente!', 'success');
+  }
+}
+
+// Carregar custos do Firebase no login
+function carregarCustosPrecFirebase() {
+  if (window._fb) {
+    window._fb.loadCollection('custos_precificacao').then(function(data) {
+      if (data && data.custos) {
+        localStorage.setItem('otica_custos_precificacao', JSON.stringify(data));
+        console.log('✅ Custos de precificação carregados do Firebase');
+      }
+    }).catch(function(){});
+  }
+}
+
 function initDark() {
   if (localStorage.getItem('otica_dark') === '1') {
     document.body.classList.add('dark');
@@ -15509,7 +15624,13 @@ document.addEventListener('DOMContentLoaded', function() {
   <h2>💰 Calculadora de Precificação</h2>
   <button class="modal-close" onclick="closeModal('modal-precificacao')">✕</button>
 </div>
-<div class="modal-body" style="padding:20px">
+<!-- Abas -->
+<div style="display:flex;border-bottom:2px solid #e2e8f0;background:#f8fafc">
+  <button id="prec-aba-calc" onclick="abaPrec('calc')" style="flex:1;padding:10px;background:#0d2b4e;color:#e8c96a;border:none;font-size:13px;font-weight:700;cursor:pointer">📊 Calcular</button>
+  <button id="prec-aba-custos" onclick="abaPrec('custos')" style="flex:1;padding:10px;background:transparent;color:#64748b;border:none;font-size:13px;font-weight:600;cursor:pointer">⚙️ Meus Custos</button>
+</div>
+<!-- ABA CALCULAR -->
+<div id="prec-tab-calc" class="modal-body" style="padding:20px">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
     <div class="form-group">
       <label>📦 Custo do Produto (R$)</label>
@@ -15582,6 +15703,53 @@ document.addEventListener('DOMContentLoaded', function() {
     <button onclick="limparPrecificacao()" style="padding:10px 16px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:13px;cursor:pointer">🔄 Limpar</button>
   </div>
 </div>
+
+<!-- ABA MEUS CUSTOS -->
+<div id="prec-tab-custos" class="modal-body" style="padding:20px;display:none">
+  <!-- Resumo do rateio -->
+  <div id="prec-rateio-resumo" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;padding:14px;margin-bottom:16px">
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:8px">📊 Rateio por Produto</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:8px">
+        <div style="font-size:9px;color:rgba(255,255,255,.6)">Total Mensal</div>
+        <div id="prec-total-mensal" style="font-size:15px;font-weight:800;color:#e8c96a">R$ 0,00</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:8px">
+        <div style="font-size:9px;color:rgba(255,255,255,.6)">Produtos/Mês</div>
+        <div id="prec-qtd-display" style="font-size:15px;font-weight:800;color:#e8c96a">0</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:8px">
+        <div style="font-size:9px;color:rgba(255,255,255,.6)">Custo/Produto</div>
+        <div id="prec-custo-por-prod" style="font-size:15px;font-weight:800;color:#34d399">R$ 0,00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quantidade média de produtos -->
+  <div class="form-group" style="margin-bottom:16px">
+    <label>📦 Quantidade média de produtos vendidos por mês</label>
+    <input type="number" id="prec-qtd-produtos" placeholder="ex: 50" min="1" oninput="calcRateio()" style="font-size:15px;font-weight:700"/>
+    <small style="color:#64748b;font-size:11px">Usado para calcular o custo fixo por produto</small>
+  </div>
+
+  <!-- Lista de custos -->
+  <div style="font-size:13px;font-weight:700;color:#0d2b4e;margin-bottom:8px">💼 Custos Mensais</div>
+  <div id="prec-lista-custos" style="margin-bottom:12px"></div>
+
+  <!-- Adicionar custo -->
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <input type="text" id="prec-novo-nome" placeholder="Nome do custo (ex: Aluguel)" style="flex:2;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px"/>
+    <input type="number" id="prec-novo-valor" placeholder="R$" step="0.01" min="0" style="flex:1;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px"/>
+    <button onclick="adicionarCustoPrec()" style="padding:8px 14px;background:#0d2b4e;color:#e8c96a;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">+ Add</button>
+  </div>
+
+  <!-- Botões -->
+  <div style="display:flex;gap:10px">
+    <button onclick="salvarCustosPrec()" style="flex:1;padding:10px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">☁️ Salvar na Nuvem</button>
+    <button onclick="aplicarRateio()" style="flex:1;padding:10px;background:linear-gradient(135deg,#0d2b4e,#1a4a7a);color:#e8c96a;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">✅ Aplicar na Calculadora</button>
+  </div>
+</div>
+
 </div>
 </div>
 
