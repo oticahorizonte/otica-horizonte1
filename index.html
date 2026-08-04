@@ -16028,18 +16028,19 @@ function renderHistoricoProLabore() {
     return;
   }
   var totalRetirado = historico.reduce(function(s,p){ return s+(p.valor||0); },0);
-  el.innerHTML = '<div style="border-top:1px solid rgba(255,255,255,.15);padding-top:14px;margin-top:4px">' +
-    '<div style="font-size:12px;font-weight:700;color:#c9a84c;margin-bottom:10px">📋 Histórico de Retiradas — Total: ' + fmtMoney(totalRetirado) + '</div>' +
-    historico.slice(0,10).map(function(p){
-      return '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px;margin-bottom:6px">' +
-        '<div>' +
-          '<div style="font-size:12px;font-weight:700;color:#34d399">' + fmtMoney(p.valor) + '</div>' +
-          '<div style="font-size:10px;color:rgba(255,255,255,.5)">' + p.referencia + ' • ' + (p.data||'').split('-').reverse().join('/') + (p.obs ? ' • ' + p.obs : '') + '</div>' +
-        '</div>' +
-        '<button onclick="excluirProLabore('' + p.id + '')" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:6px;color:#f87171;padding:4px 8px;font-size:10px;cursor:pointer">🗑️</button>' +
-      '</div>';
-    }).join('') +
-  '</div>';
+  var html = '<div style="border-top:1px solid rgba(255,255,255,.15);padding-top:14px;margin-top:4px">';
+  html += '<div style="font-size:12px;font-weight:700;color:#c9a84c;margin-bottom:10px">📋 Histórico de Retiradas — Total: ' + fmtMoney(totalRetirado) + '</div>';
+  historico.slice(0,10).forEach(function(p){
+    var dataFmt = (p.data||'').split('-').reverse().join('/');
+    var obsStr = p.obs ? ' • ' + p.obs : '';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px;margin-bottom:6px">';
+    html += '<div><div style="font-size:12px;font-weight:700;color:#34d399">' + fmtMoney(p.valor) + '</div>';
+    html += '<div style="font-size:10px;color:rgba(255,255,255,.5)">' + p.referencia + ' • ' + dataFmt + obsStr + '</div></div>';
+    html += '<button data-plid="' + p.id + '" onclick="excluirProLabore(this.dataset.plid)" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:6px;color:#f87171;padding:4px 8px;font-size:10px;cursor:pointer">🗑️</button>';
+    html += '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 // Adicionar 'prolabore' ao sistema de sync
