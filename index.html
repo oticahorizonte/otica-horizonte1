@@ -2084,9 +2084,25 @@ async function zerarVendasOS() {
                 }
                 continue;
               }
-              // Nota: proteção cloudLen < localLen removida intencionalmente
-              // Motivo: quando usuário exclui dados, Firebase pode ter mais registros
-              // O Firebase é a fonte de verdade após qualquer save()
+              // MESCLAGEM INTELIGENTE: nunca perder dados locais não sincronizados
+              var modulosMesclarAuto = ['vendas','os','composicoes','clientes','receitas','agendamentos','despesas','entradas','prolabore'];
+              var localRaw2 = localStorage.getItem(keys[k]);
+              var localData2 = null;
+              if (localRaw2) { try { localData2 = JSON.parse(localRaw2); } catch(e){} }
+
+              if (modulosMesclarAuto.indexOf(k) !== -1 && Array.isArray(data) && Array.isArray(localData2) && localData2.length > 0) {
+                var cloudIds2 = new Set(data.map(function(x){ return x.id || x.cod || JSON.stringify(x); }));
+                var apenasLocal2 = localData2.filter(function(x){
+                  var xid = x.id || x.cod || JSON.stringify(x);
+                  return !cloudIds2.has(xid);
+                });
+                if (apenasLocal2.length > 0) {
+                  console.log('🔀 Auto-sync: mesclando', apenasLocal2.length, 'registros locais em', k);
+                  data = data.concat(apenasLocal2);
+                  // Subir versão mesclada para a nuvem
+                  if (window._fb) window._fb.saveCollection(k, data).catch(function(){});
+                }
+              }
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
             }
@@ -5503,6 +5519,9 @@ async function syncFirebaseToLocal() {
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
       'usuarios','metas_vendas','config_comissao','prolabore'];
+    // Módulos que precisam de MESCLAGEM (nunca perder dados locais não sincronizados)
+    var modulosMesclar = ['vendas','os','composicoes','clientes','receitas','agendamentos','despesas','entradas','prolabore'];
+
     for (var k of modulosCriticos) {
       try {
         var chave = KEYS[k] || ('otica_'+k);
@@ -5511,16 +5530,37 @@ async function syncFirebaseToLocal() {
           var cloudLen = Array.isArray(data) ? data.length : Object.keys(data).length;
           var localRaw = localStorage.getItem(chave);
           var localLen = 0;
-          if (localRaw) { try { var ld=JSON.parse(localRaw); localLen=Array.isArray(ld)?ld.length:Object.keys(ld).length; } catch(e){} }
-          // Só proteger se Firebase está vazio E local tem dados
+          var localData = null;
+          if (localRaw) {
+            try { localData = JSON.parse(localRaw); localLen = Array.isArray(localData) ? localData.length : Object.keys(localData).length; } catch(e){}
+          }
+
+          // Proteção 1: Firebase vazio E local tem dados → subir local para nuvem
           if (cloudLen === 0 && localLen > 0) {
-            console.log('⚠️ Firebase vazio para', k, '- mantendo local');
-            if (window._fb) window._fb.saveCollection(k, JSON.parse(localRaw)).catch(function(){});
+            console.log('⚠️ Firebase vazio para', k, '- mantendo local e subindo');
+            if (window._fb) window._fb.saveCollection(k, localData).catch(function(){});
             continue;
           }
+
+          // Proteção 2: Para módulos críticos com arrays — MESCLAR por ID
+          // Nunca perder registros locais que ainda não foram para a nuvem
+          if (modulosMesclar.indexOf(k) !== -1 && Array.isArray(data) && Array.isArray(localData) && localData.length > 0) {
+            var cloudIds = new Set(data.map(function(x){ return x.id || x.cod || JSON.stringify(x); }));
+            var apenasLocal = localData.filter(function(x){
+              var xid = x.id || x.cod || JSON.stringify(x);
+              return !cloudIds.has(xid);
+            });
+            if (apenasLocal.length > 0) {
+              console.log('🔀 Mesclando', apenasLocal.length, 'registros locais não sincronizados em', k);
+              data = data.concat(apenasLocal);
+              // Subir versão mesclada para a nuvem imediatamente
+              if (window._fb) window._fb.saveCollection(k, data).catch(function(){});
+            }
+          }
+
           // Para produtos: preservar fotos Cloudinary
           if (k === 'produtos' && Array.isArray(data)) {
-            var localProds = JSON.parse(localRaw || '[]');
+            var localProds = localData || [];
             data = data.map(function(p) {
               var lp = localProds.find(function(x){ return x.cod===p.cod; });
               if (lp && lp.foto && lp.foto.startsWith('https://') && (!p.foto||!p.foto.startsWith('https://')))
@@ -5528,6 +5568,7 @@ async function syncFirebaseToLocal() {
               return p;
             });
           }
+
           localStorage.setItem(chave, JSON.stringify(data));
           ok++;
         }
