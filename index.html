@@ -7264,7 +7264,10 @@ function renderClientes() {
     if (adminCli) {
       theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th class="hide-mobile">Total</th><th>Status</th><th>Ações</th>';
     } else {
-      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações<\\n      var tbCliEl2 = document.getElementById('tb-clientes'); if(tbCliEl2) tbCliEl2.setAttribute('data-vendedor','1');/th>';
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class=\"hide-mobile\">CPF</th><th>Telefone</th><th class=\"hide-mobile\">Cidade</th><th>Status</th><th>Ações</th>';
+      // Marcar tabela como vendedor para CSS específico
+      var tbCliEl = document.getElementById('tb-clientes');
+      if(tbCliEl) tbCliEl.setAttribute('data-vendedor','1');
     }
   }
 
