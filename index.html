@@ -7256,32 +7256,6 @@ function aplicarControleAcesso() {
 }
 
 function renderClientes() {
-  var _userCli = loadUser();
-  var adminCli = _userCli && (_userCli.nivel||'').toLowerCase() === 'admin';
-
-  // Abordagem robusta: encontrar tabela pelo tbody e garantir thead
-  var tbCli = document.getElementById('tb-clientes');
-  if (tbCli) {
-    var tbl = tbCli.closest('table') || tbCli.parentElement;
-    if (tbl && tbl.tagName === 'TBODY') tbl = tbl.parentElement;
-    if (tbl) {
-      // Remover thead existente e recriar
-      var oldThead = tbl.querySelector('thead');
-      if (oldThead) oldThead.remove();
-      var newThead = document.createElement('thead');
-      var newTr = document.createElement('tr');
-      if (adminCli) {
-        newTr.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th class="hide-mobile">Total</th><th>Status</th><th>Ações</th>';
-        tbl.removeAttribute('data-vendedor');
-      } else {
-        newTr.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th>';
-        tbl.setAttribute('data-vendedor','1');
-      }
-      newThead.appendChild(newTr);
-      tbl.insertBefore(newThead, tbCli);
-    }
-  }
-
   if(!document.getElementById('tb-clientes')) return;
   const q = (document.getElementById('search-clientes')||{}).value||'';
   const data = load('clientes').filter(c =>
