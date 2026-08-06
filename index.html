@@ -2993,9 +2993,24 @@ function instalarApp() {
 <input id="search-clientes" oninput="renderClientes()" placeholder="🔍 Buscar por nome, CPF ou cidade..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
-<table style="width:100%"><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th class="hide-mobile">Total</th><th>Status</th><th>Ações</th></tr></thead>
-<tbody id="tb-clientes"></tbody></table></div>
+<div class="card-body" style="padding:0;overflow-x:auto">
+<table id="tb-clientes-table" style="width:100%;border-collapse:collapse">
+<thead id="tb-clientes-thead">
+<tr>
+<th>ID</th>
+<th>Nome</th>
+<th>CPF</th>
+<th>Telefone</th>
+<th>Cidade</th>
+<th>Última Compra</th>
+<th>Total</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="tb-clientes"></tbody>
+</table>
+</div>
 </div>
 </div>
 </section>
