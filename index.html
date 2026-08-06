@@ -2909,7 +2909,7 @@ function instalarApp() {
 <option value="semana">Últimos 7 dias</option>
 <option selected="" value="mes">Este Mês</option>
 <option value="custom">Personalizado</option>
-</select>
+<option value=\"trimestre\">Trimestre</option>\n<option value=\"ano\">Este Ano</option>\n<option value=\"tudo\">Tudo</option>\n</select>
 <div id="dash-fin-custom" style="display:none;gap:6px;align-items:center">
 <input id="dash-fin-de" onchange="renderPainelFinanceiroAdmin()" style="background:#1a3a5c;border:1px solid #2d6a9f;color:#fff;border-radius:6px;padding:4px 8px;font-size:12px;outline:none" type="date"/>
 <span style="color:#94a3b8;font-size:12px">até</span>
@@ -6780,7 +6780,8 @@ function renderDashboard() {
   var vendasMes = vendas.filter(v=>(v.data||'').startsWith(mesAtual) && v.status !== 'Pendente' && v.status !== 'Cancelado');
   var receitaMes = calcReceitaGrupos(vendasMes);
   var osMes = os.filter(o=>(o.abertura||'').startsWith(mesAtual));
-  var ticketMedio = vendasMes.length ? receitaMes/vendasMes.length : 0;
+  var gruposMes = new Set(vendasMes.map(function(v){ return v.grupoVenda || v.id; }));
+  var ticketMedio = gruposMes.size ? receitaMes/gruposMes.size : 0;
 
   // Calcular saldo do dia
   var hojeStr2 = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
@@ -6876,14 +6877,21 @@ function getFiltroVendasAdmin(filtro) {
   // Apenas vendas pagas (não pendentes, não canceladas)
   var vendas = load('vendas').filter(function(v){ return v.status !== 'Pendente' && v.status !== 'Cancelado'; });
   if (filtro === 'hoje') {
-    var d = hoje.toISOString().slice(0,10);
+    var d = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
     return vendas.filter(v=>(v.data||'').startsWith(d));
   } else if (filtro === 'semana') {
     var ini = new Date(hoje); ini.setDate(hoje.getDate()-6);
     return vendas.filter(v=>{ var d=new Date(v.data||''); return d>=ini && d<=hoje; });
   } else if (filtro === 'mes') {
-    var m = hoje.toISOString().slice(0,7);
+    var m = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
     return vendas.filter(v=>(v.data||'').startsWith(m));
+  } else if (filtro === 'trimestre') {
+    var trimIni = new Date(hoje.getFullYear(), Math.floor(hoje.getMonth()/3)*3, 1);
+    var trimIniStr = trimIni.getFullYear()+'-'+String(trimIni.getMonth()+1).padStart(2,'0')+'-01';
+    return vendas.filter(v=>(v.data||'')>=trimIniStr);
+  } else if (filtro === 'ano') {
+    var anoStr = hoje.getFullYear()+'-';
+    return vendas.filter(v=>(v.data||'').startsWith(anoStr));
   } else if (filtro === 'custom') {
     var de = (document.getElementById('dash-fin-de')||{}).value||'';
     var ate = (document.getElementById('dash-fin-ate')||{}).value||'';
@@ -11448,11 +11456,17 @@ function renderGraficos() {
       </div>`).join('');
   }
 
-  // Top produtos - incluindo vendas compostas
+  // Top produtos — por quantidade, incluindo itens do óculos completo
   const prodCount = {};
   vendas.forEach(v=>{
     if (v.itens && v.itens.length > 0) {
       v.itens.forEach(function(it){ if(it.cod) prodCount[it.cod]=(prodCount[it.cod]||0)+(it.qtd||1); });
+    } else if (v.tipo==='oculos-completo' && v.detalhes && v.detalhes.length > 0) {
+      v.detalhes.forEach(function(d){
+        if (d.cod && d.cod !== 'OCULOS-COMPLETO') {
+          prodCount[d.cod] = (prodCount[d.cod]||0) + (d.qtd||1);
+        }
+      });
     } else if(v.produto&&v.produto!=='COMPOSICAO'&&v.produto!=='OCULOS-COMPLETO'&&v.produto!=='SERVICO') {
       prodCount[v.produto]=(prodCount[v.produto]||0)+(v.qtd||1);
     }
