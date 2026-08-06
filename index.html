@@ -7032,7 +7032,7 @@ function renderPainelFinanceiroAdmin() {
       <div style="font-size:26px;font-weight:800;color:white">${fmtMoney(lucroLiquido)}</div>
       <div style="font-size:11px;color:rgba(255,255,255,.7)">Margem: ${margem.toFixed(1)}% | Receita - Custo - Comissões - Despesas</div>
     </div>
-    <div style="background:linear-gradient(135deg,#1a4a7a,#1e6bb8);border-radius:12px;padding:14px;text-align:center;border:2px solid #c9a84c">
+    <div style="grid-column:span 2;display:flex;gap:10px"><div style=\"flex:1;background:linear-gradient(135deg,#1a4a7a,#1e6bb8);border-radius:12px;padding:14px;text-align:center;border:2px solid #c9a84c">
       <div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🏦 Capital de Giro (40%)</div>
       <div style="font-size:22px;font-weight:800;color:#c9a84c">${fmtMoney(lucroLiquido>0?lucroLiquido*0.4:0)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.6)">Reserva para a ótica</div>
@@ -7041,7 +7041,7 @@ function renderPainelFinanceiroAdmin() {
       <div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💼 Pró-labore (60%)</div>
       <div style="font-size:22px;font-weight:800;color:#34d399">${fmtMoney(lucroLiquido>0?lucroLiquido*0.6:0)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.6)">Seu pagamento como dono</div>
-    </div>
+    </div></div>
   `;
 
   // DRE Simplificado
