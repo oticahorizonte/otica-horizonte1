@@ -7080,7 +7080,7 @@ function checkEstoqueAlert() {
 // ── CONTROLE DE ACESSO ────────────────────────────────────────────────────
 function isAdmin() {
   var u = loadUser();
-  return u && u.nivel === 'Admin';
+  return u && (u.nivel === 'Admin' || u.nivel === 'admin' || (u.nivel||'').toLowerCase() === 'admin');
 }
 
 function isVendedor() {
@@ -7258,7 +7258,7 @@ function aplicarControleAcesso() {
 function renderClientes() {
   // Atualizar thead conforme nível
   var _userCli = loadUser();
-  var adminCli = _userCli && _userCli.nivel === 'Admin';
+  var adminCli = _userCli && (_userCli.nivel === 'Admin' || _userCli.nivel === 'admin' || (_userCli.nivel||'').toLowerCase() === 'admin');
   var theadCli = document.querySelector('#tb-clientes thead tr');
   if (theadCli) {
     if (adminCli) {
