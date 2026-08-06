@@ -13323,11 +13323,13 @@ function confirmarOpcaoOculos(completo) {
   if (completo) {
     var grupoId = 'OC-' + Date.now();
     _vendaGrupoAtual = grupoId;
-    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:1, tipo:'oculos-completo', grupo:grupoId, isArmacao:true});
+    // NOVA SISTEMÁTICA: armação entra com preco:0 (insumo — só baixa estoque)
+    // O preço do óculos completo será definido pela LENTE
+    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:0, custo:p.custo||0, qtd:1, tipo:'oculos-completo', grupo:grupoId, isArmacao:true, insumo:true});
     renderVendaItens();
     calcVendaTotais();
     salvarRascunhoVendaUnif();
-    showToast('🕶️ Armação adicionada! Agora busque a lente.', 'success');
+    showToast('🕶️ Armação selecionada! Agora busque a lente (preço será da lente).', 'success');
   } else {
     _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:1, tipo:'normal', grupo:null});
     renderVendaItens();
@@ -13429,7 +13431,7 @@ function renderVendaItens() {
   if (!tbody) return;
 
   if (_vendaItens.length === 0) {
-    tbody.innerHTML = '<tr id="venda-unif-empty"><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div><div style="font-size:12px;margin-top:4px;color:#cbd5e1">Armações, Lentes, Solar, Acessórios, Serviços</div></td></tr>';
+    tbody.innerHTML = '<tr id=\"venda-unif-empty\"><td colspan=\"7\" style=\"padding:50px;text-align:center;color:#94a3b8\"><div style=\"font-size:40px;margin-bottom:10px\">🛒</div><div style=\"font-size:14px;font-weight:600\">Busque um produto acima para adicionar</div><div style=\"font-size:12px;margin-top:4px;color:#cbd5e1\">Armações, Lentes, Solar, Acessórios, Serviços</div></td></tr>';
     return;
   }
 
@@ -13448,20 +13450,32 @@ function renderVendaItens() {
     if (isOculos && item.grupo) {
       if (!gruposVistos[item.grupo]) {
         gruposVistos[item.grupo] = 1;
-        grupoLabel = '<div style="font-size:9px;color:#3b82f6;font-weight:700;margin-bottom:2px">🕶️ ÓCULOS COMPLETO</div>';
+        grupoLabel = '<div style=\"font-size:9px;color:#3b82f6;font-weight:700;margin-bottom:2px\">🕶️ ÓCULOS COMPLETO</div>';
       }
     }
 
     var indent = isOculos ? 'padding-left:20px' : '';
 
-    return '<tr style="background:'+bg+';border-bottom:1px solid #f1f5f9;'+border+'">'
-      + '<td style="padding:8px 12px;color:#64748b;font-size:12px">'+(idx+1)+'</td>'
-      + '<td style="padding:8px 12px;font-size:11px;color:#64748b">'+item.cod+'</td>'
-      + '<td style="padding:8px 12px;'+indent+'">'+grupoLabel+'<div style="font-weight:600;color:#0d2b4e;font-size:13px">'+icone+' '+item.nome+'</div></td>'
-      + '<td style="padding:8px 12px;text-align:center"><input type="number" value="'+item.qtd+'" min="1" onchange="atualizarQtdVendaUnif('+idx+',this.value)" style="width:50px;padding:4px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;font-size:13px;font-weight:700"/></td>'
-      + '<td style="padding:8px 12px;text-align:right;font-size:13px;font-weight:600;color:#0d2b4e">R$ '+item.preco.toFixed(2).replace('.',',')+'</td>'
-      + '<td style="padding:8px 12px;text-align:right;font-size:14px;font-weight:700;color:#16a34a">R$ '+subtotal.toFixed(2).replace('.',',')+'</td>'
-      + '<td style="padding:8px 12px;text-align:center"><button onclick="removerItemVendaUnif('+idx+')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px">✕</button></td>'
+    // Nova sistemática: armação insumo aparece sem valor
+    var precoExibir, subtotalExibir, nomeExibir;
+    if (item.insumo) {
+      precoExibir = '<span style=\"color:#94a3b8;font-size:11px;font-style:italic\">insumo</span>';
+      subtotalExibir = '<span style=\"color:#94a3b8;font-size:11px\">—</span>';
+      nomeExibir = icone + ' ' + item.nome + '<span style=\"font-size:9px;color:#94a3b8;margin-left:4px\">(baixa estoque)</span>';
+    } else {
+      precoExibir = 'R$ ' + item.preco.toFixed(2).replace('.',',');
+      subtotalExibir = 'R$ ' + subtotal.toFixed(2).replace('.',',');
+      nomeExibir = icone + ' ' + item.nome;
+    }
+
+    return '<tr style=\"background:'+bg+';border-bottom:1px solid #f1f5f9;'+border+'\">'
+      + '<td style=\"padding:8px 12px;color:#64748b;font-size:12px\">'+(idx+1)+'</td>'
+      + '<td style=\"padding:8px 12px;font-size:11px;color:#64748b\">'+item.cod+'</td>'
+      + '<td style=\"padding:8px 12px;'+indent+'\">'+grupoLabel+'<div style=\"font-weight:600;color:#0d2b4e;font-size:13px\">'+nomeExibir+'</div></td>'
+      + '<td style=\"padding:8px 12px;text-align:center\"><input type=\"number\" value=\"'+item.qtd+'\" min=\"1\" onchange=\"atualizarQtdVendaUnif('+idx+',this.value)\" style=\"width:50px;padding:4px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;font-size:13px;font-weight:700\"/></td>'
+      + '<td style=\"padding:8px 12px;text-align:right;font-size:13px;font-weight:600;color:#0d2b4e\">'+precoExibir+'</td>'
+      + '<td style=\"padding:8px 12px;text-align:right;font-size:14px;font-weight:700;color:#16a34a\">'+subtotalExibir+'</td>'
+      + '<td style=\"padding:8px 12px;text-align:center\"><button onclick=\"removerItemVendaUnif('+idx+')\" style=\"background:#fee2e2;color:#dc2626;border:none;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px\">✕</button></td>'
       + '</tr>';
   }).join('');
 }
