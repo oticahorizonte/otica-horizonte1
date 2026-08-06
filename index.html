@@ -2501,14 +2501,7 @@ function instalarApp() {
     }
     
     /* Clientes — ocultar CPF(3), Cidade(5), Última Compra(6) */
-    #tb-clientes th:nth-child(3),
-    #tb-clientes td:nth-child(3),
-    #tb-clientes th:nth-child(5),
-    #tb-clientes td:nth-child(5),
-    #tb-clientes th:nth-child(6),
-    #tb-clientes td:nth-child(6) {
-      display: none !important;
-    }
+    
     
     /* OS — ocultar Técnico/Lab(5) */
     #tb-os th:nth-child(5),
@@ -2553,10 +2546,7 @@ function instalarApp() {
   #tb-produtos-table > tbody > tr > td:nth-child(4),
   #tb-produtos-table > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; border:none!important; }
   /* Clientes: ocultar CPF(3) e Cidade(5) — manter ID, Nome, Telefone, Status, Ações */
-  #tb-clientes > thead > tr > th:nth-child(3),
-  #tb-clientes > thead > tr > th:nth-child(5),
-  #tb-clientes > tbody > tr > td:nth-child(3),
-  #tb-clientes > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; border:none!important; }
+  
   /* OS vendedor: ocultar Valor(6) para alinhar com thead de 7 colunas */
   #tb-os > thead > tr > th:nth-child(6),
   #tb-os > tbody > tr > td:nth-child(6) { display:none!important; width:0!important; padding:0!important; }
@@ -2573,12 +2563,7 @@ function instalarApp() {
     /* Tabelas com colunas ocultas por nth-child NÃO devem ter scroll horizontal */
     #tb-receitas,
     #tb-produtos-table,
-    #tb-clientes,
-    #tb-os,
-    #tb-vendas,
-    #tb-agendamentos {
-      overflow-x: visible !important;
-    }
+    
     /* O container dessas tabelas também não deve ter scroll */
     #tb-receitas,
     #tb-produtos-table {
@@ -7277,9 +7262,9 @@ function renderClientes() {
   var theadCli = document.querySelector('#tb-clientes thead tr');
   if (theadCli) {
     if (adminCli) {
-      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th>Total</th><th>Status</th><th>Ações</th>';
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th class="hide-mobile">Última Compra</th><th class=\"hide-mobile\">Total</th><th>Status</th><th>Ações</th>';
     } else {
-      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th>';
+      theadCli.innerHTML = '<th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações<\\n      var tbCliEl2 = document.getElementById('tb-clientes'); if(tbCliEl2) tbCliEl2.setAttribute('data-vendedor','1');/th>';
     }
   }
 
@@ -15968,6 +15953,11 @@ document.addEventListener('DOMContentLoaded', function() {
   #tb-agend-table > tbody > tr > td:nth-child(6),
   #tb-agend-table > tbody > tr > td:nth-child(7) { display:none!important; width:0!important; padding:0!important; }
   table { min-width:0!important; }
+  /* Clientes vendedor — ocultar apenas CPF e Cidade, manter Status */
+  #tb-clientes[data-vendedor] > thead > tr > th:nth-child(3),
+  #tb-clientes[data-vendedor] > thead > tr > th:nth-child(5),
+  #tb-clientes[data-vendedor] > tbody > tr > td:nth-child(3),
+  #tb-clientes[data-vendedor] > tbody > tr > td:nth-child(5) { display:none!important; width:0!important; padding:0!important; }
   /* Agendamentos — ocultar Profissional(6) e Observações(7) */
   #tb-agend-table > thead > tr > th:nth-child(6),
   #tb-agend-table > thead > tr > th:nth-child(7),
