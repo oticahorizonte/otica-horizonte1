@@ -7285,7 +7285,7 @@ function renderClientes() {
         '<td>' + (c.tel||'-') + '</td>' +
         '<td class="hide-mobile">' + (c.cidade||'-') + (c.bairro?' \u2014 '+c.bairro:'') + '</td>' +
         '<td class="hide-mobile">' + fmtDate(c.ultimaCompra) + '</td>' +
-        '<td class="fw-bold text-success">' + fmtMoney(c.totalGasto) + '</td>' +
+        '<td class="fw-bold text-success hide-mobile">' + fmtMoney(c.totalGasto) + '</td>' +
         '<td>' + statusBadge(c.status) + '</td>' +
         '<td><div class="flex gap-2">' +
           '<button class="btn btn-sm btn-info" onclick="verHistorico(' + c.id + ')" style="background:#0ea5e9;color:white" data-tip="Ver hist\u00f3rico">\ud83d\udd0d</button>' +
