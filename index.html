@@ -4371,29 +4371,7 @@ function instalarApp() {
 
 
 
-    <!-- Painel Interno (Admin) com toggle -->
-    <div id="venda-painel-interno-wrap" style="border-bottom:1px solid rgba(255,255,255,.1);display:none">
-      <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="togglePainelInternoVenda()">
-        <span style="font-size:10px;font-weight:700;color:#e8c96a;text-transform:uppercase">📊 Painel Interno</span>
-        <span id="venda-painel-toggle-icon" style="color:#e8c96a;font-size:12px">▶</span>
-      </div>
-      <div id="venda-painel-interno-body" style="padding:0 14px 12px;display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
-          <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px">
-            <div style="color:rgba(255,255,255,.6)">Custo Total</div>
-            <div id="venda-pi-custo" style="color:#fbbf24;font-weight:700;font-size:14px">R$ 0,00</div>
-          </div>
-          <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px">
-            <div style="color:rgba(255,255,255,.6)">Margem</div>
-            <div id="venda-pi-margem" style="color:#34d399;font-weight:700;font-size:14px">0%</div>
-          </div>
-          <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:8px;grid-column:span 2">
-            <div style="color:rgba(255,255,255,.6)">Lucro Estimado</div>
-            <div id="venda-pi-lucro" style="color:#34d399;font-weight:700;font-size:16px">R$ 0,00</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Totais -->
     <div style="padding:14px;flex:1">
@@ -11173,26 +11151,39 @@ function imprimirRecibo(id) {
   setEl('rec-parcelas', (v.parcelas||1) > 1 ? v.parcelas + 'x' : 'À vista');
   setEl('rec-rodape-data', now);
 
-  // Tabela de itens
+  // Tabela de itens — nova sistemática: óculos completo em linha única
   var tbody = document.getElementById('rec-itens-tbody');
   if (tbody) {
     tbody.innerHTML = itensGrupo.map(function(x) {
-      var nome = (x.tipo==='oculos-completo'||x.produto==='OCULOS-COMPLETO')
-        ? '🕶️ '+(x.descricaoCompleta||'Óculos de Grau Completo')
-        : (x.descricaoCompleta||prodMap[x.produto]||x.produto||'—');
-      var det = x.detalhes ? '<br><span style="color:#94a3b8;font-size:9px">'+x.detalhes.map(function(d){return d.nome||d.cod;}).join(' | ')+'</span>' : '';
+      var isOculos = (x.tipo==='oculos-completo'||x.produto==='OCULOS-COMPLETO');
       var tot = calcTotal(x);
       var unit = (x.preco||0);
       var qtd = (x.qtd||1);
-      return '<tr style="border-bottom:1px solid #e2e8f0">'
-        +'<td style="padding:7px 8px;font-size:11px">'+nome+det+'</td>'
-        +'<td style="padding:7px 8px;text-align:center;font-size:11px">'+qtd+'</td>'
-        +'<td style="padding:7px 8px;text-align:right;font-size:11px">'+fmtMoney(unit)+'</td>'
-        +'<td style="padding:7px 8px;text-align:right;font-size:11px;font-weight:700">'+fmtMoney(tot)+'</td>'
+
+      if (isOculos) {
+        var lente = x.detalhes ? x.detalhes.find(function(d){ return !d.insumo; }) : null;
+        var armacao = x.detalhes ? x.detalhes.find(function(d){ return d.insumo; }) : null;
+        var nomeOculos = '🕶️ <strong>Óculos Completo</strong>';
+        var detOculos = '';
+        if (lente) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Lente: '+lente.nome+'</span>';
+        if (armacao) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Armação: '+armacao.nome+'</span>';
+        if (x.exame > 0) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Exame de Vista: '+fmtMoney(x.exame)+'</span>';
+        return '<tr style=\"border-bottom:1px solid #e2e8f0\">'
+          +'<td style=\"padding:7px 8px;font-size:11px\">'+nomeOculos+detOculos+'</td>'
+          +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
+          +'<td style=\"padding:7px 8px;text-align:right;font-size:11px\">'+fmtMoney(unit)+'</td>'
+          +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(tot)+'</td>'
+          +'</tr>';
+      }
+      var nome = x.descricaoCompleta||prodMap[x.produto]||x.produto||'—';
+      return '<tr style=\"border-bottom:1px solid #e2e8f0\">'
+        +'<td style=\"padding:7px 8px;font-size:11px\">'+nome+'</td>'
+        +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
+        +'<td style=\"padding:7px 8px;text-align:right;font-size:11px\">'+fmtMoney(unit)+'</td>'
+        +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(tot)+'</td>'
         +'</tr>';
     }).join('');
   }
-
   setEl('rec-tot-bruto', fmtMoney(bruto));
   setEl('rec-tot-desc', '- ' + fmtMoney(vdesc));
   setEl('rec-tot-final', fmtMoney(totalGrupo));
@@ -14237,7 +14228,8 @@ function calcOculosCompleto() {
 }
 
 function adicionarOculosCompleto() {
-  // Usar campos hidden (novos campos de busca)
+  // Nova sistemática: preço baseado na LENTE (já inclui todos os custos via precificação)
+  // Armação entra com R$0 apenas para baixar estoque
   var armCod = (document.getElementById('venda-arm-select')||{}).value||'';
   var lenCod = (document.getElementById('venda-len-select')||{}).value||'';
   var exame  = parseFloat(document.getElementById('venda-exame').value)||0;
@@ -14253,13 +14245,18 @@ function adicionarOculosCompleto() {
   if (!armP) { showToast('Armação não encontrada!','error'); return; }
   if (!lenP) { showToast('Lente não encontrada!','error'); return; }
 
-  // Usar valores dos inputs (podem ter sido editados manualmente)
-  var armVenda = parseFloat(document.getElementById('venda-arm-venda')?.value)||armP.venda||0;
-  var armCusto = parseFloat(document.getElementById('venda-arm-custo')?.value)||armP.custo||0;
+  // NOVA SISTEMÁTICA:
+  // Preço de venda = preço da LENTE (já precificado com todos os custos embutidos)
+  // Armação entra com R$0 — apenas para baixar estoque
   var lenVenda = parseFloat(document.getElementById('venda-len-venda')?.value)||lenP.venda||0;
   var lenCusto = parseFloat(document.getElementById('venda-len-custo')?.value)||lenP.custo||0;
-  var totalVenda = armVenda + lenVenda + exame;
-  var totalCusto = armCusto + lenCusto + exame;
+  var armCusto = armP.custo||0; // custo real da armação (para referência interna)
+
+  // Total da venda = preço da lente + exame (armação já embutida na lente)
+  var totalVenda = lenVenda + exame;
+  // Custo real = custo da lente + custo da armação + exame
+  var totalCusto = lenCusto + armCusto + exame;
+
   var desc = descInput ? descInput.value || 'Óculos de Grau Completo' : 'Óculos de Grau Completo';
 
   _carrinho.push({
@@ -14270,11 +14267,12 @@ function adicionarOculosCompleto() {
     desc: 0,
     tipo: 'oculos-completo',
     detalhes: [
-      { cod: armCod, nome: armP.desc, qtd: 1 },
-      { cod: lenCod, nome: lenP.desc, qtd: 1 },
+      { cod: lenCod, nome: lenP.desc, qtd: 1, custo: lenCusto, venda: lenVenda },
+      { cod: armCod, nome: armP.desc, qtd: 1, custo: armCusto, venda: 0, insumo: true },
     ],
     exame: exame,
     custo: totalCusto,
+    armInsumo: true, // flag: armação é insumo, não aparece com valor no recibo
   });
 
   renderCarrinho();
@@ -14803,15 +14801,20 @@ function renderCarrinho() {
     subtotal += bruto;
     totalDesc += vdesc;
     totalFinal += total;
-    // Detalhes do óculos completo
-    const detalhesHtml = item.tipo==='oculos-completo' && item.detalhes ?
-      `<div style="font-size:10px;color:#64748b;margin-top:2px">
-        ${item.detalhes.map(d=>`↳ ${d.nome}`).join(' &nbsp;|&nbsp; ')}
-        ${item.exame>0?'&nbsp;|&nbsp; ↳ Exame: '+fmtMoney(item.exame):''}
-      </div>` : '';
+    // Detalhes do óculos completo — nova sistemática: lente como base, armação como insumo
+    let detalhesHtml = '';
+    if (item.tipo==='oculos-completo' && item.detalhes) {
+      const lente = item.detalhes.find(d => !d.insumo);
+      const armacao = item.detalhes.find(d => d.insumo);
+      detalhesHtml = `<div style="font-size:10px;color:#94a3b8;margin-top:3px;line-height:1.6">
+        ${lente ? `↳ <span style="color:#7dd3fc">Lente:</span> ${lente.nome}` : ''}
+        ${armacao ? `<br>↳ <span style="color:#fbbf24">Armação:</span> ${armacao.nome}` : ''}
+        ${item.exame>0 ? `<br>↳ <span style="color:#86efac">Exame:</span> ${fmtMoney(item.exame)}` : ''}
+      </div>`;
+    }
     return `<tr>
       <td style="padding:8px;border:1px solid #e2e8f0">
-        ${item.tipo==='oculos-completo'?'🕶️ ':''}${item.nome}${detalhesHtml}
+        ${item.tipo==='oculos-completo'?'🕶️ <strong>Óculos Completo</strong>':item.nome}${detalhesHtml}
       </td>
       <td style="padding:8px;border:1px solid #e2e8f0;text-align:center">${item.qtd}</td>
       <td style="padding:8px;border:1px solid #e2e8f0;text-align:right;font-weight:700;color:#16a34a">${fmtMoney(total)}</td>
@@ -14823,8 +14826,6 @@ function renderCarrinho() {
 
   // Atualizar totais com desconto global
   atualizarTotaisVenda();
-  // Atualizar painel interno
-  atualizarPainelInterno(0, 0);
 }
 
 
