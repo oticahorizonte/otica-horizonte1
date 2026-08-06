@@ -3047,7 +3047,7 @@ function instalarApp() {
 <button class="btn btn-outline" onclick="forceSyncFotos()" data-tip="Enviar produtos com fotos para a nuvem" style="font-size:12px">🔄 Sync Fotos</button>
 </div>
 </div>
-<div class="card" id="card-historico-estoque" style="display:none" style="margin-bottom:20px;display:none">
+<div class="card" id="card-historico-estoque" style="margin-bottom:20px;display:none">
 <div class="card-header" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:14px 14px 0 0">
 <h3 style="color:white">📋 Histórico de Movimentação do Estoque</h3>
 <div class="search-bar" style="margin:0">
@@ -3055,7 +3055,18 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Cliente</th><th>Médico</th><th>Data</th><th>Longe OD</th><th>Longe OE</th><th>Perto OD</th><th>Perto OE</th><th>Adição</th><th>Ações</th></tr></thead><tbody id="tb-historico-estoque"></tbody></table>
+<div style="display:flex;gap:8px;padding:12px 12px 0;flex-wrap:wrap">
+  <select id="filtro-hist-tipo" onchange="renderHistoricoEstoque()" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px">
+    <option value="">Todos os tipos</option>
+    <option value="entrada">📥 Entradas</option>
+    <option value="saida">📤 Saídas</option>
+  </select>
+  <input type="date" id="filtro-hist-de" onchange="renderHistoricoEstoque()" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px"/>
+  <span style="align-self:center;font-size:12px;color:#64748b">até</span>
+  <input type="date" id="filtro-hist-ate" onchange="renderHistoricoEstoque()" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px"/>
+  <button onclick="document.getElementById('filtro-hist-tipo').value='';document.getElementById('filtro-hist-de').value='';document.getElementById('filtro-hist-ate').value='';renderHistoricoEstoque()" style="padding:6px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;cursor:pointer">🔄 Limpar</button>
+</div>
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white"><th style="padding:10px 12px;text-align:left;font-size:12px">Data</th><th style="padding:10px 12px;text-align:left;font-size:12px">Produto</th><th style="padding:10px 12px;text-align:left;font-size:12px">Tipo</th><th style="padding:10px 12px;text-align:center;font-size:12px">Qtd</th><th style="padding:10px 12px;text-align:left;font-size:12px">Motivo</th><th style="padding:10px 12px;text-align:left;font-size:12px">Referência</th></tr></thead><tbody id="tb-historico-estoque"></tbody></table></div>
 </div>
 </div>
 <div class="card">
@@ -15574,11 +15585,21 @@ function renderHistoricoEstoque() {
   var tb = document.getElementById('tb-historico-estoque');
   if (!tb) return;
   var q = (document.getElementById('search-historico')||{}).value||'';
+  var tipoFiltro = (document.getElementById('filtro-hist-tipo')||{}).value||'';
+  var dataFiltroDE = (document.getElementById('filtro-hist-de')||{}).value||'';
+  var dataFiltroATE = (document.getElementById('filtro-hist-ate')||{}).value||'';
   var hist = load('historico_estoque') || [];
   var prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod, p.desc]));
   
   var filtrado = hist.filter(function(h) {
-    return !q || (prodMap[h.cod]||h.cod||'').toLowerCase().includes(q.toLowerCase());
+    // Filtro por produto
+    if (q && !(prodMap[h.cod]||h.cod||'').toLowerCase().includes(q.toLowerCase())) return false;
+    // Filtro por tipo
+    if (tipoFiltro && h.tipo !== tipoFiltro) return false;
+    // Filtro por data
+    if (dataFiltroDE && (h.data||'') < dataFiltroDE) return false;
+    if (dataFiltroATE && (h.data||'') > dataFiltroATE) return false;
+    return true;
   });
 
   // Ordenar do mais recente para o mais antigo
