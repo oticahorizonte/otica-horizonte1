@@ -11318,7 +11318,13 @@ function doPrintRecibo() {
 
 // ══ ORÇAMENTOS — Seção independente ══════════════════════════════
 function abrirNovoOrcamentoModal() {
-  abrirNovoOrcamento(); // reutiliza função existente da seção composição
+  // Navegar para seção de composição e limpar formulário
+  showSection('composicao');
+  setTimeout(function() {
+    limparComposicao();
+    window.scrollTo(0, 0);
+    showToast('📋 Novo orçamento — preencha os dados e clique em Salvar!', 'success');
+  }, 100);
 }
 
 function renderSecOrcamentos() {
