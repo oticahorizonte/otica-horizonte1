@@ -11170,13 +11170,14 @@ function imprimirRecibo(id) {
       var qtd = (x.qtd||1);
 
       if (isOculos) {
-        var lente = x.detalhes ? x.detalhes.find(function(d){ return !d.insumo; }) : null;
-        var armacao = x.detalhes ? x.detalhes.find(function(d){ return d.insumo; }) : null;
+        var armacao = x.detalhes ? x.detalhes.find(function(d){ return d.isArmacao; }) : null;
+        var lente = x.detalhes ? x.detalhes.find(function(d){ return d.isLente; }) : null;
+        var exameItem = x.detalhes ? x.detalhes.find(function(d){ return d.isExame; }) : null;
         var nomeOculos = '🕶️ <strong>Óculos Completo</strong>';
         var detOculos = '';
         if (armacao) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Armação: '+armacao.nome+'</span>';
         if (lente) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Lente: '+lente.nome+'</span>';
-        if (x.exame > 0) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Exame de Vista: incluso</span>';
+        if (exameItem || x.exame > 0) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Exame de Vista: incluso</span>';
         return '<tr style=\"border-bottom:1px solid #e2e8f0\">'
           +'<td style=\"padding:7px 8px;font-size:11px\">'+nomeOculos+detOculos+'</td>'
           +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
@@ -11270,8 +11271,8 @@ function doPrintRecibo() {
   const area = document.getElementById('recibo-print-area');
   const win = window.open('', '_blank', 'width=700,height=900');
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Recibo - Ótica Horizonte</title>
-    <style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{font-family:'Segoe UI',sans-serif;color:#1e293b;padding:20px;background:white}
-    @media print{body{padding:0}.no-print{display:none!important}}</style>
+    <style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}body{font-family:'Segoe UI',sans-serif;color:#1e293b;padding:20px;background:white}
+    @media print{body{padding:0}.no-print{display:none!important}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}}</style>
 </head><body>
     ${area.innerHTML}
     <div class="no-print" style="text-align:center;margin-top:20px">
@@ -13728,7 +13729,7 @@ function registrarVendaUnif() {
       descGlobal: descProp,
       totalReal: totalComDesc,
       tipo: 'oculos-completo',
-      detalhes: itensGrupo.map(function(i){ return {cod:i.cod, nome:i.nome, qtd:i.qtd, preco:i.preco}; }),
+      detalhes: itensGrupo.map(function(i){ return {cod:i.cod, nome:i.nome, qtd:i.qtd, preco:i.preco, isArmacao:!!i.isArmacao, isLente:!!i.isLente, isExame:!!i.isExame}; }),
       custo: itensGrupo.reduce(function(s,i){ return s+(i.custo||0)*i.qtd; },0),
       pag: pag, parcelas: parcelas, status: status, vendedor: vendedor,
       crediario: crediarioData ? {entrada:crediarioData.entrada, entradaPag:crediarioData.entradaPag, entradaParc:crediarioData.entradaParc, parcelas:crediarioData.parcelas} : null
@@ -14821,8 +14822,8 @@ function renderCarrinho() {
     // Detalhes do óculos completo — nova sistemática: lente como base, armação como insumo
     let detalhesHtml = '';
     if (item.tipo==='oculos-completo' && item.detalhes) {
-      const lente = item.detalhes.find(d => !d.insumo);
-      const armacao = item.detalhes.find(d => d.insumo);
+      const armacao = item.detalhes.find(d => d.isArmacao);
+      const lente = item.detalhes.find(d => d.isLente);
       detalhesHtml = `<div style="font-size:10px;color:#94a3b8;margin-top:3px;line-height:1.6">
         ${lente ? `↳ <span style="color:#7dd3fc">Lente:</span> ${lente.nome}` : ''}
         ${armacao ? `<br>↳ <span style="color:#fbbf24">Armação:</span> ${armacao.nome}` : ''}
