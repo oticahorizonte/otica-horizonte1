@@ -5428,25 +5428,6 @@ const save = function(k, v) {
     tentarSalvarFirebaseDebounced(k, v, 5);
   }, 800);
 };
-function tentarSalvarFirebaseDebounced(k, v, tentativas) {
-  function tentarSalvarFirebase(t) {
-    if (window._firebaseReady && window._fb) {
-      window._fb.saveCollection(k, v).then(function(ok) {
-        if (ok) {
-          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
-          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-        } else if (t > 0) {
-          setTimeout(function() { tentarSalvarFirebase(t-1); }, 2000);
-        }
-      }).catch(function(e) {
-        if (t > 0) setTimeout(function() { tentarSalvarFirebase(t-1); }, 2000);
-      });
-    } else if (t > 0) {
-      setTimeout(function() { tentarSalvarFirebase(t-1); }, 2000);
-    }
-  }
-  tentarSalvarFirebase(tentativas);
-}
 
 
 // ── Firebase Sync automático ───────────────────────────────────────────────
