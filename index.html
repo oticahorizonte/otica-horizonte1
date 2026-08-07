@@ -2621,7 +2621,7 @@ function instalarApp() {
     .sidebar::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 2px; }
 
     /* Quando sidebar está aberta, bloquear scroll do body */
-    body.sidebar-open { overflow: hidden; }
+    /* body.sidebar-open overflow:hidden removido - bloqueava modais position:fixed */
   }
 </style>
 <style>
@@ -3495,6 +3495,8 @@ function instalarApp() {
 </div>
 </section>
 
+</main>
+
 <!-- Modal Nova Entrada Financeira -->
 <div class="modal-overlay" id="modal-entrada" style="display:none">
 <div class="modal" style="max-width:480px">
@@ -3823,7 +3825,6 @@ function instalarApp() {
 </div>
 </div>
 
-</main>
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- MODAIS -->
 <!-- ══════════════════════════════════════════════════════════════ -->
