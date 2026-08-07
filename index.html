@@ -2804,6 +2804,7 @@ function instalarApp() {
     </div>
     <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-item" onclick="showSection('vendas')"><span class="icon">💰</span> Vendas &amp; Caixa</div>
+    <div class="nav-item" onclick="showSection('orcamentos')"><span class="icon">📋</span> Orçamentos</div>
     <div class="nav-item" onclick="showSection('os')"><span class="icon">🔧</span> Ordens de Serviço <span class="nav-badge" id="badge-os" style="display:none">0</span></div>
     <div class="nav-item" onclick="showSection('agendamentos')"><span class="icon">📅</span> Agendamentos <span class="nav-badge" id="badge-agend" style="display:none">0</span></div>
     <div class="nav-item" id="nav-comissoes" onclick="showSection('comissoes')"><span class="icon">💈</span> Comissões</div>
@@ -3144,17 +3145,7 @@ function instalarApp() {
 </div>
 </div>
 <!-- ── Orçamentos Pendentes ── -->
-<div class="card" id="card-orcamentos-pendentes" style="margin-bottom:12px">
-<div class="card-header" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px 14px 0 0;cursor:pointer" onclick="toggleCard('orcamentos-pendentes-body','orc-icon')">
-<h3 style="color:white">📋 Orçamentos <span id="orcamentos-count" style="font-size:12px;opacity:.8">0</span></h3>
-<span id="orc-icon" style="color:white">▼</span>
-</div>
-<div id="orcamentos-pendentes-body">
-<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">
-      Nenhum orçamento pendente. Clique em <strong>"➕ Nova Venda"</strong> e salve como orçamento!
-    </div>
-</div>
-</div>
+
 </section>
 <!-- ── OS ── -->
 <section class="section" id="sec-os">
@@ -3602,6 +3593,54 @@ function instalarApp() {
 </div>
 </div>
 <!-- ── COMPOSIÇÃO DE PREÇO ── -->
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- ORÇAMENTOS -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-orcamentos">
+<div class="topbar">
+<h1>📋 Orçamentos</h1>
+<div class="topbar-actions">
+<select id="orc-periodo" onchange="renderSecOrcamentos()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="todos">Todo o Período</option>
+<option value="hoje">Hoje</option>
+<option value="semana">Esta Semana</option>
+<option selected value="mes">Este Mês</option>
+</select>
+<select id="orc-status-filtro" onchange="renderSecOrcamentos()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="todos">Todos os Status</option>
+<option value="pendente">Pendentes</option>
+<option value="fechado">Convertidos</option>
+<option value="cancelado">Cancelados</option>
+</select>
+<button class="btn btn-primary" onclick="abrirNovoOrcamentoModal()">➕ Novo Orçamento</button>
+</div>
+</div>
+
+<!-- Cards resumo -->
+<div class="cards-grid" id="orc-cards-resumo" style="margin-bottom:16px"></div>
+
+<!-- Busca -->
+<div class="card">
+<div class="card-header" style="background:linear-gradient(135deg,#1a3a5c,#0ea5e9);border-radius:14px 14px 0 0">
+<h3 style="color:white">📋 Histórico de Orçamentos</h3>
+<div class="search-bar" style="margin:0">
+<input id="search-orcamentos" oninput="renderSecOrcamentos()" placeholder="🔍 Buscar por cliente ou descrição..." style="background:rgba(255,255,255,.9)" type="text"/>
+</div>
+</div>
+<div class="card-body" style="padding:0">
+<table>
+<thead>
+<tr>
+<th>Nº</th><th>Data</th><th>Validade</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th>
+</tr>
+</thead>
+<tbody id="tb-orcamentos-sec"></tbody>
+</table>
+</div>
+</div>
+</section>
+
 <section class="section" id="sec-composicao">
 <div class="topbar">
 <h1>📋 Pré-vendas</h1>
@@ -4423,9 +4462,7 @@ function instalarApp() {
 
 
       <!-- Botões -->
-      <button onclick="salvarOrcamentoVendaUnif()" style="width:100%;padding:10px;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px">
-        📋 Salvar como Orçamento
-      </button>
+      
       <button onclick="registrarVendaUnif()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:6px">
         ✅ Registrar Venda
       </button>
@@ -6086,7 +6123,7 @@ function showSection(id) {
     if (oc.indexOf("'"+id+"'") !== -1) el.classList.add('active');
   });
 
-  const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes,despesas:renderFinanceiro,usuarios:renderUsuarios};
+  const renders = {dashboard:renderDashboard,clientes:renderClientes,receitas:renderReceitas,produtos:renderProdutos,vendas:renderVendas,os:renderOS,relatorios:renderRelatorios,agendamentos:renderAgendamentos,comissoes:renderComissoes,despesas:renderFinanceiro,usuarios:renderUsuarios,orcamentos:renderSecOrcamentos};
   if (renders[id]) { try { renders[id](); } catch(e) { console.error('Erro ao renderizar '+id+':', e); showToast('Erro ao carregar: '+e.message,'error'); } }
   // Abrir modal Nova Venda automaticamente ao entrar em Vendas
   if (id === 'vendas') {
@@ -11276,6 +11313,143 @@ function doPrintRecibo() {
       initVendaModal();
     }
   }, 500);
+}
+
+
+// ══ ORÇAMENTOS — Seção independente ══════════════════════════════
+function abrirNovoOrcamentoModal() {
+  abrirNovoOrcamento(); // reutiliza função existente da seção composição
+}
+
+function renderSecOrcamentos() {
+  var tbody = document.getElementById('tb-orcamentos-sec');
+  var cardsEl = document.getElementById('orc-cards-resumo');
+  if (!tbody) return;
+
+  var clMap = Object.fromEntries(load('clientes').map(function(c){ return [c.id, c.nome]; }));
+  var q = (document.getElementById('search-orcamentos')||{}).value||'';
+  var periodo = (document.getElementById('orc-periodo')||{}).value||'todos';
+  var statusFiltro = (document.getElementById('orc-status-filtro')||{}).value||'todos';
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var todos = load('composicoes');
+
+  // Filtro período
+  var filtrados = todos.filter(function(c) {
+    if (periodo === 'hoje') {
+      var d = new Date(c.data); d.setHours(0,0,0,0);
+      return d.getTime() === hoje.getTime();
+    }
+    if (periodo === 'semana') {
+      var d = new Date(c.data);
+      var diff = (hoje - d) / 86400000;
+      return diff >= 0 && diff <= 7;
+    }
+    if (periodo === 'mes') {
+      var d = new Date(c.data);
+      return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+    }
+    return true;
+  });
+
+  // Filtro status
+  if (statusFiltro !== 'todos') {
+    filtrados = filtrados.filter(function(c) {
+      var st = c.status || 'pendente';
+      return st === statusFiltro;
+    });
+  }
+
+  // Filtro busca
+  if (q) {
+    filtrados = filtrados.filter(function(c) {
+      return (clMap[c.clienteId]||'').toLowerCase().includes(q.toLowerCase()) ||
+             (c.desc||'').toLowerCase().includes(q.toLowerCase()) ||
+             String(c.id).includes(q);
+    });
+  }
+
+  // Cards resumo
+  var pendentes = todos.filter(function(c){ return !c.status || c.status === 'pendente'; });
+  var convertidos = todos.filter(function(c){ return c.status === 'fechado'; });
+  var cancelados = todos.filter(function(c){ return c.status === 'cancelado'; });
+  var totalPendente = pendentes.reduce(function(s,c){ return s+(c.totalCli||0); }, 0);
+
+  if (cardsEl) {
+    cardsEl.innerHTML =
+      '<div class="stat-card" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">' +
+        '<div class="label">PENDENTES</div>' +
+        '<div class="value">' + pendentes.length + '</div>' +
+        '<div class="sub">' + fmtMoney(totalPendente) + ' em aberto</div>' +
+      '</div>' +
+      '<div class="stat-card" style="background:linear-gradient(135deg,#16a34a,#22c55e)">' +
+        '<div class="label">CONVERTIDOS</div>' +
+        '<div class="value">' + convertidos.length + '</div>' +
+        '<div class="sub">virou venda</div>' +
+      '</div>' +
+      '<div class="stat-card" style="background:linear-gradient(135deg,#64748b,#94a3b8)">' +
+        '<div class="label">CANCELADOS</div>' +
+        '<div class="value">' + cancelados.length + '</div>' +
+        '<div class="sub">não convertidos</div>' +
+      '</div>' +
+      '<div class="stat-card" style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a)">' +
+        '<div class="label">TOTAL</div>' +
+        '<div class="value">' + todos.length + '</div>' +
+        '<div class="sub">orçamentos</div>' +
+      '</div>';
+  }
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:var(--text-muted)">Nenhum orçamento encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = [...filtrados].reverse().map(function(c) {
+    var st = c.status || 'pendente';
+    var stLabel = st === 'fechado' ? '✅ Convertido' : st === 'cancelado' ? '❌ Cancelado' : '⏳ Pendente';
+    var stColor = st === 'fechado' ? '#16a34a' : st === 'cancelado' ? '#dc2626' : '#d97706';
+    var stBg = st === 'fechado' ? '#dcfce7' : st === 'cancelado' ? '#fee2e2' : '#fef3c7';
+
+    // Calcular validade (30 dias após criação)
+    var dataOrc = new Date(c.data);
+    var validade = new Date(dataOrc.getTime() + 30*86400000);
+    var vencido = validade < hoje && st === 'pendente';
+    var validadeStr = validade.toLocaleDateString('pt-BR');
+
+    var acoes = '';
+    if (st === 'pendente') {
+      acoes += '<button class="btn btn-sm btn-success" onclick="fecharOrcamentoPendente(' + c.id + ')" data-tip="Converter em venda" style="font-weight:700">✅ Fechar Venda</button> ';
+    }
+    acoes += '<button class="btn btn-sm" onclick="imprimirOrcamentoById(' + c.id + ')" data-tip="Imprimir orçamento" style="background:#0ea5e9;color:white">🖨️</button> ';
+    if (st === 'pendente') {
+      acoes += '<button class="btn btn-sm btn-outline" onclick="cancelarOrcamento(' + c.id + ')" data-tip="Cancelar orçamento">✖️</button> ';
+    }
+    acoes += '<button class="btn btn-sm btn-danger" onclick="excluirOrcamentoPendente(' + c.id + ')" data-tip="Excluir">🗑️</button>';
+
+    return '<tr style="border-bottom:1px solid #e2e8f0' + (vencido?';background:#fff7ed':'') + '">' +
+      '<td style="padding:10px 12px"><strong style="color:#1a3a5c">#' + c.id + '</strong></td>' +
+      '<td style="padding:10px 12px;font-size:13px">' + fmtDate(c.data) + '</td>' +
+      '<td style="padding:10px 12px;font-size:12px;color:' + (vencido?'#dc2626':'#64748b') + '">' + validadeStr + (vencido?' ⚠️':'') + '</td>' +
+      '<td style="padding:10px 12px"><strong>' + (clMap[c.clienteId]||'—') + '</strong></td>' +
+      '<td style="padding:10px 12px;font-size:13px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + '</td>' +
+      '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a;font-size:14px">' + fmtMoney(c.totalCli||0) + '</td>' +
+      '<td style="padding:10px 12px"><span style="background:' + stBg + ';color:' + stColor + ';padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + stLabel + '</span></td>' +
+      '<td style="padding:10px 12px"><div style="display:flex;gap:4px;flex-wrap:wrap">' + acoes + '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function cancelarOrcamento(id) {
+  confirmar('Cancelar este orçamento?', function() {
+    var arr = load('composicoes');
+    var idx = arr.findIndex(function(c){ return c.id === id; });
+    if (idx >= 0) {
+      arr[idx].status = 'cancelado';
+      save('composicoes', arr);
+      renderSecOrcamentos();
+      showToast('Orçamento cancelado.', 'warning');
+    }
+  });
 }
 
 // ── SEED AGENDAMENTOS ────────────────────────────────────────────
