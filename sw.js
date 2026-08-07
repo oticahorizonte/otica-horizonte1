@@ -1,5 +1,5 @@
-// v467 - força atualização do cache
-const CACHE_VERSION = 'v467';
+// v489 - força atualização do cache
+const CACHE_VERSION = 'v489';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -14,7 +14,10 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  if (e.request.url.includes('firestore') || e.request.url.includes('firebase')) return;
+  if (e.request.url.includes('cloudinary')) return;
   e.respondWith(
-    fetch(e.request, {cache: 'no-store'}).catch(() => caches.match(e.request))
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
