@@ -11174,9 +11174,9 @@ function imprimirRecibo(id) {
         var armacao = x.detalhes ? x.detalhes.find(function(d){ return d.insumo; }) : null;
         var nomeOculos = '🕶️ <strong>Óculos Completo</strong>';
         var detOculos = '';
-        if (lente) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Lente: '+lente.nome+'</span>';
         if (armacao) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Armação: '+armacao.nome+'</span>';
-        if (x.exame > 0) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Exame de Vista: '+fmtMoney(x.exame)+'</span>';
+        if (lente) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Lente: '+lente.nome+'</span>';
+        if (x.exame > 0) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Exame de Vista: incluso</span>';
         return '<tr style=\"border-bottom:1px solid #e2e8f0\">'
           +'<td style=\"padding:7px 8px;font-size:11px\">'+nomeOculos+detOculos+'</td>'
           +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
@@ -13338,13 +13338,12 @@ function confirmarOpcaoOculos(completo) {
   if (completo) {
     var grupoId = 'OC-' + Date.now();
     _vendaGrupoAtual = grupoId;
-    // NOVA SISTEMÁTICA: armação entra com preco:0 (insumo — só baixa estoque)
-    // O preço do óculos completo será definido pela LENTE
-    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:0, custo:p.custo||0, qtd:1, tipo:'oculos-completo', grupo:grupoId, isArmacao:true, insumo:true});
+    // Armação entra com preco:p.venda — valor real da armação
+    _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:1, tipo:'oculos-completo', grupo:grupoId, isArmacao:true});
     renderVendaItens();
     calcVendaTotais();
     salvarRascunhoVendaUnif();
-    showToast('🕶️ Armação selecionada! Agora busque a lente (preço será da lente).', 'success');
+    showToast('🕶️ Armação adicionada! Agora busque a lente.', 'success');
   } else {
     _vendaItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:1, tipo:'normal', grupo:null});
     renderVendaItens();
@@ -13471,17 +13470,10 @@ function renderVendaItens() {
 
     var indent = isOculos ? 'padding-left:20px' : '';
 
-    // Nova sistemática: armação insumo aparece sem valor
-    var precoExibir, subtotalExibir, nomeExibir;
-    if (item.insumo) {
-      precoExibir = '<span style=\"color:#94a3b8;font-size:11px;font-style:italic\">insumo</span>';
-      subtotalExibir = '<span style=\"color:#94a3b8;font-size:11px\">—</span>';
-      nomeExibir = icone + ' ' + item.nome + '<span style=\"font-size:9px;color:#94a3b8;margin-left:4px\">(baixa estoque)</span>';
-    } else {
-      precoExibir = 'R$ ' + item.preco.toFixed(2).replace('.',',');
-      subtotalExibir = 'R$ ' + subtotal.toFixed(2).replace('.',',');
-      nomeExibir = icone + ' ' + item.nome;
-    }
+    // Todos os itens aparecem com valor normal
+    var precoExibir = 'R$ ' + item.preco.toFixed(2).replace('.',',');
+    var subtotalExibir = 'R$ ' + subtotal.toFixed(2).replace('.',',');
+    var nomeExibir = icone + ' ' + item.nome;
 
     return '<tr style=\"background:'+bg+';border-bottom:1px solid #f1f5f9;'+border+'\">'
       + '<td style=\"padding:8px 12px;color:#64748b;font-size:12px\">'+(idx+1)+'</td>'
@@ -14274,17 +14266,14 @@ function adicionarOculosCompleto() {
   if (!armP) { showToast('Armação não encontrada!','error'); return; }
   if (!lenP) { showToast('Lente não encontrada!','error'); return; }
 
-  // NOVA SISTEMÁTICA:
-  // Preço de venda = preço da LENTE (já precificado com todos os custos embutidos)
-  // Armação entra com R$0 — apenas para baixar estoque
+  // Preço de venda = armação + lente + exame
+  var armVenda = parseFloat(document.getElementById('venda-arm-venda')?.value)||armP.venda||0;
+  var armCusto = parseFloat(document.getElementById('venda-arm-custo')?.value)||armP.custo||0;
   var lenVenda = parseFloat(document.getElementById('venda-len-venda')?.value)||lenP.venda||0;
   var lenCusto = parseFloat(document.getElementById('venda-len-custo')?.value)||lenP.custo||0;
-  var armCusto = armP.custo||0; // custo real da armação (para referência interna)
 
-  // Total da venda = preço da lente + exame (armação já embutida na lente)
-  var totalVenda = lenVenda + exame;
-  // Custo real = custo da lente + custo da armação + exame
-  var totalCusto = lenCusto + armCusto + exame;
+  var totalVenda = armVenda + lenVenda + exame;
+  var totalCusto = armCusto + lenCusto + exame;
 
   var desc = descInput ? descInput.value || 'Óculos de Grau Completo' : 'Óculos de Grau Completo';
 
@@ -14296,12 +14285,11 @@ function adicionarOculosCompleto() {
     desc: 0,
     tipo: 'oculos-completo',
     detalhes: [
+      { cod: armCod, nome: armP.desc, qtd: 1, custo: armCusto, venda: armVenda },
       { cod: lenCod, nome: lenP.desc, qtd: 1, custo: lenCusto, venda: lenVenda },
-      { cod: armCod, nome: armP.desc, qtd: 1, custo: armCusto, venda: 0, insumo: true },
     ],
     exame: exame,
     custo: totalCusto,
-    armInsumo: true, // flag: armação é insumo, não aparece com valor no recibo
   });
 
   renderCarrinho();
