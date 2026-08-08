@@ -13732,9 +13732,11 @@ function filtrarVendaUnif() {
     if (!q) return true;
     return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
+    // Serviços primeiro
     if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
     if (b.cat==='Serviço' && a.cat!=='Serviço') return 1;
-    return 0;
+    // Depois ordem alfabética por descrição
+    return (a.desc||'').localeCompare(b.desc||'', 'pt-BR', {sensitivity:'base'});
   });
 
   if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
