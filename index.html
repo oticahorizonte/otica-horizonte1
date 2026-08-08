@@ -6171,9 +6171,20 @@ function finalizarLogin(userObj, usuarios) {
         window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
           if (usuariosCloud && Array.isArray(usuariosCloud) && usuariosCloud.length > 0) {
             var usuariosLocal = JSON.parse(localStorage.getItem('otica_usuarios')||'[]');
-            if (usuariosCloud.length >= usuariosLocal.length) {
-              localStorage.setItem('otica_usuarios', JSON.stringify(usuariosCloud));
-            }
+            // Merge inteligente: nunca perder usuários locais
+            // Usar a versão com MAIS usuários, ou fazer merge
+            var mergedUsers = JSON.parse(JSON.stringify(usuariosCloud));
+            usuariosLocal.forEach(function(uLocal) {
+              var existeNaCloud = mergedUsers.find(function(uC){ return uC.login === uLocal.login; });
+              if (!existeNaCloud) {
+                // Usuário local não existe na cloud - adicionar
+                mergedUsers.push(uLocal);
+              } else if (uLocal.senha && !existeNaCloud.senha) {
+                // Cloud não tem senha mas local tem - preservar senha local
+                existeNaCloud.senha = uLocal.senha;
+              }
+            });
+            localStorage.setItem('otica_usuarios', JSON.stringify(mergedUsers));
           }
           // Carregar entradas
           window._fb.loadCollection('entradas').then(function(entradasCloud) {
