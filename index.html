@@ -11460,7 +11460,24 @@ function imprimirRecibo(id) {
   }
   setEl('rec-tot-bruto', fmtMoney(bruto));
   setEl('rec-tot-desc', '- ' + fmtMoney(vdesc));
-  setEl('rec-tot-final', fmtMoney(totalGrupo));
+  // Para crediário: mostrar valor da entrada no total
+  if (v.crediario && v.crediario.entrada > 0) {
+    setEl('rec-tot-final', fmtMoney(totalGrupo));
+    // Adicionar linha de entrada recebida
+    var entradaInfo = document.getElementById('rec-entrada-info');
+    if (!entradaInfo) {
+      entradaInfo = document.createElement('div');
+      entradaInfo.id = 'rec-entrada-info';
+      entradaInfo.style.cssText = 'font-size:12px;color:#16a34a;margin-top:4px;font-weight:600';
+      var totalEl = document.getElementById('rec-tot-final');
+      if (totalEl && totalEl.parentNode) totalEl.parentNode.appendChild(entradaInfo);
+    }
+    entradaInfo.textContent = '✅ Entrada recebida: ' + fmtMoney(v.crediario.entrada);
+  } else {
+    setEl('rec-tot-final', fmtMoney(totalGrupo));
+    var entradaInfo2 = document.getElementById('rec-entrada-info');
+    if (entradaInfo2) entradaInfo2.textContent = '';
+  }
 
   // Crediário — mostrar parcelas no recibo
   var credBox = document.getElementById('rec-crediario-box');
@@ -11481,9 +11498,23 @@ function imprimirRecibo(id) {
 
   var badge = document.getElementById('rec-status-badge');
   if (badge) {
-    var statusColors = {'Pago':'background:#dcfce7;color:#16a34a','Pendente':'background:#fef3c7;color:#d97706','Cancelado':'background:#fee2e2;color:#dc2626'};
-    badge.style.cssText = statusColors[v.status]||'background:#f1f5f9;color:#64748b';
-    badge.textContent = v.status;
+    // Para crediário: mostrar "Entrada Paga" em vez de "Pago"
+    var displayStatus = v.status;
+    var displayStyle = '';
+    if (v.crediario && v.status === 'Pago') {
+      // Verificar se há parcelas pendentes
+      var parcPendentes = v.crediario.parcelas ? v.crediario.parcelas.filter(function(p){ return p.status !== 'Pago'; }).length : 0;
+      if (parcPendentes > 0) {
+        displayStatus = '💳 Entrada Paga';
+        displayStyle = 'background:#dbeafe;color:#1d4ed8';
+      }
+    }
+    if (!displayStyle) {
+      var statusColors = {'Pago':'background:#dcfce7;color:#16a34a','Pendente':'background:#fef3c7;color:#d97706','Cancelado':'background:#fee2e2;color:#dc2626'};
+      displayStyle = statusColors[v.status]||'background:#f1f5f9;color:#64748b';
+    }
+    badge.style.cssText = displayStyle;
+    badge.textContent = displayStatus;
   }
 
   openModal('modal-recibo');
