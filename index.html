@@ -4727,21 +4727,22 @@ function instalarApp() {
 </div>
 <div class="modal-body" style="padding:0">
 <div id="recibo-print-area" style="padding:24px;font-family:'Segoe UI',sans-serif;color:#1e293b;max-width:148mm;margin:0 auto">
-<!-- Cabeçalho A5 -->
-<div style="display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:3px solid #1e3a5f;margin-bottom:14px">
-<img alt="Ótica Horizonte" id="rec-logo" src="" style="width:64px;height:64px;object-fit:contain;border-radius:50%;background:#f8fafc;padding:3px"/>
+<!-- Cabeçalho A5 com gradiente -->
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:10px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+<img alt="Ótica Horizonte" id="rec-logo" src="" style="width:56px;height:56px;object-fit:contain;border-radius:50%;background:white;padding:4px"/>
 <div style="flex:1">
-<div style="font-size:18px;font-weight:800;color:#1e3a5f;line-height:1.1">Ótica Horizonte</div>
-<div style="font-size:10px;color:#64748b;font-style:italic">Seu olhar, nosso compromisso.</div>
-<div style="font-size:9px;color:#64748b;margin-top:2px">CNPJ: 64.448.745/0001-09</div>
-<div style="font-size:9px;color:#64748b">Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10</div>
-<div style="font-size:9px;color:#64748b">Tel: (92) 99289-0085 / (92) 99445-1770</div>
+<div style="font-size:18px;font-weight:800;color:white;line-height:1.1">Ótica Horizonte</div>
+<div style="font-size:10px;color:rgba(255,255,255,.7);font-style:italic">Seu olhar, nosso compromisso.</div>
+<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">CNPJ: 64.448.745/0001-09</div>
+<div style="font-size:9px;color:rgba(255,255,255,.6)">Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10</div>
+<div style="font-size:9px;color:rgba(255,255,255,.6)">Tel: (92) 99289-0085 / (92) 99445-1770</div>
 </div>
 <div style="text-align:right">
-<div id="rec-num-venda" style="background:#1e3a5f;color:white;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:800"></div>
-<div id="rec-data-emissao" style="font-size:10px;color:#64748b;margin-top:4px"></div>
+<div id="rec-num-venda" style="background:rgba(255,255,255,.2);color:#e8c96a;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:800;border:1px solid rgba(201,168,76,.4)"></div>
+<div id="rec-data-emissao" style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px"></div>
 </div>
 </div>
+
 <!-- Título -->
 <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);color:white;padding:7px 14px;border-radius:6px;margin-bottom:12px;text-align:center">
 <span style="font-size:13px;font-weight:700;letter-spacing:1.5px">RECIBO DE VENDA</span>
@@ -11445,7 +11446,7 @@ function imprimirRecibo(id) {
         var detOculos = '';
         if (armacao) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Armação: '+armacao.nome+'</span>';
         if (lente) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Lente: '+lente.nome+'</span>';
-        if (exameItem || x.exame > 0) detOculos += '<br><span style=\"color:#475569;font-size:9px\">↳ Exame de Vista: incluso</span>';
+        // Exame de Vista omitido do recibo do cliente
         return '<tr style=\"border-bottom:1px solid #e2e8f0\">'
           +'<td style=\"padding:7px 8px;font-size:11px\">'+nomeOculos+detOculos+'</td>'
           +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
