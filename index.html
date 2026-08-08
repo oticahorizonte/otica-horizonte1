@@ -13639,108 +13639,156 @@ function carregarComposicao(id) {
 
 
 function imprimirOrcamentoById(id) {
-  const c = load('composicoes').find(x=>x.id===id);
+  var c = load('composicoes').find(function(x){ return x.id===id; });
   if (!c) return;
-  const clMap = Object.fromEntries(load('clientes').map(cl=>[cl.id,cl.nome]));
-  const nomeCliente = clMap[c.clienteId] || '—';
-  const itens = c.carrinho || c.itens || [];
-  const descReais = c.descValor || c.desconto || 0;
-  const total = c.totalCli || c.total || 0;
-  const subtotal = total + descReais;
-  const now = new Date().toLocaleString('pt-BR');
-  const dataOrc = c.data ? new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR') : now;
+  var clMap = Object.fromEntries(load('clientes').map(function(cl){ return [cl.id,cl.nome]; }));
+  var nomeCliente = clMap[c.clienteId] || '—';
+  var itens = c.carrinho || c.itens || [];
+  var descReais = c.descValor || c.desconto || c.descReais || 0;
+  var total = c.totalCli || c.total || 0;
+  var subtotal = total + descReais;
+  var now = new Date().toLocaleString('pt-BR');
+  var dataOrc = c.data ? new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR') : now;
+  var logoSrc = (document.querySelector('.sidebar-logo-img')||{}).src || '';
 
-  // Montar linhas dos itens
-  // Agrupar TODOS os itens oculos-completo em UMA linha
-  var prodMapOrc = Object.fromEntries(load('produtos').map(function(p){return [p.cod, p.desc||p.cod];}));
-  var itensAgrupados = [];
-  var oculosGroup = {partes:[], totalPreco:0, exame:0, encontrou:false};
-  
+  // Agrupar itens - óculos completo em uma linha
+  var prodMapOrc = Object.fromEntries(load('produtos').map(function(p){ return [p.cod, p.desc||p.cod]; }));
+  var grupos = {};
+  var avulsos = [];
   itens.forEach(function(item) {
-    var tipo = (item.tipo||item.cod||'').toUpperCase().replace(/_/g,'-');
-    if (tipo === 'OCULOS-COMPLETO') {
-      oculosGroup.encontrou = true;
-      oculosGroup.totalPreco += (item.preco||0) * (item.qtd||1);
-      // Coletar partes dos detalhes
-      if (item.detalhes && item.detalhes.length > 0) {
-        item.detalhes.forEach(function(d){ 
-          var nome = prodMapOrc[d.cod]||d.nome||d.cod;
-          if (nome && oculosGroup.partes.indexOf(nome) === -1) oculosGroup.partes.push(nome);
-        });
+    if (item.tipo === 'oculos-completo' && item.grupo) {
+      if (!grupos[item.grupo]) grupos[item.grupo] = [];
+      grupos[item.grupo].push(item);
+    } else { avulsos.push(item); }
+  });
+
+  var itensHtml = '';
+  Object.keys(grupos).forEach(function(gId) {
+    var g = grupos[gId];
+    var arm = g.find(function(i){return i.isArmacao;});
+    var len = g.find(function(i){return i.isLente;});
+    var tot = g.reduce(function(s,i){return s+(i.preco||0)*(i.qtd||1);},0);
+    var det = '';
+    if (arm) det += '<br><span style="color:#475569;font-size:11px;font-style:italic">↳ Armação: '+arm.nome+'</span>';
+    if (len) det += '<br><span style="color:#475569;font-size:11px;font-style:italic">↳ Lente: '+len.nome+'</span>';
+    itensHtml += '<tr style="border-bottom:1px solid #e2e8f0;background:#eff6ff">' +
+      '<td style="padding:10px 12px;font-size:13px">🕶️ <strong>Óculos Completo</strong>'+det+'</td>' +
+      '<td style="padding:10px 12px;text-align:center;font-size:13px">1</td>' +
+      '<td style="padding:10px 12px;text-align:right;font-size:13px">'+fmtMoney(tot)+'</td>' +
+      '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:700;color:#16a34a">'+fmtMoney(tot)+'</td>' +
+    '</tr>';
+  });
+  avulsos.forEach(function(item) {
+    var nome = item.descricaoCompleta || prodMapOrc[item.cod] || item.nome || item.cod || '—';
+    var valorItem = (item.preco||0)*(item.qtd||1);
+    itensHtml += '<tr style="border-bottom:1px solid #e2e8f0">' +
+      '<td style="padding:10px 12px;font-size:13px">'+nome+'</td>' +
+      '<td style="padding:10px 12px;text-align:center;font-size:13px">'+(item.qtd||1)+'</td>' +
+      '<td style="padding:10px 12px;text-align:right;font-size:13px">'+fmtMoney(item.preco||0)+'</td>' +
+      '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:700;color:#16a34a">'+fmtMoney(valorItem)+'</td>' +
+    '</tr>';
+  });
+
+  // Informações de pagamento
+  var pagHtml = '';
+  var pag = c.pag || '';
+  if (pag) {
+    pagHtml += '<div style="background:#f0f4ff;border-radius:8px;padding:12px 16px;margin-bottom:16px;border-left:4px solid #1e3a5f">';
+    pagHtml += '<div style="font-size:11px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:8px">💳 Forma de Pagamento</div>';
+    if (pag === 'Crediário Próprio' && c.crediario) {
+      pagHtml += '<div style="font-size:13px;font-weight:700;color:#0d2b4e">Crediário Próprio</div>';
+      pagHtml += '<div style="font-size:12px;color:#16a34a;margin-top:4px">✅ Entrada: <strong>'+fmtMoney(c.crediario.entrada||0)+'</strong> ('+( c.crediario.entradaPag||'')+')</div>';
+      if (c.crediario.parcelas && c.crediario.parcelas.length > 0) {
+        pagHtml += '<div style="font-size:12px;color:#64748b;margin-top:4px">📅 '+c.crediario.parcelas.length+'x de <strong>'+fmtMoney(c.crediario.parcelas[0].valor||0)+'</strong></div>';
       }
-      if (item.exame > 0) oculosGroup.exame += item.exame;
-      // Se o item tem nome/descricaoCompleta próprio, usar como parte
-      if (!item.detalhes || item.detalhes.length === 0) {
-        var nome = item.descricaoCompleta || item.nome || prodMapOrc[item.cod] || '';
-        if (nome && nome !== 'Óculos Completo' && oculosGroup.partes.indexOf(nome) === -1) {
-          oculosGroup.partes.push(nome);
-        }
+    } else if (pag === 'Cartão Crédito') {
+      var parcelas = c.parcelas || 1;
+      pagHtml += '<div style="font-size:13px;font-weight:700;color:#0d2b4e">Cartão de Crédito</div>';
+      if (parcelas > 1) {
+        pagHtml += '<div style="font-size:12px;color:#64748b;margin-top:4px">'+parcelas+'x de <strong>'+fmtMoney(total/parcelas)+'</strong></div>';
+      } else {
+        pagHtml += '<div style="font-size:12px;color:#64748b;margin-top:4px">À vista</div>';
       }
     } else {
-      var nome = item.descricaoCompleta || prodMapOrc[item.cod] || item.nome || item.cod || '—';
-      itensAgrupados.push({nome: nome, qtd: item.qtd||1, preco: item.preco||0});
+      var pagLabels = {'PIX':'PIX','Dinheiro':'Dinheiro','Cartão Débito':'Cartão de Débito','À vista':'À vista'};
+      pagHtml += '<div style="font-size:13px;font-weight:700;color:#0d2b4e">'+(pagLabels[pag]||pag)+'</div>';
     }
-  });
-  
-  // Adicionar óculos completo agrupado (UMA linha)
-  if (oculosGroup.encontrou) {
-    if (oculosGroup.exame > 0) oculosGroup.partes.push('Exame de Vista');
-    var descOculos = '🕶️ Óculos Completo' + (oculosGroup.partes.length > 0 ? ' — ' + oculosGroup.partes.join(' + ') : '');
-    itensAgrupados.unshift({nome: descOculos, qtd: 1, preco: oculosGroup.totalPreco});
+    pagHtml += '</div>';
   }
-  
-  var itensHtml = itensAgrupados.map(function(item) {
-    var valorItem = (item.preco||0) * (item.qtd||1);
-    return '<tr style=\"border-bottom:1px solid #e2e8f0\">' +
-      '<td style=\"padding:8px 12px;font-size:13px\">' + item.nome + '</td>' +
-      '<td style=\"padding:8px 12px;text-align:center;font-size:13px\">' + (item.qtd||1) + '</td>' +
-      '<td style=\"padding:8px 12px;text-align:right;font-size:13px\">' + fmtMoney(item.preco||0) + '</td>' +
-      '<td style=\"padding:8px 12px;text-align:right;font-size:13px;font-weight:700\">' + fmtMoney(valorItem) + '</td>' +
-      '</tr>';
-  }).join('');
+
+  var validade = new Date(new Date(c.data||new Date()).getTime()+30*86400000).toLocaleDateString('pt-BR');
 
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
-    '<title>Orçamento - Ótica Horizonte</title>' +
-    '<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}' +
-    'body{font-family:"Segoe UI",sans-serif;color:#1e293b;padding:20px;max-width:600px;margin:0 auto}' +
+    '<title>Orçamento #'+c.id+' - Ótica Horizonte</title>' +
+    '<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}' +
+    'body{font-family:"Segoe UI",sans-serif;color:#1e293b;padding:20px;max-width:600px;margin:0 auto;background:white}' +
     'table{width:100%;border-collapse:collapse}' +
     '@media print{.no-print{display:none!important}@page{size:A5;margin:8mm}}</style></head><body>' +
-    // Cabeçalho
-    '<div style="display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:3px solid #1e3a5f;margin-bottom:16px">' +
-    '<div><div style="font-size:20px;font-weight:800;color:#1e3a5f">Ótica Horizonte</div>' +
-    '<div style="font-size:11px;color:#64748b">CNPJ: 64.448.745/0001-09</div>' +
-    '<div style="font-size:11px;color:#64748b">Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10</div>' +
-    '<div style="font-size:11px;color:#64748b">Tel: (92) 99289-0085 / (92) 99445-1770</div></div></div>' +
-    // Título
-    '<div style="background:#f0f4ff;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between">' +
-    '<div><div style="font-size:16px;font-weight:800;color:#1e3a5f">📋 ORÇAMENTO</div>' +
-    '<div style="font-size:12px;color:#64748b">Data: ' + dataOrc + '</div></div>' +
-    '<div style="text-align:right"><div style="font-size:12px;color:#64748b">Cliente:</div>' +
-    '<div style="font-size:14px;font-weight:700;color:#1e3a5f">' + nomeCliente + '</div></div></div>' +
+    // Cabeçalho com gradiente
+    '<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px">' +
+    (logoSrc ? '<img src="'+logoSrc+'" style="width:52px;height:52px;border-radius:50%;background:white;padding:3px;object-fit:contain"/>' : '') +
+    '<div style="flex:1">' +
+    '<div style="font-size:18px;font-weight:800;color:white">Ótica Horizonte</div>' +
+    '<div style="font-size:10px;color:rgba(255,255,255,.7);font-style:italic">Seu olhar, nosso compromisso.</div>' +
+    '<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">CNPJ: 64.448.745/0001-09</div>' +
+    '<div style="font-size:9px;color:rgba(255,255,255,.6)">Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10</div>' +
+    '<div style="font-size:9px;color:rgba(255,255,255,.6)">Tel: (92) 99289-0085 / (92) 99445-1770</div>' +
+    '</div>' +
+    '<div style="text-align:right">' +
+    '<div style="background:rgba(255,255,255,.2);color:#e8c96a;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:800;border:1px solid rgba(201,168,76,.4)">ORC-'+c.id+'</div>' +
+    '<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px">Emitido: '+now+'</div>' +
+    '</div></div>' +
+    // Faixa dourada
+    '<div style="height:3px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c);border-radius:2px;margin-bottom:14px"></div>' +
+    // Título + Cliente
+    '<div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);color:white;padding:7px 14px;border-radius:6px;margin-bottom:12px;text-align:center">' +
+    '<span style="font-size:13px;font-weight:700;letter-spacing:1.5px">ORÇAMENTO</span>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">' +
+    '<div style="background:#f0f4ff;border-radius:8px;padding:10px;border-left:3px solid #0ea5e9">' +
+    '<div style="font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:4px">👤 Cliente</div>' +
+    '<div style="font-weight:700;font-size:13px">'+nomeCliente+'</div>' +
+    '</div>' +
+    '<div style="background:#f0f4ff;border-radius:8px;padding:10px;border-left:3px solid #1e3a5f">' +
+    '<div style="font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:4px">📋 Dados</div>' +
+    '<div style="font-size:11px">Data: <strong>'+dataOrc+'</strong></div>' +
+    '<div style="font-size:11px">Validade: <strong>'+validade+'</strong></div>' +
+    (c.vendedor ? '<div style="font-size:11px">Vendedor: <strong>'+c.vendedor+'</strong></div>' : '') +
+    '</div></div>' +
     // Tabela de itens
-    '<table style="margin-bottom:16px"><thead>' +
-    '<tr style="background:#1e3a5f;color:white">' +
-    '<th style="padding:8px 12px;text-align:left;font-size:12px">Produto/Serviço</th>' +
-    '<th style="padding:8px 12px;text-align:center;font-size:12px">Qtd</th>' +
-    '<th style="padding:8px 12px;text-align:right;font-size:12px">Unit.</th>' +
-    '<th style="padding:8px 12px;text-align:right;font-size:12px">Total</th>' +
-    '</tr></thead><tbody>' + itensHtml + '</tbody></table>' +
+    '<div style="margin-bottom:12px">' +
+    '<div style="font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:6px">🛒 Produtos / Serviços</div>' +
+    '<table><thead><tr style="background:#1e3a5f;color:white">' +
+    '<th style="padding:8px 12px;text-align:left;font-size:11px;border-radius:4px 0 0 0">Descrição</th>' +
+    '<th style="padding:8px 12px;text-align:center;font-size:11px;width:40px">Qtd</th>' +
+    '<th style="padding:8px 12px;text-align:right;font-size:11px;width:80px">Unit.</th>' +
+    '<th style="padding:8px 12px;text-align:right;font-size:11px;width:90px;border-radius:0 4px 0 0">Total</th>' +
+    '</tr></thead><tbody>'+itensHtml+'</tbody></table></div>' +
     // Totais
-    '<div style="border-top:2px solid #e2e8f0;padding-top:12px;text-align:right">' +
-    (descReais > 0 ? '<div style="font-size:13px;color:#64748b;margin-bottom:4px">Subtotal: ' + fmtMoney(subtotal) + '</div>' +
-    '<div style="font-size:13px;color:#dc2626;margin-bottom:4px">Desconto: - ' + fmtMoney(descReais) + '</div>' : '') +
-    '<div style="font-size:20px;font-weight:800;color:#16a34a">TOTAL: ' + fmtMoney(total) + '</div></div>' +
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:12px">' +
+    '<div style="min-width:200px;background:#f8fafc;border-radius:8px;padding:10px">' +
+    (descReais > 0 ?
+      '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:11px"><span style="color:#64748b">Subtotal:</span><span>'+fmtMoney(subtotal)+'</span></div>' +
+      '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:11px"><span style="color:#dc2626">Desconto:</span><span style="color:#dc2626">- '+fmtMoney(descReais)+'</span></div>'
+    : '') +
+    '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:16px;font-weight:800"><span style="color:#1e3a5f">TOTAL:</span><span style="color:#16a34a">'+fmtMoney(total)+'</span></div>' +
+    '</div></div>' +
+    // Pagamento
+    pagHtml +
     // Rodapé
-    '<div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center">' +
-    '🛡️ Orçamento válido por 30 dias. Ótica Horizonte — Seu olhar, nosso compromisso.</div>' +
+    '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10px;color:#166534;text-align:center">' +
+    '📅 Orçamento válido por <strong>30 dias</strong> a partir de '+dataOrc+'. Ótica Horizonte — Seu olhar, nosso compromisso.' +
+    '</div>' +
     '<div class="no-print" style="text-align:center;margin-top:20px">' +
-    '<button onclick="window.print()" style="padding:12px 32px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-right:10px">🖨️ Imprimir / Salvar PDF</button>' +
-    '<button onclick="window.close()" style="padding:12px 24px;background:#64748b;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer">✕ Fechar</button>' +
+    '<button onclick="window.print()" style="padding:12px 32px;background:#0d2b4e;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700;margin-right:10px">🖨️ Imprimir / Salvar PDF</button>' +
+    '<button onclick="window.close()" style="padding:12px 24px;background:#64748b;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer">✕ Fechar</button>' +
     '</div></body></html>';
 
   var win = window.open('', '_blank', 'width=700,height=900');
   if (win) { win.document.write(html); win.document.close(); setTimeout(function(){ win.focus(); }, 300); }
+  else { showToast('Permita popups para imprimir!', 'warning'); }
 }
+
 
 function delComposicao(id) {
   confirmar('Excluir este orçamento?', function() {
