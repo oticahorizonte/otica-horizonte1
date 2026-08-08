@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v489</title>
+<title>Ótica Horizonte — Sistema de Gestão v493</title>
 <link rel="icon" type="image/png" href="icon-192.png"/>
 <link rel="shortcut icon" type="image/png" href="icon-192.png"/>
 <style>
@@ -2852,7 +2852,7 @@ function instalarApp() {
       <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
       <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
     </div>
-    <div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v358</div>
+    <div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v493</div>
   </div>
 
 </aside>
@@ -5722,7 +5722,7 @@ async function syncLocalToCloud() {
     // Enviar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
-      'usuarios','metas_vendas','config_comissao','prolabore'];
+      'usuarios','metas_vendas','config_comissao','prolabore','meta_faturamento'];
     for (var k of modulosCriticos) {
       try {
         var data = JSON.parse(localStorage.getItem(KEYS[k] || ('otica_'+k)) || '[]');
@@ -5758,7 +5758,7 @@ async function syncFirebaseToLocal() {
     // Baixar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
-      'usuarios','metas_vendas','config_comissao','prolabore'];
+      'usuarios','metas_vendas','config_comissao','prolabore','meta_faturamento'];
     // Módulos que precisam de MESCLAGEM (nunca perder dados locais não sincronizados)
     var modulosMesclar = ['vendas','os','composicoes','clientes','receitas','agendamentos','despesas','entradas','prolabore'];
 
