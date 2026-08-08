@@ -11832,8 +11832,9 @@ function filtrarOrcUnif() {
     if (b.cat==='Serviço' && a.cat!=='Serviço') return 1;
     return (a.desc||'').localeCompare(b.desc||'', 'pt-BR', {sensitivity:'base'});
   });
-  if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
+  if (filtrados.length === 0) { lista.innerHTML='<div style="padding:14px;text-align:center;color:#94a3b8">Nenhum produto encontrado</div>'; lista.style.display='block'; return; }
   lista.style.display = 'block';
+  lista.innerHTML = '';
   var icones = {'Armação':'🕶️','Lente':'🔍','Solar':'☀️','Acessório':'🎁','Contato':'👁️','Serviço':'🔧'};
   var html = '';
   filtrados.slice(0,15).forEach(function(p) {
