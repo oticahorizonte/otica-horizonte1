@@ -4506,7 +4506,7 @@ function instalarApp() {
 
 
 <!-- ABAS MOBILE - ocultas no PC -->
-<div id="venda-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
+<div id="orc-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
   <div style="display:flex">
     <button id="btn-aba-produtos" onclick="abaOrc('produtos')"
       style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
@@ -4523,7 +4523,7 @@ function instalarApp() {
 <div id="orc-grid" style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
-  <div id="venda-col-esq" style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
+  <div id="orc-col-esq" style="display:flex;flex-direction:column;overflow:hidden;background:#f8fafc">
 
     <!-- Barra de busca unificada -->
     <div style="padding:12px 16px;background:white;border-bottom:2px solid #e2e8f0;display:flex;gap:8px;align-items:center">
@@ -4570,7 +4570,7 @@ function instalarApp() {
   </div>
 
   <!-- COLUNA DIREITA: Painel interno + Totais -->
-  <div id="venda-col-dir" class="aba-oculta" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
+  <div id="orc-col-dir" class="aba-oculta" style="background:#0d2b4e;display:flex;flex-direction:column;overflow-y:auto">
     <!-- Campos de venda - Data, Pagamento, Vendedor, Status -->
     <div style="background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.1);padding:12px 14px">
       <!-- Data + Hora na mesma linha -->
@@ -4578,12 +4578,12 @@ function instalarApp() {
         <!-- Data -->
         <div>
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">📅 Data</label>
-          <input id="venda-data" type="date" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
+          <input id="orc-data" type="date" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
         </div>
         <!-- Hora -->
         <div>
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">🕐 Hora</label>
-          <input id="venda-hora" type="time" style="width:80px;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
+          <input id="orc-hora" type="time" style="width:80px;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark"/>
         </div>
       </div>
       <!-- Vendedor — linha inteira -->
@@ -4607,12 +4607,7 @@ function instalarApp() {
               <option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option>
             </select>
           </div>
-          <div>
-            <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">Status</label>
-            <select id="orc-status" style="width:100%;padding:7px 6px;background:#0d2b4e;border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:11px;outline:none;cursor:pointer">
-              <option>Pago</option><option>Pendente</option><option>Cancelado</option>
-            </select>
-          </div>
+          
         </div>
       </div>
     </div>
@@ -4665,7 +4660,7 @@ function instalarApp() {
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="color:rgba(255,255,255,.7);font-size:13px">Subtotal</span>
-        <span id="venda-unif-subtotal" style="color:white;font-weight:700;font-size:14px">R$ 0,00</span>
+        <span id="orc-unif-subtotal" style="color:white;font-weight:700;font-size:14px">R$ 0,00</span>
       </div>
 
       <!-- Desconto -->
@@ -11781,7 +11776,9 @@ function calcOrcTotais() {
   var total = Math.max(0, subtotal - descReais);
   var totalEl = document.getElementById('orc-unif-total');
   var descInfoEl = document.getElementById('orc-unif-desc-info');
+  var subtotalEl = document.getElementById('orc-unif-subtotal');
   if (totalEl) totalEl.textContent = fmtMoney(total);
+  if (subtotalEl) subtotalEl.textContent = fmtMoney(subtotal);
   if (descInfoEl) descInfoEl.textContent = descReais > 0 ? 'Desconto: ' + fmtMoney(descReais) : '';
   renderOrcCarrinho();
 }
@@ -11795,7 +11792,7 @@ function renderOrcCarrinho() {
   }
   tbody.innerHTML = _orcItens.map(function(item, idx) {
     var isOculos = item.tipo === 'oculos-completo';
-    var nome = isOculos ? '🕶️ <strong>Óculos Completo</strong>' : item.nome;
+    var nome = isOculos ? '🕶️ <strong>Óculos Completo</strong>' : (item.nome||'').replace(/\n/g,' ').replace(/\r/g,'');
     var detalhes = '';
     if (isOculos && item.detalhes) {
       var arm = item.detalhes.find(function(d){return d.isArmacao;});
@@ -11889,6 +11886,7 @@ function adicionarOrcItem(cod) {
   else { _orcItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:qtd}); }
   if (qtdEl) qtdEl.value = 1;
   calcOrcTotais();
+  renderOrcCarrinho();
   showToast('✅ ' + p.desc + ' adicionado!', 'success');
 }
 
@@ -11932,6 +11930,18 @@ function iniciarAbasOrcMobile() {
 function initOrcModal() {
   _orcItens = [];
   _orcGrupoAtual = null;
+  // Preencher data e hora automaticamente
+  var hoje = new Date();
+  var dataStr = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  var horaStr = String(hoje.getHours()).padStart(2,'0')+':'+String(hoje.getMinutes()).padStart(2,'0');
+  var dataEl = document.getElementById('orc-data');
+  var horaEl = document.getElementById('orc-hora');
+  if (dataEl) dataEl.value = dataStr;
+  if (horaEl) horaEl.value = horaStr;
+  // Preencher vendedor logado
+  var user = loadUser();
+  var vendEl = document.getElementById('orc-vendedor');
+  if (vendEl && user) vendEl.value = user.nome || user.login || '';
   renderOrcCarrinho();
   calcOrcTotais();
   if (typeof popularClienteSelect === 'function') popularClienteSelect('orc-cliente');
