@@ -4595,7 +4595,7 @@ function instalarApp() {
         <!-- Pagamento -->
         <div>
           <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">💳 Pagamento</label>
-          <select id="orc-pag" onchange="onChangePagamento()" style="width:100%;padding:7px 8px;background:#0d2b4e;border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer">
+          <select id="orc-pag" onchange="onOrcPagChange()" style="width:100%;padding:7px 8px;background:#0d2b4e;border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer">
             <option>PIX</option><option>Dinheiro</option><option>Cartão Crédito</option><option>Cartão Débito</option><option>Crediário Próprio</option>
           </select>
         </div>
@@ -4618,7 +4618,7 @@ function instalarApp() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
           <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Entrada (R$) *</label>
-          <input id="orc-cred-entrada" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()"
+          <input id="orc-cred-entrada" oninput="calcOrcCrediario()" type="number" min="0" step="0.01" placeholder="0,00" oninput="atualizarPreviewCrediario()"
             style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:13px;font-weight:700;background:white"/>
         </div>
         <div>
@@ -4629,7 +4629,7 @@ function instalarApp() {
         </div>
         <div>
           <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Nº Parcelas</label>
-          <select id="orc-cred-parcelas" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
+          <select id="orc-cred-parcelas" onchange="calcOrcCrediario()" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
             <option value="1">À Vista</option>
             <option value="2">2x</option>
             <option value="3">3x</option>
@@ -4640,7 +4640,7 @@ function instalarApp() {
         </div>
         <div>
           <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Periodicidade</label>
-          <select id="orc-cred-periodo" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
+          <select id="orc-cred-periodo" onchange="calcOrcCrediario()" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
             <option value="mensal">Mensal (30 dias)</option>
             <option value="quinzenal">Quinzenal (15 dias)</option>
             <option value="semanal">Semanal (7 dias)</option>
@@ -4670,13 +4670,13 @@ function instalarApp() {
           <div>
             <label style="font-size:9px;color:rgba(255,255,255,.5)">Em R$</label>
             <input id="orc-unif-desc-reais" type="number" min="0" step="0.01" placeholder="0,00"
-              oninput="syncDescVendaUnif('reais')"
+              oninput="syncDescOrcUnif('reais')"
               style="width:100%;padding:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:white;font-size:12px;font-weight:600;outline:none"/>
           </div>
           <div>
             <label style="font-size:9px;color:rgba(255,255,255,.5)">Em %</label>
             <input id="orc-unif-desc-pct" type="number" min="0" max="100" step="0.1" placeholder="0%"
-              oninput="syncDescVendaUnif('pct')"
+              oninput="syncDescOrcUnif('pct')"
               style="width:100%;padding:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:white;font-size:12px;font-weight:600;outline:none"/>
           </div>
         </div>
@@ -11801,6 +11801,8 @@ function renderOrcCarrinho() {
       if (len) detalhes += '<br><small style="color:#64748b">↳ ' + len.nome + '</small>';
     }
     return '<tr style="border-bottom:1px solid #e2e8f0;background:' + (isOculos?'#eff6ff':'white') + '">' +
+      '<td style="padding:8px 10px;text-align:center;font-size:12px;color:#64748b">' + (idx+1) + '</td>' +
+      '<td style="padding:8px 10px;font-size:11px;color:#64748b">' + (item.cod||'—') + '</td>' +
       '<td style="padding:8px 10px;font-size:12px">' + nome + detalhes + '</td>' +
       '<td style="padding:8px 10px;text-align:center;font-size:12px">' + (item.qtd||1) + '</td>' +
       '<td style="padding:8px 10px;text-align:right;font-size:12px">' + fmtMoney(item.preco||0) + '</td>' +
@@ -11875,10 +11877,10 @@ function adicionarOrcItem(cod) {
   if (!p) return;
   // Verificar se é armação - perguntar se óculos completo
   if (p.cat === 'Armação') {
-    if (confirm('Armação: ' + p.desc + ' — Montar Óculos Completo? (OK = Completo | Cancelar = Só armação)')) {
-      confirmarOpcaoOculosOrc(p.cod, qtd);
-      return;
-    }
+    // Usar modal bonito igual ao de Nova Venda
+    _orcPendingArmacao = {cod: p.cod, qtd: qtd};
+    mostrarOpcaoOculosOrc(p);
+    return;
   }
   // Item avulso
   var existente = _orcItens.find(function(i){ return i.cod===cod && i.tipo!=='oculos-completo'; });
@@ -11888,6 +11890,42 @@ function adicionarOrcItem(cod) {
   calcOrcTotais();
   renderOrcCarrinho();
   showToast('✅ ' + p.desc + ' adicionado!', 'success');
+}
+
+
+var _orcPendingArmacao = null;
+
+function mostrarOpcaoOculosOrc(p) {
+  var existing = document.getElementById('modal-opcao-oculos-orc');
+  if (existing) existing.remove();
+  var modal = document.createElement('div');
+  modal.id = 'modal-opcao-oculos-orc';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:white;border-radius:16px;padding:24px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3)';
+  inner.innerHTML = '<div style="font-size:16px;font-weight:800;color:#0d2b4e;margin-bottom:8px">🕶️ ' + p.desc + '</div>' +
+    '<div style="font-size:13px;color:#64748b;margin-bottom:20px">Como deseja adicionar esta armação?</div>' +
+    '<button id="btn-orc-oculos-completo" style="width:100%;padding:14px;background:linear-gradient(135deg,#0d2b4e,#1a4a7a);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">🕶️ Óculos Completo<br><span style="font-size:10px;opacity:.8">armação + lente + exame</span></button>' +
+    '<button id="btn-orc-so-armacao" style="width:100%;padding:12px;background:#f1f5f9;color:#0d2b4e;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">Só a Armação</button>';
+  modal.appendChild(inner);
+  document.body.appendChild(modal);
+  document.getElementById('btn-orc-oculos-completo').onclick = function() {
+    modal.remove();
+    if (_orcPendingArmacao) confirmarOpcaoOculosOrc(_orcPendingArmacao.cod, _orcPendingArmacao.qtd);
+    _orcPendingArmacao = null;
+  };
+  document.getElementById('btn-orc-so-armacao').onclick = function() {
+    modal.remove();
+    if (_orcPendingArmacao) {
+      var prod = load('produtos').find(function(x){ return x.cod===_orcPendingArmacao.cod; });
+      if (prod) {
+        _orcItens.push({cod:prod.cod, nome:prod.desc, cat:prod.cat, preco:prod.venda, custo:prod.custo||0, qtd:_orcPendingArmacao.qtd});
+        calcOrcTotais();
+        showToast('✅ ' + prod.desc + ' adicionado!', 'success');
+      }
+    }
+    _orcPendingArmacao = null;
+  };
 }
 
 function confirmarOpcaoOculosOrc(armCod, qtd) {
@@ -11945,6 +11983,59 @@ function initOrcModal() {
   renderOrcCarrinho();
   calcOrcTotais();
   if (typeof popularClienteSelect === 'function') popularClienteSelect('orc-cliente');
+}
+
+
+function syncDescOrcUnif(origem) {
+  var subtotal = _orcItens.reduce(function(s,i){ return s+(i.preco||0)*(i.qtd||1); },0);
+  var reaisEl = document.getElementById('orc-unif-desc-reais');
+  var pctEl = document.getElementById('orc-unif-desc-pct');
+  if (!reaisEl || !pctEl) return;
+  if (origem === 'reais') {
+    var reais = parseFloat(reaisEl.value) || 0;
+    var pct = subtotal > 0 ? (reais/subtotal*100) : 0;
+    if (document.activeElement !== pctEl) pctEl.value = pct > 0 ? pct.toFixed(1) : '';
+  } else {
+    var pct = parseFloat(pctEl.value) || 0;
+    var reais = subtotal > 0 ? (subtotal*pct/100) : 0;
+    if (document.activeElement !== reaisEl) reaisEl.value = reais > 0 ? reais.toFixed(2) : '';
+  }
+  calcOrcTotais();
+}
+
+function onOrcPagChange() {
+  var pag = document.getElementById('orc-pag');
+  var credBox = document.getElementById('orc-crediario-box');
+  if (!pag || !credBox) return;
+  if (pag.value === 'Crediário Próprio') {
+    credBox.style.display = 'block';
+    // Calcular parcelas automaticamente
+    calcOrcCrediario();
+  } else {
+    credBox.style.display = 'none';
+  }
+}
+
+function calcOrcCrediario() {
+  var subtotal = _orcItens.reduce(function(s,i){ return s+(i.preco||0)*(i.qtd||1); },0);
+  var descReaisEl = document.getElementById('orc-unif-desc-reais');
+  var descReais = parseFloat((descReaisEl?descReaisEl.value:'0')) || 0;
+  var total = Math.max(0, subtotal - descReais);
+  var entradaEl = document.getElementById('orc-cred-entrada');
+  var parcelasEl = document.getElementById('orc-cred-parcelas');
+  var periodoEl = document.getElementById('orc-cred-periodo');
+  var previewEl = document.getElementById('orc-cred-preview');
+  if (!entradaEl || !parcelasEl || !previewEl) return;
+  var entrada = parseFloat(entradaEl.value) || 0;
+  var nParcelas = parseInt(parcelasEl.value) || 1;
+  var restante = total - entrada;
+  var valorParcela = nParcelas > 0 ? restante/nParcelas : restante;
+  var html = '<div style="font-size:12px;color:#0d2b4e;margin-top:8px">';
+  html += '<div>Entrada: <strong>' + fmtMoney(entrada) + '</strong></div>';
+  html += '<div>' + nParcelas + 'x de <strong>' + fmtMoney(valorParcela) + '</strong></div>';
+  html += '<div>Restante: <strong>' + fmtMoney(restante) + '</strong></div>';
+  html += '</div>';
+  previewEl.innerHTML = html;
 }
 
 function cancelarOrcamento(id) {
