@@ -4498,7 +4498,7 @@ function instalarApp() {
     <select id="orc-cliente" style="display:none"></select>
   </div>
   <!-- Botão Ver Histórico -->
-  <button onclick="verRegistroVendas()" style="color:#0d2b4e;background:linear-gradient(135deg,#e8c96a,#c9a84c);border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;box-shadow:0 3px 12px rgba(201,168,76,.5);letter-spacing:.3px;transition:all .2s" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 5px 18px rgba(201,168,76,.7)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 3px 12px rgba(201,168,76,.5)'">
+  <button onclick="closeModal('modal-novo-orcamento');showSection('orcamentos')" style="color:#0d2b4e;background:linear-gradient(135deg,#e8c96a,#c9a84c);border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;box-shadow:0 3px 12px rgba(201,168,76,.5);letter-spacing:.3px;transition:all .2s" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 5px 18px rgba(201,168,76,.7)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 3px 12px rgba(201,168,76,.5)'">
     <span style="font-size:16px">📋</span>
     <span>Ver Histórico</span>
   </button>
@@ -4508,11 +4508,11 @@ function instalarApp() {
 <!-- ABAS MOBILE - ocultas no PC -->
 <div id="venda-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
   <div style="display:flex">
-    <button id="btn-aba-produtos" onclick="abaVenda('produtos')"
+    <button id="btn-aba-produtos" onclick="abaOrc('produtos')"
       style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
       🔍 Produtos
     </button>
-    <button id="btn-aba-pagamento" onclick="abaVenda('pagamento')"
+    <button id="btn-aba-pagamento" onclick="abaOrc('pagamento')"
       style="flex:1;padding:11px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer">
       💰 Pagamento
     </button>
@@ -4528,9 +4528,9 @@ function instalarApp() {
     <!-- Barra de busca unificada -->
     <div style="padding:12px 16px;background:white;border-bottom:2px solid #e2e8f0;display:flex;gap:8px;align-items:center">
       <div style="flex:1;position:relative">
-        <input id="venda-busca-unif" type="text" autocomplete="off"
+        <input id="orc-busca-unif" type="text" autocomplete="off"
           placeholder="🔍 Buscar produto (armação, lente, solar, serviço...)"
-          oninput="filtrarVendaUnif()" onkeydown="onVendaUnifKeydown(event)" onfocus="filtrarVendaUnif()"
+          oninput="filtrarOrcUnif()" onkeydown="onOrcUnifKeydown(event)" onfocus="filtrarOrcUnif()"
           style="width:100%;padding:10px 14px;border:2px solid #0d2b4e;border-radius:10px;font-size:14px;font-weight:600;outline:none;background:white"/>
         <div id="orc-unif-lista" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:white;border:1px solid #dde3ee;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);max-height:280px;overflow-y:auto;width:100%;margin-top:4px"></div>
       </div>
@@ -5328,7 +5328,7 @@ function instalarApp() {
 </div>
 <div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:20px;border-left:4px solid #0ea5e9">
 <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px">👤 Cliente</div>
-<div id="orc-cliente" style="font-size:15px;font-weight:600"></div>
+<div id="orc-view-cliente" style="font-size:15px;font-weight:600"></div>
 <div id="orc-desc" style="font-size:13px;color:#64748b;margin-top:2px"></div>
 </div>
 <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
@@ -11581,10 +11581,8 @@ function abrirNovoOrcamentoModal() {
   var descReais = document.getElementById('orc-unif-desc-reais');
   if (descReais) descReais.value = '';
   // Popular selects de clientes e produtos
-  if (typeof popularClienteSelect === 'function') popularClienteSelect('orc-cliente');
-  if (typeof popularProdutosVenda === 'function') popularProdutosVenda();
+  initOrcModal();
   openModal('modal-novo-orcamento');
-  if (typeof calcVendaTotais === 'function') calcVendaTotais();
 }
 
 function renderSecOrcamentos() {
@@ -11722,13 +11720,13 @@ function saveOrcamentoNovo() {
   }
 
   if (!clienteId) { showToast('Selecione um cliente!', 'warning'); return; }
-  if (!_vendaItens || _vendaItens.length === 0) { showToast('Adicione pelo menos um produto!', 'warning'); return; }
+  if (!_orcItens || _orcItens.length === 0) { showToast('Adicione pelo menos um produto!', 'warning'); return; }
 
   var descReaisEl = document.getElementById('orc-unif-desc-reais');
   var descReais = parseFloat((descReaisEl ? descReaisEl.value : '0').replace(',','.')) || 0;
-  var subtotal = _vendaItens.reduce(function(s,i){ return s + (i.preco||0)*(i.qtd||1); }, 0);
+  var subtotal = _orcItens.reduce(function(s,i){ return s + (i.preco||0)*(i.qtd||1); }, 0);
   var totalCli = Math.max(0, subtotal - descReais);
-  var custoTotal = _vendaItens.reduce(function(s,i){ return s + (i.custo||0)*(i.qtd||1); }, 0);
+  var custoTotal = _orcItens.reduce(function(s,i){ return s + (i.custo||0)*(i.qtd||1); }, 0);
 
   var pagEl = document.getElementById('orc-pag');
   var pag = pagEl ? pagEl.value : 'PIX';
@@ -11738,14 +11736,14 @@ function saveOrcamentoNovo() {
 
   // Descrição automática
   var clMap = Object.fromEntries(load('clientes').map(function(c){ return [c.id, c.nome]; }));
-  var desc = _vendaItens.map(function(i){ return i.nome; }).join(' + ');
+  var desc = _orcItens.map(function(i){ return i.nome; }).join(' + ');
 
   var orc = {
     id: novoId,
     data: new Date().toISOString().split('T')[0],
     clienteId: clienteId,
     desc: desc,
-    carrinho: JSON.parse(JSON.stringify(_vendaItens)),
+    carrinho: JSON.parse(JSON.stringify(_orcItens)),
     recBruta: subtotal,
     totalCli: totalCli,
     descReais: descReais,
@@ -11766,6 +11764,176 @@ function saveOrcamentoNovo() {
 
   showToast('📋 Orçamento #' + novoId + ' salvo com sucesso!', 'success');
   showSection('orcamentos');
+}
+
+
+// ══ FUNÇÕES DO MODAL DE NOVO ORÇAMENTO ══════════════════════════
+
+// Carrinho do orçamento (separado do _vendaItens)
+var _orcItens = [];
+var _orcGrupoAtual = null;
+
+function calcOrcTotais() {
+  var subtotal = _orcItens.reduce(function(s,i){ return s+(i.preco||0)*(i.qtd||1); },0);
+  var descReaisEl = document.getElementById('orc-unif-desc-reais');
+  var descPctEl = document.getElementById('orc-unif-desc-pct');
+  var descReais = parseFloat((descReaisEl?descReaisEl.value:'0').replace(',','.')) || 0;
+  var total = Math.max(0, subtotal - descReais);
+  var totalEl = document.getElementById('orc-unif-total');
+  var descInfoEl = document.getElementById('orc-unif-desc-info');
+  if (totalEl) totalEl.textContent = fmtMoney(total);
+  if (descInfoEl) descInfoEl.textContent = descReais > 0 ? 'Desconto: ' + fmtMoney(descReais) : '';
+  renderOrcCarrinho();
+}
+
+function renderOrcCarrinho() {
+  var tbody = document.getElementById('orc-unif-itens');
+  if (!tbody) return;
+  if (_orcItens.length === 0) {
+    tbody.innerHTML = '<tr id="orc-unif-empty"><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = _orcItens.map(function(item, idx) {
+    var isOculos = item.tipo === 'oculos-completo';
+    var nome = isOculos ? '🕶️ <strong>Óculos Completo</strong>' : item.nome;
+    var detalhes = '';
+    if (isOculos && item.detalhes) {
+      var arm = item.detalhes.find(function(d){return d.isArmacao;});
+      var len = item.detalhes.find(function(d){return d.isLente;});
+      if (arm) detalhes += '<br><small style="color:#64748b">↳ ' + arm.nome + '</small>';
+      if (len) detalhes += '<br><small style="color:#64748b">↳ ' + len.nome + '</small>';
+    }
+    return '<tr style="border-bottom:1px solid #e2e8f0;background:' + (isOculos?'#eff6ff':'white') + '">' +
+      '<td style="padding:8px 10px;font-size:12px">' + nome + detalhes + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-size:12px">' + (item.qtd||1) + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-size:12px">' + fmtMoney(item.preco||0) + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-size:12px;font-weight:700;color:#16a34a">' + fmtMoney((item.preco||0)*(item.qtd||1)) + '</td>' +
+      '<td style="padding:8px 10px;text-align:center"><button onclick="removerOrcItem(' + idx + ')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">✕</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function removerOrcItem(idx) {
+  _orcItens.splice(idx, 1);
+  calcOrcTotais();
+}
+
+function filtrarOrcUnif() {
+  var input = document.getElementById('orc-busca-unif');
+  var lista = document.getElementById('orc-unif-lista');
+  if (!input || !lista) return;
+  var q = input.value.toLowerCase().trim();
+  var produtos = load('produtos');
+  var filtrados = produtos.filter(function(p) {
+    if (!q) return true;
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
+  }).sort(function(a,b) {
+    if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
+    if (b.cat==='Serviço' && a.cat!=='Serviço') return 1;
+    return (a.desc||'').localeCompare(b.desc||'', 'pt-BR', {sensitivity:'base'});
+  });
+  if (!q && filtrados.length === 0) { lista.style.display='none'; return; }
+  lista.style.display = 'block';
+  var icones = {'Armação':'🕶️','Lente':'🔍','Solar':'☀️','Acessório':'🎁','Contato':'👁️','Serviço':'🔧'};
+  var html = '';
+  filtrados.slice(0,15).forEach(function(p) {
+    var icone = icones[p.cat] || '📦';
+    var isServico = p.cat === 'Serviço';
+    var bg = isServico ? '#f0fdf4' : 'white';
+    var estoqueInfo = isServico ? '<span style="color:#0ea5e9;font-size:10px">Serviço</span>' :
+      (p.qtd <= p.min ? '<span style="color:#dc2626;font-size:10px">⚠️ '+p.qtd+' un.</span>' :
+      '<span style="color:#16a34a;font-size:10px">'+p.qtd+' un.</span>');
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;background:'+bg;
+    div.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">'+icone+'</span><div style="flex:1"><div style="font-weight:700;color:#0d2b4e;font-size:13px">'+p.desc+'</div><div style="display:flex;gap:8px;align-items:center;margin-top:2px"><span style="color:#64748b;font-size:11px">'+p.cod+'</span><span style="color:#16a34a;font-size:12px;font-weight:700">R$ '+p.venda+'</span>'+estoqueInfo+'</div></div></div>';
+    div.addEventListener('mouseover', function(){ this.style.background='#f0f4ff'; });
+    div.addEventListener('mouseout', function(){ this.style.background=bg; });
+    div.addEventListener('click', function(){ adicionarOrcItem(p.cod); });
+    lista.appendChild(div);
+    html = 'ok';
+  });
+  if (!html) lista.innerHTML = '<div style="padding:14px;text-align:center;color:#94a3b8">Nenhum produto encontrado</div>';
+  setTimeout(function() {
+    document.addEventListener('click', function fecharOrc(e) {
+      var l = document.getElementById('orc-unif-lista');
+      var i = document.getElementById('orc-busca-unif');
+      if (l && !l.contains(e.target) && e.target !== i) {
+        l.style.display='none';
+        document.removeEventListener('click', fecharOrc);
+      }
+    });
+  }, 100);
+}
+
+
+function adicionarOrcItem(cod) {
+  var lista = document.getElementById('orc-unif-lista');
+  if (lista) lista.style.display = 'none';
+  var input = document.getElementById('orc-busca-unif');
+  if (input) input.value = '';
+  var qtdEl = document.getElementById('orc-unif-qtd');
+  var qtd = parseInt(qtdEl ? qtdEl.value : 1) || 1;
+  var p = load('produtos').find(function(x){ return x.cod === cod; });
+  if (!p) return;
+  // Verificar se é armação - perguntar se óculos completo
+  if (p.cat === 'Armação') {
+    if (confirm('Armação: ' + p.desc + ' — Montar Óculos Completo? (OK = Completo | Cancelar = Só armação)')) {
+      confirmarOpcaoOculosOrc(p.cod, qtd);
+      return;
+    }
+  }
+  // Item avulso
+  var existente = _orcItens.find(function(i){ return i.cod===cod && i.tipo!=='oculos-completo'; });
+  if (existente) { existente.qtd += qtd; }
+  else { _orcItens.push({cod:p.cod, nome:p.desc, cat:p.cat, preco:p.venda, custo:p.custo||0, qtd:qtd}); }
+  if (qtdEl) qtdEl.value = 1;
+  calcOrcTotais();
+  showToast('✅ ' + p.desc + ' adicionado!', 'success');
+}
+
+function confirmarOpcaoOculosOrc(armCod, qtd) {
+  var armP = load('produtos').find(function(p){ return p.cod===armCod; });
+  if (!armP) return;
+  var grupoId = 'ORC-' + Date.now();
+  // Adicionar armação
+  _orcItens.push({cod:armP.cod, nome:armP.desc, cat:armP.cat, preco:armP.venda, custo:armP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:grupoId, isArmacao:true});
+  calcOrcTotais();
+  showToast('🕶️ Armação adicionada! Agora busque a lente.', 'success');
+}
+
+function onOrcUnifKeydown(e) {
+  if (e.key === 'Enter') {
+    var lista = document.getElementById('orc-unif-lista');
+    if (lista && lista.style.display !== 'none') {
+      var primeiro = lista.querySelector('div[onclick]');
+      if (primeiro) { primeiro.click(); return; }
+    }
+    var q = document.getElementById('orc-busca-unif').value.trim().toUpperCase();
+    var p = load('produtos').find(function(x){ return x.cod.toUpperCase()===q; });
+    if (p) adicionarOrcItem(p.cod);
+  }
+}
+
+function abaOrc(aba) {
+  var tabs = ['produtos','pagamento'];
+  tabs.forEach(function(t) {
+    var btn = document.getElementById('orc-tab-'+t);
+    var content = document.getElementById('orc-tab-content-'+t);
+    if (btn) btn.classList.toggle('active', t===aba);
+    if (content) content.classList.toggle('active', t===aba);
+  });
+}
+
+function iniciarAbasOrcMobile() {
+  if (window.innerWidth <= 768) abaOrc('produtos');
+}
+
+function initOrcModal() {
+  _orcItens = [];
+  _orcGrupoAtual = null;
+  renderOrcCarrinho();
+  calcOrcTotais();
+  if (typeof popularClienteSelect === 'function') popularClienteSelect('orc-cliente');
 }
 
 function cancelarOrcamento(id) {
@@ -14402,7 +14570,7 @@ function adicionarCaixaRapida(cod) {
 
   // Se for armação, perguntar se quer adicionar como óculos completo
   if (p.cat === 'Armação') {
-    if (confirm('🕶️ Armação selecionada: ' + p.desc + '\n\nDeseja montar um Óculos Completo (armação + lente + exame)?\n\nOK = Óculos Completo | Cancelar = Só a armação')) {
+    if (confirm('Armação: ' + p.desc + ' — Montar Óculos Completo? (OK = Completo | Cancelar = Só armação)')) {
       // Preencher o campo de armação do óculos completo
       var armBusca = document.getElementById('venda-arm-busca');
       var armSelect = document.getElementById('venda-arm-select');
