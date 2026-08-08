@@ -11680,6 +11680,7 @@ function renderSecOrcamentos() {
       acoes += '<button class="btn btn-sm btn-success" onclick="fecharOrcamentoPendente(' + c.id + ')" data-tip="Converter em venda" style="font-weight:700">✅ Fechar Venda</button> ';
     }
     acoes += '<button class="btn btn-sm" onclick="imprimirOrcamentoById(' + c.id + ')" data-tip="Imprimir orçamento" style="background:#0ea5e9;color:white">🖨️</button> ';
+    acoes += '<button class="btn btn-sm" onclick="whatsappOrcamento(' + c.id + ')" data-tip="WhatsApp" style="background:#16a34a;color:white">📱</button> ';
     if (st === 'pendente') {
       acoes += '<button class="btn btn-sm btn-outline" onclick="cancelarOrcamento(' + c.id + ')" data-tip="Cancelar orçamento">✖️</button> ';
     }
@@ -11757,6 +11758,14 @@ function saveOrcamentoNovo() {
   var tbody = document.getElementById('orc-unif-itens');
   if (tbody) tbody.innerHTML = '<tr id="orc-unif-empty"><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div></td></tr>';
 
+  _orcItens=[]; _orcGrupoAtual=null;
+  var _e; _e=document.getElementById('orc-cliente-busca'); if(_e)_e.value='';
+  _e=document.getElementById('orc-cliente'); if(_e)_e.value='';
+  _e=document.getElementById('orc-unif-desc-reais'); if(_e)_e.value='';
+  _e=document.getElementById('orc-unif-desc-pct'); if(_e)_e.value='';
+  _e=document.getElementById('orc-crediario-box'); if(_e)_e.style.display='none';
+  _e=document.getElementById('orc-unif-total'); if(_e)_e.textContent='R$ 0,00';
+  renderOrcCarrinho();
   showToast('📋 Orçamento #' + novoId + ' salvo com sucesso!', 'success');
   showSection('orcamentos');
 }
@@ -11787,30 +11796,60 @@ function renderOrcCarrinho() {
   var tbody = document.getElementById('orc-unif-itens');
   if (!tbody) return;
   if (_orcItens.length === 0) {
-    tbody.innerHTML = '<tr id="orc-unif-empty"><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:50px;text-align:center;color:#94a3b8"><div style="font-size:40px;margin-bottom:10px">🛒</div><div style="font-size:14px;font-weight:600">Busque um produto acima para adicionar</div></td></tr>';
     return;
   }
-  tbody.innerHTML = _orcItens.map(function(item, idx) {
-    var isOculos = item.tipo === 'oculos-completo';
-    var nome = isOculos ? '🕶️ <strong>Óculos Completo</strong>' : (item.nome||'').replace(/\n/g,' ').replace(/\r/g,'');
-    var detalhes = '';
-    if (isOculos && item.detalhes) {
-      var arm = item.detalhes.find(function(d){return d.isArmacao;});
-      var len = item.detalhes.find(function(d){return d.isLente;});
-      if (arm) detalhes += '<br><small style="color:#64748b">↳ ' + arm.nome + '</small>';
-      if (len) detalhes += '<br><small style="color:#64748b">↳ ' + len.nome + '</small>';
-    }
-    return '<tr style="border-bottom:1px solid #e2e8f0;background:' + (isOculos?'#eff6ff':'white') + '">' +
-      '<td style="padding:8px 10px;text-align:center;font-size:12px;color:#64748b">' + (idx+1) + '</td>' +
-      '<td style="padding:8px 10px;font-size:11px;color:#64748b">' + (item.cod||'—') + '</td>' +
-      '<td style="padding:8px 10px;font-size:12px">' + nome + detalhes + '</td>' +
-      '<td style="padding:8px 10px;text-align:center;font-size:12px">' + (item.qtd||1) + '</td>' +
-      '<td style="padding:8px 10px;text-align:right;font-size:12px">' + fmtMoney(item.preco||0) + '</td>' +
-      '<td style="padding:8px 10px;text-align:right;font-size:12px;font-weight:700;color:#16a34a">' + fmtMoney((item.preco||0)*(item.qtd||1)) + '</td>' +
-      '<td style="padding:8px 10px;text-align:center"><button onclick="removerOrcItem(' + idx + ')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">✕</button></td>' +
+  var grupos = {};
+  var avulsos = [];
+  _orcItens.forEach(function(item, i) {
+    if (item.tipo === 'oculos-completo' && item.grupo) {
+      if (!grupos[item.grupo]) grupos[item.grupo] = {itens:[], firstIdx:i};
+      grupos[item.grupo].itens.push({item:item, idx:i});
+    } else { avulsos.push({item:item, idx:i}); }
+  });
+  var rows = '';
+  var rowNum = 1;
+  Object.keys(grupos).forEach(function(gId) {
+    var g = grupos[gId];
+    var arm = g.itens.find(function(x){return x.item.isArmacao;});
+    var len = g.itens.find(function(x){return x.item.isLente;});
+    var exame = g.itens.find(function(x){return x.item.isExame;});
+    var total = g.itens.reduce(function(s,x){return s+(x.item.preco||0)*(x.item.qtd||1);},0);
+    var det = '';
+    if (arm) det += '<br><small style="color:#64748b;font-style:italic">↳ Armação: ' + arm.item.nome + '</small>';
+    if (len) det += '<br><small style="color:#64748b;font-style:italic">↳ Lente: ' + len.item.nome + '</small>';
+    if (exame) det += '<br><small style="color:#64748b;font-style:italic">↳ Exame de Vista: incluso</small>';
+    var safeGid = gId.replace(/'/g, '');
+    rows += '<tr style="border-bottom:1px solid #e2e8f0;background:#eff6ff">' +
+      '<td style="padding:8px 10px;text-align:center;font-size:12px;color:#64748b">' + rowNum++ + '</td>' +
+      '<td style="padding:8px 10px;font-size:11px;color:#64748b">COMP</td>' +
+      '<td style="padding:8px 10px;font-size:12px">🕶️ <strong>Óculos Completo</strong>' + det + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-size:12px">1</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-size:12px">' + fmtMoney(total) + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-size:12px;font-weight:700;color:#16a34a">' + fmtMoney(total) + '</td>' +
+      '<td style="padding:8px 10px;text-align:center"><button data-gid="' + safeGid + '" onclick="removerOrcGrupo(this.dataset.gid)" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">✕</button></td>' +
     '</tr>';
-  }).join('');
+  });
+  avulsos.forEach(function(a) {
+    var nome = (a.item.nome||'').replace(/[\n\r]/g,' ');
+    rows += '<tr style="border-bottom:1px solid #e2e8f0;background:white">' +
+      '<td style="padding:8px 10px;text-align:center;font-size:12px;color:#64748b">' + rowNum++ + '</td>' +
+      '<td style="padding:8px 10px;font-size:11px;color:#64748b">' + (a.item.cod||'—') + '</td>' +
+      '<td style="padding:8px 10px;font-size:12px">' + nome + '</td>' +
+      '<td style="padding:8px 10px;text-align:center;font-size:12px">' + (a.item.qtd||1) + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-size:12px">' + fmtMoney(a.item.preco||0) + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-size:12px;font-weight:700;color:#16a34a">' + fmtMoney((a.item.preco||0)*(a.item.qtd||1)) + '</td>' +
+      '<td style="padding:8px 10px;text-align:center"><button onclick="removerOrcItem(' + a.idx + ')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">✕</button></td>' +
+    '</tr>';
+  });
+  tbody.innerHTML = rows;
 }
+
+function removerOrcGrupo(gId) {
+  _orcItens = _orcItens.filter(function(i){ return i.grupo !== gId; });
+  calcOrcTotais();
+}
+
 
 function removerOrcItem(idx) {
   _orcItens.splice(idx, 1);
@@ -11875,9 +11914,12 @@ function adicionarOrcItem(cod) {
   var qtd = parseInt(qtdEl ? qtdEl.value : 1) || 1;
   var p = load('produtos').find(function(x){ return x.cod === cod; });
   if (!p) return;
+  // Se há grupo em andamento e é lente → adicionar como lente
+  if (_orcGrupoAtual && p.cat === 'Lente') { adicionarLenteOrc(p.cod, qtd); if(qtdEl) qtdEl.value=1; return; }
+  // Se há grupo em andamento e é serviço → adicionar como exame
+  if (_orcGrupoAtual && p.cat === 'Serviço') { adicionarExameOrc(p.cod, qtd); if(qtdEl) qtdEl.value=1; return; }
   // Verificar se é armação - perguntar se óculos completo
   if (p.cat === 'Armação') {
-    // Usar modal bonito igual ao de Nova Venda
     _orcPendingArmacao = {cod: p.cod, qtd: qtd};
     mostrarOpcaoOculosOrc(p);
     return;
@@ -11932,10 +11974,28 @@ function confirmarOpcaoOculosOrc(armCod, qtd) {
   var armP = load('produtos').find(function(p){ return p.cod===armCod; });
   if (!armP) return;
   var grupoId = 'ORC-' + Date.now();
-  // Adicionar armação
+  _orcGrupoAtual = grupoId;
   _orcItens.push({cod:armP.cod, nome:armP.desc, cat:armP.cat, preco:armP.venda, custo:armP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:grupoId, isArmacao:true});
   calcOrcTotais();
   showToast('🕶️ Armação adicionada! Agora busque a lente.', 'success');
+}
+
+function adicionarLenteOrc(lenCod, qtd) {
+  var lenP = load('produtos').find(function(p){ return p.cod===lenCod; });
+  if (!lenP || !_orcGrupoAtual) return;
+  _orcItens.push({cod:lenP.cod, nome:lenP.desc, cat:lenP.cat, preco:lenP.venda, custo:lenP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:_orcGrupoAtual, isLente:true});
+  calcOrcTotais();
+  showToast('🔍 Lente adicionada! Óculos Completo montado.', 'success');
+  _orcGrupoAtual = null;
+}
+
+function adicionarExameOrc(exameCod, qtd) {
+  var exameP = load('produtos').find(function(p){ return p.cod===exameCod; });
+  if (!exameP) return;
+  var g = _orcGrupoAtual || ('ORC-EX-' + Date.now());
+  _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:g, isExame:true});
+  calcOrcTotais();
+  showToast('👨‍⚕️ Exame adicionado!', 'success');
 }
 
 function onOrcUnifKeydown(e) {
@@ -12036,6 +12096,36 @@ function calcOrcCrediario() {
   html += '<div>Restante: <strong>' + fmtMoney(restante) + '</strong></div>';
   html += '</div>';
   previewEl.innerHTML = html;
+}
+
+
+function whatsappOrcamento(id) {
+  var c = load('composicoes').find(function(x){ return x.id===id; });
+  if (!c) return;
+  var clMap = Object.fromEntries(load('clientes').map(function(cl){ return [cl.id,cl]; }));
+  var cliente = clMap[c.clienteId];
+  var nomeCliente = cliente ? cliente.nome : 'Cliente';
+  var user = loadUser();
+  var whatsappNum = '';
+  if (user) { var us = load('usuarios').find(function(u){ return u.login===user.login; }); if(us&&us.whatsapp) whatsappNum=us.whatsapp; }
+  var itensTexto = '';
+  if (c.carrinho && c.carrinho.length > 0) {
+    var grupos = {};
+    c.carrinho.forEach(function(item) {
+      if (item.tipo==='oculos-completo'&&item.grupo) { if(!grupos[item.grupo]) grupos[item.grupo]=[]; grupos[item.grupo].push(item); }
+      else itensTexto += '• ' + item.nome + ' — ' + fmtMoney((item.preco||0)*(item.qtd||1)) + '\n';
+    });
+    Object.keys(grupos).forEach(function(g) {
+      var arm=grupos[g].find(function(i){return i.isArmacao;}), len=grupos[g].find(function(i){return i.isLente;});
+      var tot=grupos[g].reduce(function(s,i){return s+(i.preco||0)*(i.qtd||1);},0);
+      itensTexto += '🕶️ Óculos Completo — ' + fmtMoney(tot) + '\n';
+      if(arm) itensTexto += '   ↳ Armação: ' + arm.nome + '\n';
+      if(len) itensTexto += '   ↳ Lente: ' + len.nome + '\n';
+    });
+  } else { itensTexto = c.desc || 'Orçamento'; }
+  var validade = new Date(new Date(c.data).getTime()+30*86400000).toLocaleDateString('pt-BR');
+  var msg = 'Olá, ' + nomeCliente + '! 😊\n\n📋 *Orçamento #' + c.id + ' — Ótica Horizonte*\n\n' + itensTexto + '\n💰 *Total: ' + fmtMoney(c.totalCli||0) + '*\n📅 Válido até: ' + validade + '\n\nFicamos à disposição!\n📞 (92) 99289-0085';
+  window.open('https://wa.me/' + (whatsappNum||'') + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function cancelarOrcamento(id) {
