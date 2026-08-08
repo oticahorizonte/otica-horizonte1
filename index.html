@@ -128,6 +128,10 @@
     transition: transform .3s cubic-bezier(.4,0,.2,1), width .3s ease;
     box-shadow: 4px 0 20px rgba(0,0,0,.2);
   }
+  /* Sidebar SEMPRE atrás dos modais */
+  body.modal-open .sidebar {
+    z-index: 50 !important;
+  }
   .sidebar.sidebar-hidden {
     transform: translateX(-100%);
   }
@@ -6390,23 +6394,17 @@ function openModal(id) {
   var el = document.getElementById(id);
   if (!el) return;
   el.style.display = 'flex';
-  // Bloquear scroll do body para evitar scroll atrás do modal
   document.body.style.overflow = 'hidden';
-  // Garantir que sidebar fique atrás do modal
-  var sidebar = document.getElementById('sidebar');
-  if (sidebar) sidebar.style.zIndex = '50';
+  document.body.classList.add('modal-open');
 }
 function closeModal(id) {
   var el = document.getElementById(id);
   if (!el) return;
   el.style.display = 'none';
-  // Restaurar scroll do body apenas se não houver outros modais abertos
   var anyOpen = document.querySelectorAll('.modal-overlay[style*="flex"]').length > 0;
   if (!anyOpen) {
     document.body.style.overflow = '';
-    // Restaurar z-index da sidebar
-    var sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.style.zIndex = '';
+    document.body.classList.remove('modal-open');
   }
 }
 
