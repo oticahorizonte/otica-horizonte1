@@ -128,7 +128,15 @@
     transition: width .3s ease;
     box-shadow: 4px 0 20px rgba(0,0,0,.2);
   }
-  /* Sidebar oculta quando modal aberto (via JS) */
+  /* Sidebar SEMPRE atrás dos modais */
+  body.modal-open .sidebar {
+    z-index: 50 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  body.modal-open .sidebar * {
+    pointer-events: none;
+  }
   .sidebar.sidebar-hidden {
     transform: translateX(-100%);
   }
@@ -430,7 +438,7 @@
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(7,24,40,.65);
     backdrop-filter: blur(6px);
-    z-index: 99999; display: flex; align-items: center; justify-content: center;
+    z-index: 9000; display: flex; align-items: center; justify-content: center;
     padding: 16px;
   }
   .modal {
@@ -877,16 +885,8 @@
      PC GRANDE (>1024px) — Sidebar sempre fixa
   ═══════════════════════════════════════════════ */
   @media (min-width: 1025px) {
-    .sidebar { 
-      transform: translateX(0) !important;
-      display: flex !important;
-      left: 0 !important;
-    }
-    .main { 
-      margin-left: var(--sidebar-w) !important;
-      width: calc(100% - var(--sidebar-w)) !important;
-      max-width: calc(100% - var(--sidebar-w)) !important;
-    }
+    .sidebar { transform: translateX(0) !important; }
+    .main { margin-left: var(--sidebar-w) !important; }
     .sidebar-toggle-btn { display: none !important; }
     .section.active { min-height: calc(100vh - 40px); }
   }
@@ -2401,7 +2401,6 @@ function instalarApp() {
     padding: 0 !important;
     align-items: stretch !important;
     justify-content: stretch !important;
-    z-index: 99999 !important;
   }
   #modal-venda .modal {
     width: 100vw !important;
@@ -2765,92 +2764,6 @@ function instalarApp() {
 <!-- ══════════════════════════════════════════════════════════════ -->
 <!-- APP -->
 <!-- ══════════════════════════════════════════════════════════════ -->
-<aside class="sidebar" id="sidebar">
-
-  <!-- HEADER: Logo em destaque -->
-  <div class="sidebar-header" style="text-align:center;position:relative;padding:20px 12px 16px">
-    <button class="sidebar-pin-btn" id="sidebar-pin-btn" onclick="toggleSidebarPin()" title="Fixar/Soltar sidebar" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:rgba(255,255,255,.7);width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">📌</button>
-    <!-- Logo grande em destaque -->
-    <div style="display:flex;justify-content:center;margin-bottom:10px">
-      <div style="border-radius:16px;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5);border:2px solid rgba(201,168,76,.8);width:140px;height:140px;display:flex;align-items:center;justify-content:center">
-        <img alt="Ótica Horizonte" class="sidebar-logo-img" src="icon-192.png" style="width:140px;height:140px;object-fit:contain;display:block;transform:scale(1.6);transform-origin:center center"/>
-      </div>
-    </div>
-    <!-- Nome e tagline -->
-    <div style="margin-bottom:10px">
-      <div style="font-size:15px;font-weight:800;color:#e8c96a;letter-spacing:.5px">ÓTICA HORIZONTE</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5);font-style:italic;margin-top:2px">Seu olhar, nosso compromisso.</div>
-    </div>
-    <!-- Usuário logado -->
-    <div style="background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:7px 12px">
-      <div id="sidebar-user" style="font-size:12px;color:rgba(255,255,255,.9);font-weight:600">Carregando...</div>
-    </div>
-  </div>
-
-  <!-- NAV: Módulos agrupados -->
-  <nav class="sidebar-nav" style="padding:8px 0;overflow-y:auto;flex:1">
-
-    <!-- ◈ OPERAÇÕES -->
-    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
-      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
-      <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ OPERAÇÕES</span>
-      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
-    </div>
-    <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</div>
-    <div class="nav-item" onclick="showSection('vendas')"><span class="icon">💰</span> Vendas &amp; Caixa</div>
-    <div class="nav-item" onclick="showSection('orcamentos')"><span class="icon">📋</span> Orçamentos</div>
-    <div class="nav-item" onclick="showSection('os')"><span class="icon">🔧</span> Ordens de Serviço <span class="nav-badge" id="badge-os" style="display:none">0</span></div>
-    <div class="nav-item" onclick="showSection('agendamentos')"><span class="icon">📅</span> Agendamentos <span class="nav-badge" id="badge-agend" style="display:none">0</span></div>
-    <div class="nav-item" id="nav-comissoes" onclick="showSection('comissoes')"><span class="icon">💈</span> Comissões</div>
-
-    <!-- ◈ CADASTROS -->
-    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
-      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
-      <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ CADASTROS</span>
-      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
-    </div>
-    <div class="nav-item" onclick="showSection('clientes')"><span class="icon">👥</span> Clientes</div>
-    <div class="nav-item" id="nav-receitas" onclick="showSection('receitas')"><span class="icon">📋</span> Receitas Médicas</div>
-    <div class="nav-item" onclick="showSection('produtos')"><span class="icon">📦</span> Produtos &amp; Estoque <span class="nav-badge" id="badge-estoque" style="display:none">0</span></div>
-
-    <!-- ◈ GESTÃO -->
-    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
-      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
-      <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ GESTÃO</span>
-      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
-    </div>
-    <!-- Comissões movido para OPERAÇÕES -->
-    <div class="nav-item" onclick="showSection('despesas')"><span class="icon">💰</span> Financeiro</div>
-    <div class="nav-item" id="nav-relatorios" onclick="showSection('relatorios')"><span class="icon">📈</span> Relatórios</div>
-    <div class="nav-item" id="nav-usuarios" onclick="showSection('usuarios')" style="display:none"><span class="icon">👤</span> Usuários</div>
-
-  </nav>
-
-  <!-- Instalar App movido para Configurações -->
-
-  <!-- FOOTER -->
-  <div class="sidebar-footer" style="padding:12px;border-top:1px solid rgba(201,168,76,.2)">
-    <button onclick="abrirBusca()" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;text-align:left;margin-bottom:8px">
-      🔍 Busca rápida... <kbd style="float:right;background:rgba(255,255,255,.2);padding:1px 5px;border-radius:3px;font-size:10px">Ctrl+K</kbd>
-    </button>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-      <button onclick="abrirMeuCatalogo()" style="padding:8px 4px;background:linear-gradient(135deg,rgba(201,168,76,.4),rgba(201,168,76,.2));border:1px solid rgba(201,168,76,.6);border-radius:8px;color:rgba(255,255,255,.95);font-size:11px;cursor:pointer;font-weight:700">📤 Catálogo</button>
-      <button onclick="openModal('modal-config');setTimeout(abrirModalConfigGitHub,100)" style="padding:8px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">⚙️ Config</button>
-      <button onclick="syncLocalToCloud()" style="padding:8px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">☁️ Enviar</button>
-      <button onclick="syncFirebaseToLocal()" style="padding:8px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">⬇️ Baixar</button>
-    </div>
-    <div id="sync-indicator" style="font-size:10px;text-align:center;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;opacity:.7">
-      <span id="sync-icon" style="font-size:11px">☁️⏳</span>
-      <span id="sync-text" style="color:rgba(255,255,255,.5);font-size:9px">Conectando...</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
-      <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
-    </div>
-    <div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v493</div>
-  </div>
-
-</aside>
 <div id="app">
 <!-- Hamburger Mobile -->
 <!-- Botão toggle sidebar -->
@@ -3047,7 +2960,7 @@ function instalarApp() {
 </div>
 </section>
 <!-- ── PRODUTOS ── -->
-<section class="section" id="sec-produtos">
+<section class="section" id="sec-produtos" style="overflow-x:hidden">
 <div class="topbar">
 <h1>📦 Produtos &amp; Estoque</h1>
 <div class="topbar-actions">
@@ -6409,11 +6322,13 @@ function openModal(id) {
   el.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   document.body.classList.add('modal-open');
-  // SOLUÇÃO: esconder sidebar completamente quando modal abre
+  // CRÍTICO: remover transform da sidebar para evitar stacking context
+  // transform em position:fixed cria novo stacking context, ignorando z-index global
   var sidebar = document.querySelector('aside.sidebar');
   if (sidebar) {
-    sidebar.dataset.savedDisplay = sidebar.style.display || '';
-    sidebar.style.display = 'none';
+    sidebar.dataset.savedTransform = sidebar.style.transform || '';
+    sidebar.style.transform = 'none';
+    sidebar.style.transition = 'none';
   }
 }
 function closeModal(id) {
@@ -6424,10 +6339,11 @@ function closeModal(id) {
   if (!anyOpen) {
     document.body.style.overflow = '';
     document.body.classList.remove('modal-open');
-    // Restaurar sidebar
+    // Restaurar transform da sidebar
     var sidebar = document.querySelector('aside.sidebar');
     if (sidebar) {
-      sidebar.style.display = sidebar.dataset.savedDisplay || '';
+      sidebar.style.transform = sidebar.dataset.savedTransform || '';
+      sidebar.style.transition = '';
     }
   }
 }
@@ -8133,8 +8049,8 @@ function zoomFoto(src, desc) {
   var modal = document.getElementById('modal-zoom-foto');
   document.getElementById('zoom-foto-img').src = src;
   document.getElementById('zoom-foto-desc').textContent = desc || '';
-  openModal('modal-zoom-foto');
-  modal.onclick = function(e) { if (e.target === modal || e.target === document.getElementById('zoom-foto-img')) closeModal('modal-zoom-foto'); };
+  modal.style.display = 'flex';
+  modal.onclick = function(e) { if (e.target === modal || e.target === document.getElementById('zoom-foto-img')) modal.style.display = 'none'; };
 }
 
 function visualizarProduto(cod) {
@@ -12742,20 +12658,11 @@ var _sidebarVisible = _sidebarPinned;
 function initSidebar() {
   var sidebar = document.getElementById('sidebar');
   if (!sidebar) return;
-  var main = document.querySelector('.main');
-  // No PC (>1024px): sidebar sempre visível, main com margem
-  if (window.innerWidth > 1024) {
-    if (main) {
-      main.style.marginLeft = 'var(--sidebar-w)';
-      main.style.width = 'calc(100% - var(--sidebar-w))';
-      main.style.maxWidth = 'calc(100% - var(--sidebar-w))';
-    }
-    sidebar.style.transform = 'translateX(0)';
-    sidebar.style.display = 'flex';
-    _sidebarVisible = true;
-  } else {
-    _sidebarVisible = false;
-  }
+  // Comportamento automático por tamanho de tela
+  // PC grande (>1024px): CSS mantém sidebar sempre visível
+  // Tablet/Mobile: sidebar oculta, toggle visível
+  // Não precisamos de lógica JS para PC — o CSS cuida disso
+  _sidebarVisible = false;
 }
 
 function toggleSidebarVisibility() {
@@ -12784,13 +12691,10 @@ function fecharSidebar() {
 
 
 function closeSidebarAuto() {
-  // No PC (>1024px) a sidebar nunca fecha
-  if (window.innerWidth > 1024) return;
   var sidebar = document.getElementById('sidebar');
   var overlay = document.getElementById('sidebar-overlay');
   if (sidebar) { sidebar.classList.remove('sidebar-visible'); sidebar.classList.add('sidebar-hidden'); }
   if (overlay) overlay.classList.remove('active');
-  document.body.classList.remove('sidebar-open');
   _sidebarVisible = false;
 }
 
@@ -12816,7 +12720,7 @@ function toggleSidebarPin() {
     _sidebarVisible = true;
     showToast('📌 Sidebar fixada!');
   } else {
-    // Soltar: sidebar opcional, main sem margem (mas no PC mantém margem)
+    // Soltar: sidebar opcional, main sem margem (no PC mantém margem)
     if (main) main.style.marginLeft = window.innerWidth > 1024 ? 'var(--sidebar-w)' : '0';
     if (toggleBtn) toggleBtn.classList.remove('hidden-btn');
     if (pinBtn) { pinBtn.classList.remove('pinned'); pinBtn.textContent = '📌'; pinBtn.title = 'Fixar sidebar'; }
@@ -16679,7 +16583,6 @@ function registrarMovimentacaoEstoque(cod, qtd, tipo, motivo, ref) {
   // Manter apenas os últimos 500 registros
   if (hist.length > 500) hist = hist.slice(-500);
   save('historico_estoque', hist);
-  if(window._firebaseReady&&window._fb){window._fb.saveCollection('historico_estoque',load('historico_estoque')).catch(function(){});}
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -16750,49 +16653,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Ajustar tabelas mobile
   ajustarTabelasMobile();
 });
-
-// ══ PROTEÇÃO DO LAYOUT: garantir margin-left correto no PC ══════════
-(function() {
-  function fixMainLayout() {
-    if (window.innerWidth <= 1024) return;
-    var main = document.querySelector('.main');
-    if (!main) return;
-    var currentML = main.style.marginLeft;
-    // Se margin-left foi zerado ou removido, restaurar
-    if (!currentML || currentML === '0px' || currentML === '0') {
-      main.style.marginLeft = 'var(--sidebar-w)';
-      main.style.width = 'calc(100% - var(--sidebar-w))';
-      main.style.maxWidth = 'calc(100% - var(--sidebar-w))';
-    }
-  }
-  
-  // Executar ao carregar
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(fixMainLayout, 100);
-    setTimeout(fixMainLayout, 500);
-    setTimeout(fixMainLayout, 1000);
-  });
-  
-  // Monitorar mudanças no style do .main
-  var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(m) {
-      if (m.type === 'attributes' && m.attributeName === 'style') {
-        fixMainLayout();
-      }
-    });
-  });
-  
-  // Iniciar observação após DOM carregar
-  document.addEventListener('DOMContentLoaded', function() {
-    var main = document.querySelector('.main');
-    if (main) {
-      observer.observe(main, { attributes: true, attributeFilter: ['style'] });
-    }
-  });
-  
-  // Também ao redimensionar
-  window.addEventListener('resize', fixMainLayout);
-})();
 </script>
 
 <!-- Modal Zoom Foto -->
@@ -17160,11 +17020,11 @@ function abrirModalProLabore() {
   // Renderizar histórico
   renderHistoricoProLabore();
 
-  openModal('modal-prolabore');
+  document.getElementById('modal-prolabore').style.display = 'flex';
 }
 
 function fecharModalProLabore() {
-  closeModal('modal-prolabore');
+  document.getElementById('modal-prolabore').style.display = 'none';
 }
 
 function salvarProLabore() {
@@ -17188,7 +17048,6 @@ function salvarProLabore() {
   };
   historico.unshift(novo);
   save('prolabore', historico);
-  if(window._firebaseReady&&window._fb){window._fb.saveCollection('prolabore',load('prolabore')).catch(function(){});}
 
   // Limpar campos
   document.getElementById('pl-valor').value = '';
@@ -17234,6 +17093,91 @@ function renderHistoricoProLabore() {
 // Adicionar 'prolabore' ao sistema de sync
 var _keysOriginalPL = null;
 </script>
+<aside class="sidebar" id="sidebar">
 
+  <!-- HEADER: Logo em destaque -->
+  <div class="sidebar-header" style="text-align:center;position:relative;padding:20px 12px 16px">
+    <button class="sidebar-pin-btn" id="sidebar-pin-btn" onclick="toggleSidebarPin()" title="Fixar/Soltar sidebar" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:rgba(255,255,255,.7);width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">📌</button>
+    <!-- Logo grande em destaque -->
+    <div style="display:flex;justify-content:center;margin-bottom:10px">
+      <div style="border-radius:16px;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5);border:2px solid rgba(201,168,76,.8);width:140px;height:140px;display:flex;align-items:center;justify-content:center">
+        <img alt="Ótica Horizonte" class="sidebar-logo-img" src="icon-192.png" style="width:140px;height:140px;object-fit:contain;display:block;transform:scale(1.6);transform-origin:center center"/>
+      </div>
+    </div>
+    <!-- Nome e tagline -->
+    <div style="margin-bottom:10px">
+      <div style="font-size:15px;font-weight:800;color:#e8c96a;letter-spacing:.5px">ÓTICA HORIZONTE</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);font-style:italic;margin-top:2px">Seu olhar, nosso compromisso.</div>
+    </div>
+    <!-- Usuário logado -->
+    <div style="background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:7px 12px">
+      <div id="sidebar-user" style="font-size:12px;color:rgba(255,255,255,.9);font-weight:600">Carregando...</div>
+    </div>
+  </div>
+
+  <!-- NAV: Módulos agrupados -->
+  <nav class="sidebar-nav" style="padding:8px 0;overflow-y:auto;flex:1">
+
+    <!-- ◈ OPERAÇÕES -->
+    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
+      <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ OPERAÇÕES</span>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
+    </div>
+    <div class="nav-item" id="nav-dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item" onclick="showSection('vendas')"><span class="icon">💰</span> Vendas &amp; Caixa</div>
+    <div class="nav-item" onclick="showSection('orcamentos')"><span class="icon">📋</span> Orçamentos</div>
+    <div class="nav-item" onclick="showSection('os')"><span class="icon">🔧</span> Ordens de Serviço <span class="nav-badge" id="badge-os" style="display:none">0</span></div>
+    <div class="nav-item" onclick="showSection('agendamentos')"><span class="icon">📅</span> Agendamentos <span class="nav-badge" id="badge-agend" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-comissoes" onclick="showSection('comissoes')"><span class="icon">💈</span> Comissões</div>
+
+    <!-- ◈ CADASTROS -->
+    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
+      <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ CADASTROS</span>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
+    </div>
+    <div class="nav-item" onclick="showSection('clientes')"><span class="icon">👥</span> Clientes</div>
+    <div class="nav-item" id="nav-receitas" onclick="showSection('receitas')"><span class="icon">📋</span> Receitas Médicas</div>
+    <div class="nav-item" onclick="showSection('produtos')"><span class="icon">📦</span> Produtos &amp; Estoque <span class="nav-badge" id="badge-estoque" style="display:none">0</span></div>
+
+    <!-- ◈ GESTÃO -->
+    <div id="nav-grupo-gestao" style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
+      <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ GESTÃO</span>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
+    </div>
+    <!-- Comissões movido para OPERAÇÕES -->
+    <div class="nav-item" onclick="showSection('despesas')"><span class="icon">💰</span> Financeiro</div>
+    <div class="nav-item" id="nav-relatorios" onclick="showSection('relatorios')"><span class="icon">📈</span> Relatórios</div>
+    <div class="nav-item" id="nav-usuarios" onclick="showSection('usuarios')" style="display:none"><span class="icon">👤</span> Usuários</div>
+
+  </nav>
+
+  <!-- Instalar App movido para Configurações -->
+
+  <!-- FOOTER -->
+  <div class="sidebar-footer" style="padding:12px;border-top:1px solid rgba(201,168,76,.2)">
+    <button onclick="abrirBusca()" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;text-align:left;margin-bottom:8px">
+      🔍 Busca rápida... <kbd style="float:right;background:rgba(255,255,255,.2);padding:1px 5px;border-radius:3px;font-size:10px">Ctrl+K</kbd>
+    </button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      <button onclick="abrirMeuCatalogo()" style="padding:8px 4px;background:linear-gradient(135deg,rgba(201,168,76,.4),rgba(201,168,76,.2));border:1px solid rgba(201,168,76,.6);border-radius:8px;color:rgba(255,255,255,.95);font-size:11px;cursor:pointer;font-weight:700">📤 Catálogo</button>
+      <button onclick="openModal('modal-config');setTimeout(abrirModalConfigGitHub,100)" style="padding:8px 4px;background:rgba(100,116,139,.3);border:1px solid rgba(100,116,139,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">⚙️ Config</button>
+      <button onclick="syncLocalToCloud()" style="padding:8px 4px;background:rgba(251,146,60,.3);border:1px solid rgba(251,146,60,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">☁️ Enviar</button>
+      <button onclick="syncFirebaseToLocal()" style="padding:8px 4px;background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:8px;color:rgba(255,255,255,.9);font-size:11px;cursor:pointer;font-weight:600">⬇️ Baixar</button>
+    </div>
+    <div id="sync-indicator" style="font-size:10px;text-align:center;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;opacity:.7">
+      <span id="sync-icon" style="font-size:11px">☁️⏳</span>
+      <span id="sync-text" style="color:rgba(255,255,255,.5);font-size:9px">Conectando...</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
+      <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v493</div>
+  </div>
+
+</aside>
 </body>
 </html>
