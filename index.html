@@ -128,14 +128,11 @@
     transition: width .3s ease;
     box-shadow: 4px 0 20px rgba(0,0,0,.2);
   }
-  /* Sidebar SEMPRE atrás dos modais */
+  /* Sidebar SEMPRE atrás dos modais - ocultar completamente */
   body.modal-open .sidebar {
-    z-index: 50 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-  body.modal-open .sidebar * {
-    pointer-events: none;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
   }
   .sidebar.sidebar-hidden {
     transform: translateX(-100%);
@@ -6322,13 +6319,16 @@ function openModal(id) {
   el.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   document.body.classList.add('modal-open');
-  // CRÍTICO: remover transform da sidebar para evitar stacking context
-  // transform em position:fixed cria novo stacking context, ignorando z-index global
+  // SOLUÇÃO DEFINITIVA: sidebar com visibility:hidden quando modal abre
+  // Isso remove o stacking context sem afetar o layout
   var sidebar = document.querySelector('aside.sidebar');
   if (sidebar) {
     sidebar.dataset.savedTransform = sidebar.style.transform || '';
+    sidebar.dataset.savedVisibility = sidebar.style.visibility || '';
     sidebar.style.transform = 'none';
     sidebar.style.transition = 'none';
+    sidebar.style.visibility = 'hidden';
+    sidebar.style.pointerEvents = 'none';
   }
 }
 function closeModal(id) {
@@ -6339,11 +6339,13 @@ function closeModal(id) {
   if (!anyOpen) {
     document.body.style.overflow = '';
     document.body.classList.remove('modal-open');
-    // Restaurar transform da sidebar
+    // Restaurar sidebar
     var sidebar = document.querySelector('aside.sidebar');
     if (sidebar) {
       sidebar.style.transform = sidebar.dataset.savedTransform || '';
       sidebar.style.transition = '';
+      sidebar.style.visibility = sidebar.dataset.savedVisibility || '';
+      sidebar.style.pointerEvents = '';
     }
   }
 }
@@ -17144,7 +17146,7 @@ var _keysOriginalPL = null;
     <div class="nav-item" onclick="showSection('produtos')"><span class="icon">📦</span> Produtos &amp; Estoque <span class="nav-badge" id="badge-estoque" style="display:none">0</span></div>
 
     <!-- ◈ GESTÃO -->
-    <div id="nav-grupo-gestao" style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
+    <div style="padding:6px 16px 2px;display:flex;align-items:center;gap:8px">
       <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,.6),transparent)"></div>
       <span style="font-size:9px;font-weight:800;color:#c9a84c;letter-spacing:1.5px;white-space:nowrap">◈ GESTÃO</span>
       <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6))"></div>
