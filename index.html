@@ -11756,6 +11756,12 @@ function saveOrcamentoNovo() {
 
   arr.push(orc);
   save('composicoes', arr);
+  // Sync imediato ao Firebase (sem debounce) para não perder orçamentos
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('composicoes', arr).then(function(ok) {
+      if (ok) console.log('✅ Orçamento sincronizado com Firebase imediatamente');
+    }).catch(function(e) { console.warn('Erro sync orçamento:', e); });
+  }
 
   // Limpar modal
   closeModal('modal-novo-orcamento');
