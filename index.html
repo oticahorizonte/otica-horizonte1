@@ -16583,6 +16583,7 @@ function registrarMovimentacaoEstoque(cod, qtd, tipo, motivo, ref) {
   // Manter apenas os últimos 500 registros
   if (hist.length > 500) hist = hist.slice(-500);
   save('historico_estoque', hist);
+  if(window._firebaseReady&&window._fb){window._fb.saveCollection('historico_estoque',load('historico_estoque')).catch(function(){});}
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -17048,6 +17049,7 @@ function salvarProLabore() {
   };
   historico.unshift(novo);
   save('prolabore', historico);
+  if(window._firebaseReady&&window._fb){window._fb.saveCollection('prolabore',load('prolabore')).catch(function(){});}
 
   // Limpar campos
   document.getElementById('pl-valor').value = '';
