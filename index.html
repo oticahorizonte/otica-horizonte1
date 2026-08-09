@@ -16750,6 +16750,49 @@ document.addEventListener('DOMContentLoaded', function() {
   // Ajustar tabelas mobile
   ajustarTabelasMobile();
 });
+
+// ══ PROTEÇÃO DO LAYOUT: garantir margin-left correto no PC ══════════
+(function() {
+  function fixMainLayout() {
+    if (window.innerWidth <= 1024) return;
+    var main = document.querySelector('.main');
+    if (!main) return;
+    var currentML = main.style.marginLeft;
+    // Se margin-left foi zerado ou removido, restaurar
+    if (!currentML || currentML === '0px' || currentML === '0') {
+      main.style.marginLeft = 'var(--sidebar-w)';
+      main.style.width = 'calc(100% - var(--sidebar-w))';
+      main.style.maxWidth = 'calc(100% - var(--sidebar-w))';
+    }
+  }
+  
+  // Executar ao carregar
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(fixMainLayout, 100);
+    setTimeout(fixMainLayout, 500);
+    setTimeout(fixMainLayout, 1000);
+  });
+  
+  // Monitorar mudanças no style do .main
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      if (m.type === 'attributes' && m.attributeName === 'style') {
+        fixMainLayout();
+      }
+    });
+  });
+  
+  // Iniciar observação após DOM carregar
+  document.addEventListener('DOMContentLoaded', function() {
+    var main = document.querySelector('.main');
+    if (main) {
+      observer.observe(main, { attributes: true, attributeFilter: ['style'] });
+    }
+  });
+  
+  // Também ao redimensionar
+  window.addEventListener('resize', fixMainLayout);
+})();
 </script>
 
 <!-- Modal Zoom Foto -->
