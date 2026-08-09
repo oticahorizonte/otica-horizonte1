@@ -430,7 +430,7 @@
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(7,24,40,.65);
     backdrop-filter: blur(6px);
-    z-index: 9000; display: flex; align-items: center; justify-content: center;
+    z-index: 99999; display: flex; align-items: center; justify-content: center;
     padding: 16px;
   }
   .modal {
@@ -2393,6 +2393,7 @@ function instalarApp() {
     padding: 0 !important;
     align-items: stretch !important;
     justify-content: stretch !important;
+    z-index: 99999 !important;
   }
   #modal-venda .modal {
     width: 100vw !important;
