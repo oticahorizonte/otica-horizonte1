@@ -7588,6 +7588,10 @@ function saveCliente() {
   };
   if (id) { const i=arr.findIndex(x=>x.id===parseInt(id)); arr[i]=obj; } else arr.push(obj);
   save('clientes', arr);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('clientes', load('clientes')).catch(function(e){ console.warn('Sync clientes error:', e); });
+  }
   closeModal('modal-cliente');
   renderClientes();
   showToast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!');
@@ -7772,6 +7776,10 @@ function saveReceita() {
   };
   if (id) { const i=arr.findIndex(x=>x.id===parseInt(id)); arr[i]=obj; } else arr.push(obj);
   save('receitas', arr);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('receitas', load('receitas')).catch(function(e){ console.warn('Sync receitas error:', e); });
+  }
   closeModal('modal-receita');
   renderReceitas();
   showToast(id ? 'Receita atualizada!' : 'Receita cadastrada!');
@@ -9297,6 +9305,10 @@ function saveOS() {
 
   if (idx) { const i=arr.findIndex(x=>x.id===idx); arr[i]=obj; } else arr.push(obj);
   save('os', arr);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('os', load('os')).catch(function(e){ console.warn('Sync os error:', e); });
+  }
   document.getElementById('os-idx').value = '';
   document.getElementById('modal-os-title').textContent = '🔧 Nova Ordem de Serviço';
   closeModal('modal-os');
@@ -10340,6 +10352,10 @@ function saveAgendamento() {
   };
   if (idx) { const i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('agendamentos', arr);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('agendamentos', load('agendamentos')).catch(function(e){ console.warn('Sync agendamentos error:', e); });
+  }
   closeModal('modal-agend');
   renderAgendamentos();
   showToast(idx ? 'Agendamento atualizado!' : 'Agendamento criado!');
@@ -10787,6 +10803,10 @@ function saveEntrada() {
   };
   if (idx) { var i=arr.findIndex(function(x){ return x.id===parseInt(idx); }); arr[i]=obj; } else arr.push(obj);
   save('entradas', arr);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('entradas', load('entradas')).catch(function(e){ console.warn('Sync entradas error:', e); });
+  }
   closeModal('modal-entrada');
   renderEntradas();
   renderFluxoCaixa();
@@ -10989,6 +11009,10 @@ function saveDespesa() {
   };
   if (idx) { var i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('despesas', arr);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('despesas', load('despesas')).catch(function(e){ console.warn('Sync despesas error:', e); });
+  }
   closeModal('modal-despesa');
   renderDespesas();
   showToast(idx ? 'Despesa atualizada!' : 'Despesa registrada!');
