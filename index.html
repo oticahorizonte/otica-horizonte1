@@ -12734,11 +12734,14 @@ var _sidebarVisible = _sidebarPinned;
 function initSidebar() {
   var sidebar = document.getElementById('sidebar');
   if (!sidebar) return;
-  // Comportamento automático por tamanho de tela
-  // PC grande (>1024px): CSS mantém sidebar sempre visível
-  // Tablet/Mobile: sidebar oculta, toggle visível
-  // Não precisamos de lógica JS para PC — o CSS cuida disso
-  _sidebarVisible = false;
+  var main = document.querySelector('.main');
+  // No PC (>1024px): sidebar sempre visível, main com margem
+  if (window.innerWidth > 1024) {
+    if (main) main.style.marginLeft = 'var(--sidebar-w)';
+    _sidebarVisible = true;
+  } else {
+    _sidebarVisible = false;
+  }
 }
 
 function toggleSidebarVisibility() {
@@ -12767,10 +12770,13 @@ function fecharSidebar() {
 
 
 function closeSidebarAuto() {
+  // No PC (>1024px) a sidebar nunca fecha
+  if (window.innerWidth > 1024) return;
   var sidebar = document.getElementById('sidebar');
   var overlay = document.getElementById('sidebar-overlay');
   if (sidebar) { sidebar.classList.remove('sidebar-visible'); sidebar.classList.add('sidebar-hidden'); }
   if (overlay) overlay.classList.remove('active');
+  document.body.classList.remove('sidebar-open');
   _sidebarVisible = false;
 }
 
@@ -12796,8 +12802,8 @@ function toggleSidebarPin() {
     _sidebarVisible = true;
     showToast('📌 Sidebar fixada!');
   } else {
-    // Soltar: sidebar opcional, main sem margem
-    if (main) main.style.marginLeft = '0';
+    // Soltar: sidebar opcional, main sem margem (mas no PC mantém margem)
+    if (main) main.style.marginLeft = window.innerWidth > 1024 ? 'var(--sidebar-w)' : '0';
     if (toggleBtn) toggleBtn.classList.remove('hidden-btn');
     if (pinBtn) { pinBtn.classList.remove('pinned'); pinBtn.textContent = '📌'; pinBtn.title = 'Fixar sidebar'; }
     showToast('📌 Sidebar solta — clique em ☰ para abrir');
