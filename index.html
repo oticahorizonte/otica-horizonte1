@@ -4653,7 +4653,7 @@ function instalarApp() {
 <div class="modal-body" style="padding:0">
 <div id="recibo-print-area" style="padding:24px;font-family:'Segoe UI',sans-serif;color:#1e293b;max-width:148mm;margin:0 auto">
 <!-- Cabeçalho A5 com gradiente -->
-<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:10px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;gap:14px">
 <img alt="Ótica Horizonte" id="rec-logo" src="" style="width:56px;height:56px;object-fit:contain;border-radius:50%;background:white;padding:4px"/>
 <div style="flex:1">
 <div style="font-size:18px;font-weight:800;color:white;line-height:1.1">Ótica Horizonte</div>
@@ -4669,16 +4669,16 @@ function instalarApp() {
 </div>
 
 <!-- Título -->
-<div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);color:white;padding:7px 14px;border-radius:6px;margin-bottom:12px;text-align:center">
+<div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);color:white;padding:4px 10px;border-radius:6px;margin-bottom:6px;text-align:center">
 <span style="font-size:13px;font-weight:700;letter-spacing:1.5px">RECIBO DE VENDA</span>
 </div>
 <!-- Cliente e Dados -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-<div style="background:#f0f4ff;border-radius:8px;padding:10px;border-left:3px solid #0ea5e9">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+<div style="background:#f0f4ff;border-radius:6px;padding:7px;border-left:3px solid #0ea5e9">
 <div style="font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:6px">👤 Cliente</div>
 <div id="rec-cliente-nome" style="font-weight:700;font-size:13px"></div>
 </div>
-<div style="background:#f0f4ff;border-radius:8px;padding:10px;border-left:3px solid #1e3a5f">
+<div style="background:#f0f4ff;border-radius:6px;padding:7px;border-left:3px solid #1e3a5f">
 <div style="font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:6px">📋 Dados</div>
 <div style="font-size:10px;display:grid;gap:2px">
 <div><span style="color:#64748b">Data:</span> <strong id="rec-data-venda"></strong></div>
@@ -4705,7 +4705,7 @@ function instalarApp() {
 </table>
 </div>
 <!-- Totais -->
-<div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+<div style="display:flex;justify-content:flex-end;margin-bottom:6px">
 <div style="min-width:200px;background:#f8fafc;border-radius:8px;padding:10px">
 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:11px">
 <span style="color:#64748b">Subtotal:</span><span id="rec-tot-bruto" style="font-weight:600"></span>
@@ -4724,7 +4724,7 @@ function instalarApp() {
 <!-- Crediário no recibo -->
 <div id="rec-crediario-box" style="display:none;background:#f0f4ff;border:1px solid #c7d7f0;border-radius:8px;padding:10px 12px;margin-bottom:12px"></div>
 <!-- Garantia -->
-<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10px;color:#166534;text-align:center">
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:10px;color:#166534;text-align:center">
 🛡️ <strong>Garantia de 90 dias</strong> para defeitos na armação. Guarde este recibo.
 </div>
 <!-- Assinatura -->
@@ -9020,7 +9020,7 @@ function viewOS(id) {
       </table>
     </div>
     ${(o.tipoLente||o.tratamentos)?`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
       ${o.tipoLente?`<div style="background:#eff6ff;border-radius:10px;padding:12px;border-left:3px solid #0d2b4e">
         <div style="font-size:9px;font-weight:700;color:#0d2b4e;text-transform:uppercase;margin-bottom:4px">🔍 Tipo de Lente</div>
         <div style="font-size:13px;font-weight:700;color:#0d2b4e">${o.tipoLente}</div>
@@ -9040,7 +9040,7 @@ function viewOS(id) {
       <div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📝 Descrição do Serviço</div>
       <div style="font-size:14px;color:#1a2744;font-weight:500">${o.descricao}</div>
     </div>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
       <div style="background:#f8faff;border-radius:10px;padding:12px;border-left:3px solid #d97706;text-align:center">
         <div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">💰 Valor</div>
         <div style="font-size:22px;font-weight:800;color:${o.cobranca==='garantia'?'#16a34a':o.cobranca==='cortesia'?'#0ea5e9':'#0d2b4e'}">
@@ -11676,10 +11676,10 @@ function renderSecOrcamentos() {
 
     return '<tr style="border-bottom:1px solid #e2e8f0' + (vencido?';background:#fff7ed':'') + '">' +
       '<td style="padding:10px 12px"><strong style="color:#1a3a5c">#' + c.id + '</strong></td>' +
-      '<td style="padding:10px 12px;font-size:13px">' + fmtDate(c.data) + '</td>' +
+      '<td style="padding:6px 8px;font-size:11px">' + fmtDate(c.data) + '</td>' +
       '<td style="padding:10px 12px;font-size:12px;color:' + (vencido?'#dc2626':'#64748b') + '">' + validadeStr + (vencido?' ⚠️':'') + '</td>' +
       '<td style="padding:10px 12px"><strong>' + (clMap[c.clienteId]||'—') + '</strong></td>' +
-      '<td style="padding:10px 12px;font-size:13px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs.substring(0,50)+(c.obs.length>50?'...':'')+'</small>' : '') + '</td>' +
+      '<td style="padding:6px 8px;font-size:11px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs.substring(0,50)+(c.obs.length>50?'...':'')+'</small>' : '') + '</td>' +
       '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a;font-size:14px">' + fmtMoney(c.totalCli||0) + '</td>' +
       '<td style="padding:10px 12px"><span style="background:' + stBg + ';color:' + stColor + ';padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + stLabel + '</span></td>' +
       '<td style="padding:10px 12px"><div style="display:flex;gap:4px;flex-wrap:wrap">' + acoes + '</div></td>' +
@@ -13711,7 +13711,7 @@ function imprimirOrcamentoById(id) {
     if (arm) det += '<br><span style="color:#475569;font-size:11px;font-style:italic">↳ Armação: '+arm.nome+'</span>';
     if (len) det += '<br><span style="color:#475569;font-size:11px;font-style:italic">↳ Lente: '+len.nome+'</span>';
     itensHtml += '<tr style="border-bottom:1px solid #e2e8f0;background:#eff6ff">' +
-      '<td style="padding:10px 12px;font-size:13px">🕶️ <strong>Óculos Completo</strong>'+det+'</td>' +
+      '<td style="padding:6px 8px;font-size:11px">🕶️ <strong>Óculos Completo</strong>'+det+'</td>' +
       '<td style="padding:10px 12px;text-align:center;font-size:13px">1</td>' +
       '<td style="padding:10px 12px;text-align:right;font-size:13px">'+fmtMoney(tot)+'</td>' +
       '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:700;color:#16a34a">'+fmtMoney(tot)+'</td>' +
@@ -13721,7 +13721,7 @@ function imprimirOrcamentoById(id) {
     var nome = item.descricaoCompleta || prodMapOrc[item.cod] || item.nome || item.cod || '—';
     var valorItem = (item.preco||0)*(item.qtd||1);
     itensHtml += '<tr style="border-bottom:1px solid #e2e8f0">' +
-      '<td style="padding:10px 12px;font-size:13px">'+nome+'</td>' +
+      '<td style="padding:6px 8px;font-size:11px">'+nome+'</td>' +
       '<td style="padding:10px 12px;text-align:center;font-size:13px">'+(item.qtd||1)+'</td>' +
       '<td style="padding:10px 12px;text-align:right;font-size:13px">'+fmtMoney(item.preco||0)+'</td>' +
       '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:700;color:#16a34a">'+fmtMoney(valorItem)+'</td>' +
@@ -13779,12 +13779,12 @@ function imprimirOrcamentoById(id) {
     '<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px">Emitido: '+now+'</div>' +
     '</div></div>' +
     // Faixa dourada
-    '<div style="height:3px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c);border-radius:2px;margin-bottom:14px"></div>' +
+    '<div style="height:2px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c);border-radius:2px;margin-bottom:6px"></div>' +
     // Título + Cliente
     '<div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);color:white;padding:7px 14px;border-radius:6px;margin-bottom:12px;text-align:center">' +
     '<span style="font-size:13px;font-weight:700;letter-spacing:1.5px">ORÇAMENTO</span>' +
     '</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">' +
     '<div style="background:#f0f4ff;border-radius:8px;padding:10px;border-left:3px solid #0ea5e9">' +
     '<div style="font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:4px">👤 Cliente</div>' +
     '<div style="font-weight:700;font-size:13px">'+nomeCliente+'</div>' +
@@ -13814,7 +13814,7 @@ function imprimirOrcamentoById(id) {
     '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:16px;font-weight:800"><span style="color:#1e3a5f">TOTAL:</span><span style="color:#16a34a">'+fmtMoney(total)+'</span></div>' +
     '</div></div>' +
     // Pagamento + Observações lado a lado
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">' +
     (pagHtml || '<div></div>') +
     '<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px">' +
     '<div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:6px">📝 Observações</div>' +
@@ -15990,9 +15990,9 @@ function renderOrcamentosPendentes() {
     [...orcamentos].reverse().map(c => `
       <tr style="border-bottom:1px solid #e2e8f0;background:white" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
         <td style="padding:10px 12px"><strong style="color:#1a3a5c">#${c.id}</strong></td>
-        <td style="padding:10px 12px;font-size:13px">${fmtDate(c.data)}</td>
+        <td style="padding:6px 8px;font-size:11px">${fmtDate(c.data)}</td>
         <td style="padding:10px 12px"><strong>${clMap[c.clienteId]||'—'}</strong></td>
-        <td style="padding:10px 12px;font-size:13px;color:#64748b">${c.desc||'—'}</td>
+        <td style="padding:6px 8px;font-size:11px;color:#64748b">${c.desc||'—'}</td>
         <td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a;font-size:15px">${fmtMoney(c.totalCli||0)}</td>
         <td style="padding:10px 12px">
           <div class="flex gap-2" style="justify-content:center">
@@ -16192,9 +16192,9 @@ function renderContasReceber() {
     var tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid #fee2e2';
     tr.innerHTML = 
-      '<td style="padding:10px 12px;font-size:13px">' + fmtDate(g.data) + '</td>' +
+      '<td style="padding:6px 8px;font-size:11px">' + fmtDate(g.data) + '</td>' +
       '<td style="padding:10px 12px"><strong>' + (clMap[g.clienteId]||'—') + '</strong></td>' +
-      '<td style="padding:10px 12px;font-size:13px;color:#64748b">' + (g.pag||'—') + parcInfo + '</td>' +
+      '<td style="padding:6px 8px;font-size:11px;color:#64748b">' + (g.pag||'—') + parcInfo + '</td>' +
       '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#dc2626;font-size:15px">' + fmtMoney(total) + '</td>' +
       '<td style="padding:10px 12px;text-align:center">' +
       '<button class="btn btn-sm" data-chave="' + chave + '" data-tip="Ver detalhes da venda" style="font-size:11px;background:#0ea5e9;color:white" onclick="verDetalhesPendente(this.dataset.chave)">👁️ Ver</button>' +
