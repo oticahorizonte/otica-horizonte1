@@ -877,8 +877,16 @@
      PC GRANDE (>1024px) — Sidebar sempre fixa
   ═══════════════════════════════════════════════ */
   @media (min-width: 1025px) {
-    .sidebar { transform: translateX(0) !important; }
-    .main { margin-left: var(--sidebar-w) !important; }
+    .sidebar { 
+      transform: translateX(0) !important;
+      display: flex !important;
+      left: 0 !important;
+    }
+    .main { 
+      margin-left: var(--sidebar-w) !important;
+      width: calc(100% - var(--sidebar-w)) !important;
+      max-width: calc(100% - var(--sidebar-w)) !important;
+    }
     .sidebar-toggle-btn { display: none !important; }
     .section.active { min-height: calc(100vh - 40px); }
   }
@@ -12737,7 +12745,13 @@ function initSidebar() {
   var main = document.querySelector('.main');
   // No PC (>1024px): sidebar sempre visível, main com margem
   if (window.innerWidth > 1024) {
-    if (main) main.style.marginLeft = 'var(--sidebar-w)';
+    if (main) {
+      main.style.marginLeft = 'var(--sidebar-w)';
+      main.style.width = 'calc(100% - var(--sidebar-w))';
+      main.style.maxWidth = 'calc(100% - var(--sidebar-w))';
+    }
+    sidebar.style.transform = 'translateX(0)';
+    sidebar.style.display = 'flex';
     _sidebarVisible = true;
   } else {
     _sidebarVisible = false;
