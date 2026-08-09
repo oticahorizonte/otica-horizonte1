@@ -4617,6 +4617,12 @@ function instalarApp() {
 
       <!-- Botões -->
       
+      <!-- Observações -->
+      <div style="margin-bottom:10px">
+        <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:4px">📝 Observações (opcional)</label>
+        <textarea id="orc-obs" rows="3" placeholder="Ex: Cliente prefere armação mais leve, aguardando aprovação..." style="width:100%;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;resize:vertical;font-family:inherit"></textarea>
+      </div>
+
       <button onclick="saveOrcamentoNovo()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:6px">
         💾 Salvar Orçamento
       </button>
@@ -11673,7 +11679,7 @@ function renderSecOrcamentos() {
       '<td style="padding:10px 12px;font-size:13px">' + fmtDate(c.data) + '</td>' +
       '<td style="padding:10px 12px;font-size:12px;color:' + (vencido?'#dc2626':'#64748b') + '">' + validadeStr + (vencido?' ⚠️':'') + '</td>' +
       '<td style="padding:10px 12px"><strong>' + (clMap[c.clienteId]||'—') + '</strong></td>' +
-      '<td style="padding:10px 12px;font-size:13px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + '</td>' +
+      '<td style="padding:10px 12px;font-size:13px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs.substring(0,50)+(c.obs.length>50?'...':'')+'</small>' : '') + '</td>' +
       '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a;font-size:14px">' + fmtMoney(c.totalCli||0) + '</td>' +
       '<td style="padding:10px 12px"><span style="background:' + stBg + ';color:' + stColor + ';padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + stLabel + '</span></td>' +
       '<td style="padding:10px 12px"><div style="display:flex;gap:4px;flex-wrap:wrap">' + acoes + '</div></td>' +
@@ -11770,6 +11776,7 @@ function saveOrcamentoNovo() {
     parcelas: parcelas,
     crediario: crediarioData,
     vendedor: vendedor,
+    obs: (document.getElementById('orc-obs') ? document.getElementById('orc-obs').value.trim() : ''),
     status: 'pendente'
   };
 
@@ -11795,6 +11802,7 @@ function saveOrcamentoNovo() {
   _e=document.getElementById('orc-unif-desc-reais'); if(_e)_e.value='';
   _e=document.getElementById('orc-unif-desc-pct'); if(_e)_e.value='';
   _e=document.getElementById('orc-crediario-box'); if(_e)_e.style.display='none';
+  _e=document.getElementById('orc-obs'); if(_e)_e.value='';
   _e=document.getElementById('orc-unif-total'); if(_e)_e.textContent='R$ 0,00';
   renderOrcCarrinho();
   showToast('📋 Orçamento #' + novoId + ' salvo com sucesso!', 'success');
@@ -13807,6 +13815,11 @@ function imprimirOrcamentoById(id) {
     '</div></div>' +
     // Pagamento
     pagHtml +
+    // Observações (se houver)
+    (c.obs ? '<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:12px">' +
+    '<div style="font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;margin-bottom:4px">📝 Observações</div>' +
+    '<div style="font-size:12px;color:#1e293b;white-space:pre-wrap">'+c.obs+'</div>' +
+    '</div>' : '') +
     // Rodapé
     '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10px;color:#166534;text-align:center">' +
     '📅 Orçamento válido por <strong>30 dias</strong> a partir de '+dataOrc+'. Ótica Horizonte — Seu olhar, nosso compromisso.' +
