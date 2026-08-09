@@ -4134,6 +4134,47 @@ function instalarApp() {
 <div class="form-group"><label>Marca</label><input id="prod-marca" placeholder="Marca" type="text"/></div>
 <div class="form-group"><label>Modelo</label><input id="prod-modelo" placeholder="Modelo" type="text"/></div>
 <div class="form-group"><label>Cor</label><input id="prod-cor" placeholder="Cor" type="text"/></div>
+<!-- Campos exclusivos para Lente -->
+<div id="campos-lente" style="display:none;grid-column:1/-1;background:#eff6ff;border-radius:10px;padding:14px;border-left:4px solid #3b82f6">
+  <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:12px">🔍 Dados da Lente</div>
+  <div class="form-grid" style="margin:0">
+    <div class="form-group">
+      <label>Índice de Refração</label>
+      <select id="prod-lente-indice">
+        <option value="">— Selecione —</option>
+        <option>1.49</option><option>1.56</option><option>1.59</option>
+        <option>1.61</option><option>1.67</option><option>1.74</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Material</label>
+      <select id="prod-lente-material">
+        <option value="">— Selecione —</option>
+        <option>CR-39</option><option>Policarbonato</option><option>Trivex</option>
+        <option>MR-8</option><option>MR-10</option><option>MR-174</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="prod-lente-tipo">
+        <option value="">— Selecione —</option>
+        <option>Visão Simples</option><option>Bifocal Kriptok</option>
+        <option>Bifocal Ultex</option><option>Progressiva</option>
+        <option>Ocupacional</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tratamento</label>
+      <select id="prod-lente-tratamento">
+        <option value="">— Selecione —</option>
+        <option>Anti-reflexo</option><option>Blue Cut</option>
+        <option>Fotossensível</option><option>Proteção UV</option>
+        <option>Anti-reflexo + Blue Cut</option><option>Anti-reflexo + Fotossensível</option>
+        <option>Sem tratamento</option>
+      </select>
+    </div>
+  </div>
+</div>
 <div class="form-group"><label>Localização</label><input id="prod-local" placeholder="Prateleira A1" type="text"/></div>
 <div class="form-group"><label>Qtd. Estoque *</label><input id="prod-qtd" min="0" type="number" value="0"/></div>
 <div class="form-group"><label>Estoque Mínimo *</label><input id="prod-min" min="0" type="number" value="5"/></div>
@@ -8098,32 +8139,21 @@ function visualizarProduto(cod) {
 
 
 function onChangeProdCat() {
-  var cat = (document.getElementById('prod-cat')||{}).value||'';
+  var cat = document.getElementById('prod-cat').value;
   var isServico = cat === 'Serviço';
-  var isServicoOS = cat === 'Serviço OS';
-  var isAnyServico = isServico || isServicoOS;
-  // Campos que nao fazem sentido para servicos
-  var camposOcultar = isServicoOS
-    ? ['prod-qtd','prod-min','prod-custo','prod-venda','prod-margem']
-    : ['prod-qtd','prod-min'];
-  var todosNumericos = ['prod-qtd','prod-min','prod-custo','prod-venda','prod-margem'];
-  // Primeiro mostrar todos
-  todosNumericos.forEach(function(id) {
+  var isLente = cat === 'Lente';
+  // Campos de quantidade (ocultar para serviço)
+  var qtdFields = ['prod-qtd', 'prod-min'];
+  qtdFields.forEach(function(id) {
     var el = document.getElementById(id);
-    if (!el) return;
-    var wrap = el.parentElement;
-    while (wrap && !wrap.classList.contains('form-group')) wrap = wrap.parentElement;
-    if (wrap) wrap.style.display = '';
+    if (el) {
+      var fg = el.closest('.form-group');
+      if (fg) fg.style.display = isServico ? 'none' : '';
+    }
   });
-  // Depois ocultar os necessarios
-  camposOcultar.forEach(function(id) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    var wrap = el.parentElement;
-    while (wrap && !wrap.classList.contains('form-group')) wrap = wrap.parentElement;
-    if (wrap) wrap.style.display = 'none';
-    if (isAnyServico) el.value = id==='prod-qtd'?'999':'0';
-  });
+  // Campos exclusivos de lente
+  var camposLente = document.getElementById('campos-lente');
+  if (camposLente) camposLente.style.display = isLente ? 'block' : 'none';
 }
 
 
@@ -8146,7 +8176,16 @@ function editProduto(cod) {
   calcMargem();
   carregarFotoProduto(p.foto||'');
   document.getElementById('prod-catalogo').checked = p.catalogo||false;
-  // Aplicar regras de categoria (ocultar qtd para servicos)
+  // Preencher campos de lente se existirem
+  var elIndice = document.getElementById('prod-lente-indice');
+  var elMaterial = document.getElementById('prod-lente-material');
+  var elTipo = document.getElementById('prod-lente-tipo');
+  var elTratamento = document.getElementById('prod-lente-tratamento');
+  if (elIndice) elIndice.value = p.lenteIndice || '';
+  if (elMaterial) elMaterial.value = p.lenteMaterial || '';
+  if (elTipo) elTipo.value = p.lenteTipo || '';
+  if (elTratamento) elTratamento.value = p.lenteTratamento || '';
+  // Aplicar regras de categoria (ocultar qtd para servicos, mostrar campos lente)
   onChangeProdCat();
   openModal('modal-produto');
 }
@@ -8200,6 +8239,12 @@ function saveProduto() {
   document.getElementById('prod-cod').disabled = false;
   document.getElementById('prod-idx').value = '';
   document.getElementById('modal-produto-title').textContent = '📦 Novo Produto';
+  // Limpar campos de lente
+  var _el; 
+  _el = document.getElementById('prod-lente-indice'); if(_el) _el.value = '';
+  _el = document.getElementById('prod-lente-material'); if(_el) _el.value = '';
+  _el = document.getElementById('prod-lente-tipo'); if(_el) _el.value = '';
+  _el = document.getElementById('prod-lente-tratamento'); if(_el) _el.value = '';
   closeModal('modal-produto');
   renderProdutos();
   showToast(idx ? '✅ Produto atualizado e salvo na nuvem!' : '✅ Produto cadastrado e salvo na nuvem!', 'success');
