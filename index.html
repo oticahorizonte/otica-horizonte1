@@ -131,6 +131,11 @@
   /* Sidebar SEMPRE atrás dos modais */
   body.modal-open .sidebar {
     z-index: 50 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  body.modal-open .sidebar * {
+    pointer-events: none;
   }
   .sidebar.sidebar-hidden {
     transform: translateX(-100%);
