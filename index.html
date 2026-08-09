@@ -11953,7 +11953,7 @@ function filtrarOrcUnif() {
   var produtos = load('produtos');
   var filtrados = produtos.filter(function(p) {
     if (!q) return true;
-    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
     if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
     if (b.cat==='Serviço' && a.cat!=='Serviço') return 1;
