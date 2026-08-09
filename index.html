@@ -14235,7 +14235,7 @@ function filtrarVendaUnif() {
 
   var filtrados = produtos.filter(function(p) {
     if (!q) return true;
-    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
     // Serviços primeiro
     if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
@@ -14849,7 +14849,7 @@ function filtrarCaixaRapida() {
   // Ordenar: Serviços primeiro, depois por categoria
   var filtrados = produtos.filter(function(p) {
     if (!q) return true;
-    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
     if (a.cat === 'Serviço' && b.cat !== 'Serviço') return -1;
     if (b.cat === 'Serviço' && a.cat !== 'Serviço') return 1;
@@ -14968,7 +14968,7 @@ function filtrarEstoqueBusca(tipo) {
   else {
     filtrados = produtos.filter(p=>{
       if (p.cat==='Serviço OS') return false; // Exclusivo para OS
-      return !q||(p.desc+p.cod+p.cat+(p.marca||'')).toLowerCase().includes(q);
+      return !q||(p.desc+p.cod+p.cat+(p.marca||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
     });
     // Ordenar: Servicos primeiro se busca vazia
     if (!q) filtrados = filtrados.sort(function(a,b){ return a.cat==='Serviço'?-1:b.cat==='Serviço'?1:0; });
