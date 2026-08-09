@@ -128,12 +128,7 @@
     transition: width .3s ease;
     box-shadow: 4px 0 20px rgba(0,0,0,.2);
   }
-  /* Sidebar SEMPRE atrás dos modais - ocultar completamente */
-  body.modal-open .sidebar {
-    visibility: hidden !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-  }
+  /* Sidebar oculta quando modal aberto (via JS) */
   .sidebar.sidebar-hidden {
     transform: translateX(-100%);
   }
@@ -6319,16 +6314,11 @@ function openModal(id) {
   el.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   document.body.classList.add('modal-open');
-  // SOLUÇÃO DEFINITIVA: sidebar com visibility:hidden quando modal abre
-  // Isso remove o stacking context sem afetar o layout
+  // SOLUÇÃO: esconder sidebar completamente quando modal abre
   var sidebar = document.querySelector('aside.sidebar');
   if (sidebar) {
-    sidebar.dataset.savedTransform = sidebar.style.transform || '';
-    sidebar.dataset.savedVisibility = sidebar.style.visibility || '';
-    sidebar.style.transform = 'none';
-    sidebar.style.transition = 'none';
-    sidebar.style.visibility = 'hidden';
-    sidebar.style.pointerEvents = 'none';
+    sidebar.dataset.savedDisplay = sidebar.style.display || '';
+    sidebar.style.display = 'none';
   }
 }
 function closeModal(id) {
@@ -6342,10 +6332,7 @@ function closeModal(id) {
     // Restaurar sidebar
     var sidebar = document.querySelector('aside.sidebar');
     if (sidebar) {
-      sidebar.style.transform = sidebar.dataset.savedTransform || '';
-      sidebar.style.transition = '';
-      sidebar.style.visibility = sidebar.dataset.savedVisibility || '';
-      sidebar.style.pointerEvents = '';
+      sidebar.style.display = sidebar.dataset.savedDisplay || '';
     }
   }
 }
@@ -8051,8 +8038,8 @@ function zoomFoto(src, desc) {
   var modal = document.getElementById('modal-zoom-foto');
   document.getElementById('zoom-foto-img').src = src;
   document.getElementById('zoom-foto-desc').textContent = desc || '';
-  modal.style.display = 'flex';
-  modal.onclick = function(e) { if (e.target === modal || e.target === document.getElementById('zoom-foto-img')) modal.style.display = 'none'; };
+  openModal('modal-zoom-foto');
+  modal.onclick = function(e) { if (e.target === modal || e.target === document.getElementById('zoom-foto-img')) closeModal('modal-zoom-foto'); };
 }
 
 function visualizarProduto(cod) {
@@ -17023,11 +17010,11 @@ function abrirModalProLabore() {
   // Renderizar histórico
   renderHistoricoProLabore();
 
-  document.getElementById('modal-prolabore').style.display = 'flex';
+  openModal('modal-prolabore');
 }
 
 function fecharModalProLabore() {
-  document.getElementById('modal-prolabore').style.display = 'none';
+  closeModal('modal-prolabore');
 }
 
 function salvarProLabore() {
