@@ -4746,7 +4746,7 @@ function instalarApp() {
 <!-- Crediário no recibo -->
 <div id="rec-crediario-box" style="display:none;background:#f0f4ff;border:1px solid #c7d7f0;border-radius:8px;padding:10px 12px;margin-bottom:12px"></div>
 <!-- Garantia -->
-<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:10px;color:#166534;text-align:center">
+<div id="rec-pagamento-box" style="display:none;margin-bottom:10px">\n<div style=\"background:#f0f4ff;border-radius:8px;padding:10px 14px;border-left:4px solid #1e3a5f\">\n<div style=\"font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:6px\">\ud83d\udcb3 Forma de Pagamento</div>\n<div id=\"rec-pagamento-detalhe\" style=\"font-size:12px;color:#1e293b\"></div>\n</div>\n</div>\n<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:10px;color:#166534;text-align:center">
 🛡️ <strong>Garantia de 90 dias</strong> para defeitos na armação. Guarde este recibo.
 </div>
 <!-- Assinatura -->
@@ -11453,7 +11453,7 @@ function imprimirRecibo(id) {
           +'<td style=\"padding:7px 8px;font-size:11px\">'+nomeOculos+detOculos+'</td>'
           +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
           +'<td style=\"padding:7px 8px;text-align:right;font-size:11px\">'+fmtMoney(unit)+'</td>'
-          +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(tot)+'</td>'
+          +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(unit*qtd)+'</td>'
           +'</tr>';
       }
       var nome = x.descricaoCompleta||prodMap[x.produto]||x.produto||'—';
@@ -11461,7 +11461,7 @@ function imprimirRecibo(id) {
         +'<td style=\"padding:7px 8px;font-size:11px\">'+nome+'</td>'
         +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
         +'<td style=\"padding:7px 8px;text-align:right;font-size:11px\">'+fmtMoney(unit)+'</td>'
-        +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(tot)+'</td>'
+        +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(unit*qtd)+'</td>'
         +'</tr>';
     }).join('');
   }
@@ -11501,6 +11501,40 @@ function imprimirRecibo(id) {
     credBox.innerHTML = credHtml;
   } else if (credBox) {
     credBox.style.display = 'none';
+  }
+
+  // Preencher seção de pagamento
+  var pagBox = document.getElementById('rec-pagamento-box');
+  var pagDetalhe = document.getElementById('rec-pagamento-detalhe');
+  if (pagBox && pagDetalhe && v.pag) {
+    pagBox.style.display = 'block';
+    var pagHtml = '';
+    if (v.pag === 'Crediário Próprio' && v.crediario) {
+      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">Crediário Próprio</div>';
+      pagHtml += '<div style="color:#16a34a;margin-top:4px;font-size:12px">✅ Entrada: <strong>' + fmtMoney(v.crediario.entrada||0) + '</strong> (' + (v.crediario.entradaPag||'') + ')</div>';
+      if (v.crediario.parcelas && v.crediario.parcelas.length > 0) {
+        pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">📅 ' + v.crediario.parcelas.length + 'x de <strong>' + fmtMoney(v.crediario.parcelas[0].valor||0) + '</strong></div>';
+        pagHtml += '<div style="color:#94a3b8;font-size:11px;margin-top:2px">Restante: ' + fmtMoney((v.crediario.parcelas[0].valor||0)*v.crediario.parcelas.length) + '</div>';
+      }
+    } else if (v.pag === 'Cartão Crédito') {
+      var nParc = parseInt(v.parcelas) || 1;
+      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">Cartão de Crédito</div>';
+      if (nParc > 1) {
+        pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px"><strong>' + nParc + 'x</strong> de <strong>' + fmtMoney(totalGrupo/nParc) + '</strong></div>';
+      } else {
+        pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">À vista — ' + fmtMoney(totalGrupo) + '</div>';
+      }
+    } else if (v.pag === 'Cartão Débito') {
+      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">Cartão de Débito</div>';
+      pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">À vista — ' + fmtMoney(totalGrupo) + '</div>';
+    } else {
+      var pagLabels = {'PIX':'PIX','Dinheiro':'Dinheiro'};
+      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">' + (pagLabels[v.pag]||v.pag) + '</div>';
+      pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">À vista — ' + fmtMoney(totalGrupo) + '</div>';
+    }
+    pagDetalhe.innerHTML = pagHtml;
+  } else if (pagBox) {
+    pagBox.style.display = 'none';
   }
 
   var badge = document.getElementById('rec-status-badge');
