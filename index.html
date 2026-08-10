@@ -10361,6 +10361,34 @@ function renderAgendamentos() {
   }).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum agendamento encontrado</td></tr>';
 }
 
+
+function whatsappAgendamento(id) {
+  var a = load('agendamentos').find(function(x){ return x.id===id; });
+  if (!a) return;
+  var clMap = Object.fromEntries(load('clientes').map(function(c){ return [c.id,c]; }));
+  var cliente = clMap[a.clienteId];
+  var nomeCliente = cliente ? cliente.nome : 'Cliente';
+  var telCliente = cliente ? (cliente.tel||cliente.telefone||'') : '';
+  var tel = telCliente.replace(/\D/g, '');
+  if (tel.length === 11) tel = '55' + tel;
+  else if (tel.length === 10) tel = '55' + tel;
+  var dataFormatada = fmtDate(a.data);
+  var msg = 'Olá, ' + nomeCliente + '! 😊\n\n';
+  msg += '📅 Lembramos que você tem uma consulta agendada na Ótica Horizonte:\n\n';
+  msg += '📆 Data: ' + dataFormatada + '\n';
+  msg += '🕐 Horário: ' + a.hora + '\n';
+  msg += '📋 Tipo: ' + (a.tipo||'Consulta') + '\n';
+  if (a.obs && a.obs.trim()) {
+    msg += '📝 Obs: ' + a.obs + '\n';
+  }
+  msg += '\nConfirme sua presença respondendo esta mensagem.\n';
+  msg += '📍 Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10\n';
+  msg += '📞 (92) 99289-0085';
+  var url = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+
 function saveAgendamento() {
   const clienteId = parseInt(document.getElementById('agend-cliente').value);
   const data_ = document.getElementById('agend-data').value;
