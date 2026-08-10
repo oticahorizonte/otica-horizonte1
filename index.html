@@ -11867,7 +11867,7 @@ function saveOrcamentoNovo() {
   // Salvar no Firebase com retry robusto
   function _salvarOrcFirebase(tentativas) {
     if (window._firebaseReady && window._fb) {
-      window._fb.saveCollection('composicoes', arr).then(function(ok) {
+      window._fb.saveCollection('composicoes', load('composicoes')).then(function(ok) {
         if (ok) {
           console.log('Orcamento salvo no Firebase!');
           if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
