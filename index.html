@@ -6393,7 +6393,7 @@ function fmtTel(el) {
 }
 
 // ── IDs ──────────────────────────────────────────────────────────
-function nextId(arr) { return arr.length ? Math.max(...arr.map(x=>x.id||0))+1 : 1; }
+function nextId(arr) { return arr.length ? Math.max(...arr.map(x=>parseInt(x.id)||0))+1 : 1; }
 function nextCode(arr, prefix) {
   const nums = arr.map(x => parseInt((x.id||'').replace(prefix+'-',''))||0);
   return prefix + '-' + String((nums.length?Math.max(...nums):0)+1).padStart(4,'0');
@@ -9131,7 +9131,7 @@ function atualizarStatusOS(id) {
   const novo = prompt('Novo status:\n' + statuses.map((s,i)=>`${i+1}. ${s}`).join('\n') + '\n\nDigite o número:');
   if (!novo || !statuses[parseInt(novo)-1]) return;
   const arr = load('os');
-  const i = arr.findIndex(x=>x.id===id);
+  const i = arr.findIndex(x=>String(x.id)===String(id));
   if (i>=0) {
     var statusAnterior = arr[i].status;
     arr[i].status = statuses[parseInt(novo)-1];
@@ -10365,7 +10365,7 @@ function renderAgendamentos() {
 
 
 function whatsappAgendamento(id) {
-  var a = load('agendamentos').find(function(x){ return x.id===id; });
+  var a = load('agendamentos').find(function(x){ return String(x.id)===String(id); });
   if (!a) return;
   var clMap = Object.fromEntries(load('clientes').map(function(c){ return [c.id,c]; }));
   var cliente = clMap[a.clienteId];
@@ -10417,7 +10417,7 @@ function saveAgendamento() {
 }
 
 function editAgendamento(id) {
-  const a = load('agendamentos').find(x=>x.id===id);
+  const a = load('agendamentos').find(x=>String(x.id)===String(id));
   if (!a) return;
   populateClienteSelect('agend-cliente');
   document.getElementById('agend-idx').value = id;
@@ -10451,7 +10451,7 @@ function confirmarAgend(id) {
 
 function delAgendamento(id) {
   confirmar('Excluir agendamento?', function() {
-  save('agendamentos', load('agendamentos').filter(a=>a.id!==id));
+  save('agendamentos', load('agendamentos').filter(a=>String(a.id)!==String(id)));
   renderAgendamentos();
   showToast('Agendamento excluído!','warning');
   });
