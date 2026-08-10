@@ -10439,7 +10439,7 @@ function editAgendamento(id) {
 
 function confirmarAgend(id) {
   const arr = load('agendamentos');
-  const i = arr.findIndex(x=>x.id===id);
+  const i = arr.findIndex(x=>String(x.id)===String(id));
   if (i>=0) {
     const novoStatus = arr[i].status === 'Agendado' ? 'Confirmado' : 'Realizado';
     arr[i].status = novoStatus;
