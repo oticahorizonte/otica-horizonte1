@@ -4746,7 +4746,7 @@ function instalarApp() {
 <!-- Crediário no recibo -->
 <div id="rec-crediario-box" style="display:none;background:#f0f4ff;border:1px solid #c7d7f0;border-radius:8px;padding:10px 12px;margin-bottom:12px"></div>
 <!-- Garantia -->
-<div id="rec-pagamento-box" style="display:none;margin-bottom:10px">\n<div style=\"background:#f0f4ff;border-radius:8px;padding:10px 14px;border-left:4px solid #1e3a5f\">\n<div style=\"font-size:9px;font-weight:700;color:#1e3a5f;text-transform:uppercase;margin-bottom:6px\">\ud83d\udcb3 Forma de Pagamento</div>\n<div id=\"rec-pagamento-detalhe\" style=\"font-size:12px;color:#1e293b\"></div>\n</div>\n</div>\n<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:10px;color:#166534;text-align:center">
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:10px;color:#166534;text-align:center">
 🛡️ <strong>Garantia de 90 dias</strong> para defeitos na armação. Guarde este recibo.
 </div>
 <!-- Assinatura -->
@@ -5705,11 +5705,6 @@ async function syncFirebaseToLocal() {
     showToast('Firebase conectando... tente em instantes.', 'warning'); return;
   }
   showToast('⬇️ Baixando dados da nuvem...', 'success');
-  // PROTEÇÃO: enviar orçamentos locais antes de baixar
-  var _orcLocaisBackup = JSON.parse(localStorage.getItem('otica_composicoes')||'[]');
-  if (_orcLocaisBackup.length > 0 && window._firebaseReady && window._fb) {
-    window._fb.saveCollection('composicoes', _orcLocaisBackup).catch(function(){});
-  }
   try {
     var ok = 0;
     // Baixar todos os módulos críticos
@@ -6123,11 +6118,7 @@ function finalizarLogin(userObj, usuarios) {
   function aguardarFirebaseESync(tentativas) {
     if (window._firebaseReady && window._fb) {
       var loadingEl = document.getElementById('app-loading-overlay');
-      // PROTEÇÃO: antes de baixar da nuvem, enviar orçamentos locais para garantir que não se percam
-      var _orcLocais = JSON.parse(localStorage.getItem('otica_composicoes')||'[]');
-      if (_orcLocais.length > 0) {
-        window._fb.saveCollection('composicoes', _orcLocais).catch(function(){});
-      }
+      var _oL=JSON.parse(localStorage.getItem('otica_composicoes')||'[]'); if(_oL.length>0){window._fb.saveCollection('composicoes',_oL).catch(function(){});}
       window._fb.syncFromCloud(KEYS).then(function(ok) {
         // Carregar usuarios
         window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
@@ -10360,12 +10351,13 @@ function renderAgendamentos() {
       <td>${clMap[a.clienteId]||'-'}</td>
       <td><span class="badge badge-info">${a.tipo}</span></td>
       <td>${a.prof||'-'}</td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.obs||'-'}</td>
+      <td style="max-width:180px;white-space:pre-wrap;word-break:break-word;font-size:12px">${a.obs||'-'}</td>
       <td><span class="badge ${statusMap[a.status]||'badge-gray'}">${a.status}</span></td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-outline" onclick="editAgendamento(${a.id})" data-tip="Editar agendamento">✏️</button>
-        <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>\n        <button class=\"btn btn-sm\" onclick=\"whatsappAgendamento(${a.id})\" data-tip=\"WhatsApp\" style=\"background:#16a34a;color:white\">\xf0\x9f\x93\xb1</button>
-        \n        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
+        <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>
+        <button class="btn btn-sm" onclick="whatsappAgendamento(${a.id})" data-tip="WhatsApp" style="background:#16a34a;color:white">📱</button>
+        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
       </div></td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum agendamento encontrado</td></tr>';
@@ -10382,22 +10374,21 @@ function whatsappAgendamento(id) {
   var tel = telCliente.replace(/\D/g, '');
   if (tel.length === 11) tel = '55' + tel;
   else if (tel.length === 10) tel = '55' + tel;
-  var dataFormatada = fmtDate(a.data);
-  var msg = 'Olá, ' + nomeCliente + '! 😊\n\n';
-  msg += '📅 Lembramos que você tem uma consulta agendada na Ótica Horizonte:\n\n';
-  msg += '📆 Data: ' + dataFormatada + '\n';
-  msg += '🕐 Horário: ' + a.hora + '\n';
-  msg += '📋 Tipo: ' + (a.tipo||'Consulta') + '\n';
-  if (a.obs && a.obs.trim()) {
-    msg += '📝 Obs: ' + a.obs + '\n';
-  }
-  msg += '\nConfirme sua presença respondendo esta mensagem.\n';
-  msg += '📍 Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10\n';
-  msg += '📞 (92) 99289-0085';
-  var url = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
-  window.open(url, '_blank');
+  var linhas = [];
+  linhas.push('Olá, ' + nomeCliente + '! 😊');
+  linhas.push('');
+  linhas.push('📅 Lembramos que você tem uma consulta agendada na Ótica Horizonte:');
+  linhas.push('');
+  linhas.push('📆 Data: ' + fmtDate(a.data));
+  linhas.push('🕐 Horário: ' + a.hora);
+  linhas.push('📋 Tipo: ' + (a.tipo||'Consulta'));
+  if (a.obs && a.obs.trim()) linhas.push('📝 Obs: ' + a.obs);
+  linhas.push('');
+  linhas.push('Confirme sua presença respondendo esta mensagem.');
+  linhas.push('📍 Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10');
+  linhas.push('📞 (92) 99289-0085');
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(linhas.join('\n')), '_blank');
 }
-
 
 function saveAgendamento() {
   const clienteId = parseInt(document.getElementById('agend-cliente').value);
@@ -11491,7 +11482,7 @@ function imprimirRecibo(id) {
           +'<td style=\"padding:7px 8px;font-size:11px\">'+nomeOculos+detOculos+'</td>'
           +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
           +'<td style=\"padding:7px 8px;text-align:right;font-size:11px\">'+fmtMoney(unit)+'</td>'
-          +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(unit*qtd)+'</td>'
+          +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(tot)+'</td>'
           +'</tr>';
       }
       var nome = x.descricaoCompleta||prodMap[x.produto]||x.produto||'—';
@@ -11499,7 +11490,7 @@ function imprimirRecibo(id) {
         +'<td style=\"padding:7px 8px;font-size:11px\">'+nome+'</td>'
         +'<td style=\"padding:7px 8px;text-align:center;font-size:11px\">'+qtd+'</td>'
         +'<td style=\"padding:7px 8px;text-align:right;font-size:11px\">'+fmtMoney(unit)+'</td>'
-        +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(unit*qtd)+'</td>'
+        +'<td style=\"padding:7px 8px;text-align:right;font-size:11px;font-weight:700\">'+fmtMoney(tot)+'</td>'
         +'</tr>';
     }).join('');
   }
@@ -11539,40 +11530,6 @@ function imprimirRecibo(id) {
     credBox.innerHTML = credHtml;
   } else if (credBox) {
     credBox.style.display = 'none';
-  }
-
-  // Preencher seção de pagamento
-  var pagBox = document.getElementById('rec-pagamento-box');
-  var pagDetalhe = document.getElementById('rec-pagamento-detalhe');
-  if (pagBox && pagDetalhe && v.pag) {
-    pagBox.style.display = 'block';
-    var pagHtml = '';
-    if (v.pag === 'Crediário Próprio' && v.crediario) {
-      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">Crediário Próprio</div>';
-      pagHtml += '<div style="color:#16a34a;margin-top:4px;font-size:12px">✅ Entrada: <strong>' + fmtMoney(v.crediario.entrada||0) + '</strong> (' + (v.crediario.entradaPag||'') + ')</div>';
-      if (v.crediario.parcelas && v.crediario.parcelas.length > 0) {
-        pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">📅 ' + v.crediario.parcelas.length + 'x de <strong>' + fmtMoney(v.crediario.parcelas[0].valor||0) + '</strong></div>';
-        pagHtml += '<div style="color:#94a3b8;font-size:11px;margin-top:2px">Restante: ' + fmtMoney((v.crediario.parcelas[0].valor||0)*v.crediario.parcelas.length) + '</div>';
-      }
-    } else if (v.pag === 'Cartão Crédito') {
-      var nParc = parseInt(v.parcelas) || 1;
-      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">Cartão de Crédito</div>';
-      if (nParc > 1) {
-        pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px"><strong>' + nParc + 'x</strong> de <strong>' + fmtMoney(totalGrupo/nParc) + '</strong></div>';
-      } else {
-        pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">À vista — ' + fmtMoney(totalGrupo) + '</div>';
-      }
-    } else if (v.pag === 'Cartão Débito') {
-      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">Cartão de Débito</div>';
-      pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">À vista — ' + fmtMoney(totalGrupo) + '</div>';
-    } else {
-      var pagLabels = {'PIX':'PIX','Dinheiro':'Dinheiro'};
-      pagHtml += '<div style="font-weight:700;color:#0d2b4e;font-size:13px">' + (pagLabels[v.pag]||v.pag) + '</div>';
-      pagHtml += '<div style="color:#64748b;margin-top:4px;font-size:12px">À vista — ' + fmtMoney(totalGrupo) + '</div>';
-    }
-    pagDetalhe.innerHTML = pagHtml;
-  } else if (pagBox) {
-    pagBox.style.display = 'none';
   }
 
   var badge = document.getElementById('rec-status-badge');
@@ -12025,7 +11982,7 @@ function filtrarOrcUnif() {
   var produtos = load('produtos');
   var filtrados = produtos.filter(function(p) {
     if (!q) return true;
-    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
     if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
     if (b.cat==='Serviço' && a.cat!=='Serviço') return 1;
@@ -14307,7 +14264,7 @@ function filtrarVendaUnif() {
 
   var filtrados = produtos.filter(function(p) {
     if (!q) return true;
-    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
     // Serviços primeiro
     if (a.cat==='Serviço' && b.cat!=='Serviço') return -1;
@@ -14921,7 +14878,7 @@ function filtrarCaixaRapida() {
   // Ordenar: Serviços primeiro, depois por categoria
   var filtrados = produtos.filter(function(p) {
     if (!q) return true;
-    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
+    return (p.desc+p.cod+p.cat+(p.marca||'')+(p.modelo||'')).toLowerCase().includes(q);
   }).sort(function(a,b) {
     if (a.cat === 'Serviço' && b.cat !== 'Serviço') return -1;
     if (b.cat === 'Serviço' && a.cat !== 'Serviço') return 1;
@@ -15040,7 +14997,7 @@ function filtrarEstoqueBusca(tipo) {
   else {
     filtrados = produtos.filter(p=>{
       if (p.cat==='Serviço OS') return false; // Exclusivo para OS
-      return !q||(p.desc+p.cod+p.cat+(p.marca||'')+(p.lenteIndice||'')+(p.lenteMaterial||'')+(p.lenteTipo||'')+(p.lenteTratamento||'')).toLowerCase().includes(q);
+      return !q||(p.desc+p.cod+p.cat+(p.marca||'')).toLowerCase().includes(q);
     });
     // Ordenar: Servicos primeiro se busca vazia
     if (!q) filtrados = filtrados.sort(function(a,b){ return a.cat==='Serviço'?-1:b.cat==='Serviço'?1:0; });
