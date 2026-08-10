@@ -10375,19 +10375,21 @@ function whatsappAgendamento(id) {
   if (tel.length === 11) tel = '55' + tel;
   else if (tel.length === 10) tel = '55' + tel;
   var linhas = [];
-  linhas.push('Olá, ' + nomeCliente + '! 😊');
+  linhas.push('Ola, ' + nomeCliente + '!');
   linhas.push('');
-  linhas.push('📅 Lembramos que você tem uma consulta agendada na Ótica Horizonte:');
+  linhas.push('Lembramos que voce tem uma consulta agendada na Otica Horizonte:');
   linhas.push('');
-  linhas.push('📆 Data: ' + fmtDate(a.data));
-  linhas.push('🕐 Horário: ' + a.hora);
-  linhas.push('📋 Tipo: ' + (a.tipo||'Consulta'));
-  if (a.obs && a.obs.trim()) linhas.push('📝 Obs: ' + a.obs);
+  linhas.push('Data: ' + fmtDate(a.data));
+  linhas.push('Horario: ' + a.hora);
+  linhas.push('Tipo: ' + (a.tipo||'Consulta'));
+  if (a.obs && a.obs.trim()) linhas.push('Obs: ' + a.obs);
   linhas.push('');
-  linhas.push('Confirme sua presença respondendo esta mensagem.');
-  linhas.push('📍 Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10');
-  linhas.push('📞 (92) 99289-0085');
-  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(linhas.join('\n')), '_blank');
+  linhas.push('Confirme sua presenca respondendo esta mensagem.');
+  linhas.push('Rua Henrique Martins, 481 - Galeria Fabrica dos Oculos, 2 piso, loja 10');
+  linhas.push('Tel: (92) 99289-0085');
+  var msg = linhas.join('\n');
+  var url = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
 }
 
 function saveAgendamento() {
@@ -12242,7 +12244,7 @@ function whatsappOrcamento(id) {
     });
   } else { itensTexto = c.desc || 'Orçamento'; }
   var validade = new Date(new Date(c.data).getTime()+30*86400000).toLocaleDateString('pt-BR');
-  var msg = 'Olá, ' + nomeCliente + '! 😊\n\n📋 *Orçamento #' + c.id + ' — Ótica Horizonte*\n\n' + itensTexto + '\n💰 *Total: ' + fmtMoney(c.totalCli||0) + '*\n📅 Válido até: ' + validade + '\n\nFicamos à disposição!\n📞 (92) 99289-0085';
+  var msg = 'Olá, ' + nomeCliente + '! \n\n *Orçamento #' + c.id + ' — Otica Horizonte*\n\n' + itensTexto + '\n *Total: ' + fmtMoney(c.totalCli||0) + '*\n Válido até: ' + validade + '\n\nFicamos à disposicao!\n (92) 99289-0085';
   window.open('https://wa.me/' + (whatsappNum||'') + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -15576,7 +15578,7 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
 }
 
 function whatsappCobranca(nome, vendaId, parcNum, parcTotal, data, valor) {
-  var msg = 'Olá '+nome.split(' ')[0]+'! 😊\n\nPassando para lembrar sobre sua parcela do crediário na Ótica Horizonte:\n\n📋 Venda: '+vendaId+'\n💳 Parcela: '+parcNum+'/'+parcTotal+'\n📅 Vencimento: '+fmtDate(data)+'\n💰 Valor: '+fmtMoney(valor)+'\n\nQualquer dúvida estamos à disposição!\n\n_Ótica Horizonte — Seu olhar, nosso compromisso._';
+  var msg = 'Ola '+nome.split(' ')[0]+'! \n\nPassando para lembrar sobre sua parcela do crediario na Otica Horizonte:\n\n Venda: '+vendaId+'\n Parcela: '+parcNum+'/'+parcTotal+'\n Vencimento: '+fmtDate(data)+'\n Valor: '+fmtMoney(valor)+'\n\nQualquer duvida estamos à disposicao!\n\n_Otica Horizonte — Seu olhar, nosso compromisso._';
   document.getElementById('whatsapp-msg-preview').innerHTML = msg.replace(/\n/g,'<br>');
   document.getElementById('whatsapp-msg-preview').dataset.msg = msg;
   document.getElementById('whatsapp-copiado').style.display='none';
