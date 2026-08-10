@@ -11864,11 +11864,25 @@ function saveOrcamentoNovo() {
   arr.push(orc);
   save('composicoes', arr);
   // Sync imediato ao Firebase (sem debounce) para não perder orçamentos
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('composicoes', arr).then(function(ok) {
-      if (ok) console.log('✅ Orçamento sincronizado com Firebase imediatamente');
-    }).catch(function(e) { console.warn('Erro sync orçamento:', e); });
+  // Salvar no Firebase com retry robusto
+  function _salvarOrcFirebase(tentativas) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection('composicoes', arr).then(function(ok) {
+        if (ok) {
+          console.log('Orcamento salvo no Firebase!');
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+        } else if (tentativas > 0) {
+          setTimeout(function(){ _salvarOrcFirebase(tentativas-1); }, 2000);
+        }
+      }).catch(function(e) {
+        console.warn('Erro sync orcamento:', e);
+        if (tentativas > 0) setTimeout(function(){ _salvarOrcFirebase(tentativas-1); }, 2000);
+      });
+    } else if (tentativas > 0) {
+      setTimeout(function(){ _salvarOrcFirebase(tentativas-1); }, 1500);
+    }
   }
+  _salvarOrcFirebase(10);
 
   // Limpar modal
   closeModal('modal-novo-orcamento');
