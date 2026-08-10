@@ -10354,8 +10354,8 @@ function renderAgendamentos() {
       <td><span class="badge ${statusMap[a.status]||'badge-gray'}">${a.status}</span></td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-outline" onclick="editAgendamento(${a.id})" data-tip="Editar agendamento">✏️</button>
-        <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>
-        <button class=\"btn btn-sm\" onclick=\"whatsappAgendamento(${a.id})\" data-tip=\"WhatsApp\" style=\"background:#16a34a;color:white\">📱</button>\n        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
+        <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>\n        <button class=\"btn btn-sm\" onclick=\"whatsappAgendamento(${a.id})\" data-tip=\"WhatsApp\" style=\"background:#16a34a;color:white\">\xf0\x9f\x93\xb1</button>
+        \n        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
       </div></td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum agendamento encontrado</td></tr>';
