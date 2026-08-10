@@ -5705,6 +5705,11 @@ async function syncFirebaseToLocal() {
     showToast('Firebase conectando... tente em instantes.', 'warning'); return;
   }
   showToast('⬇️ Baixando dados da nuvem...', 'success');
+  // PROTEÇÃO: enviar orçamentos locais antes de baixar
+  var _orcLocaisBackup = JSON.parse(localStorage.getItem('otica_composicoes')||'[]');
+  if (_orcLocaisBackup.length > 0 && window._firebaseReady && window._fb) {
+    window._fb.saveCollection('composicoes', _orcLocaisBackup).catch(function(){});
+  }
   try {
     var ok = 0;
     // Baixar todos os módulos críticos
@@ -6118,6 +6123,11 @@ function finalizarLogin(userObj, usuarios) {
   function aguardarFirebaseESync(tentativas) {
     if (window._firebaseReady && window._fb) {
       var loadingEl = document.getElementById('app-loading-overlay');
+      // PROTEÇÃO: antes de baixar da nuvem, enviar orçamentos locais para garantir que não se percam
+      var _orcLocais = JSON.parse(localStorage.getItem('otica_composicoes')||'[]');
+      if (_orcLocais.length > 0) {
+        window._fb.saveCollection('composicoes', _orcLocais).catch(function(){});
+      }
       window._fb.syncFromCloud(KEYS).then(function(ok) {
         // Carregar usuarios
         window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
