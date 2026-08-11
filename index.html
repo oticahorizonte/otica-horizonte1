@@ -2408,6 +2408,21 @@ function instalarApp() {
 </style>
 <style>
   /* ===== MODAL NOVA VENDA — TELA CHEIA ===== */
+  #modal-novo-orcamento {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+  #modal-novo-orcamento .modal {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
   #modal-venda {
     padding: 0 !important;
     align-items: stretch !important;
@@ -11687,8 +11702,8 @@ function abrirNovoOrcamentoModal() {
   if (descReais) descReais.value = '';
   // Popular selects de clientes e produtos
   initOrcModal();
-  iniciarAbasOrcMobile();
   openModal('modal-novo-orcamento');
+  setTimeout(iniciarAbasOrcMobile, 50);
 }
 
 function renderSecOrcamentos() {
@@ -12212,13 +12227,21 @@ function iniciarAbasOrcMobile() {
   var abas = document.getElementById('orc-abas');
   var colEsq = document.getElementById('orc-col-esq');
   var colDir = document.getElementById('orc-col-dir');
-  if (window.innerWidth <= 768) {
-    if (abas) abas.style.display = 'block';
-    abaOrc('produtos');
+  var isMobile = window.innerWidth <= 768;
+  console.log('iniciarAbasOrcMobile - mobile:', isMobile, 'abas:', !!abas);
+  if (isMobile) {
+    if (abas) { abas.style.display = 'block'; abas.style.setProperty('display', 'block', 'important'); }
+    if (colEsq) { colEsq.style.display = 'flex'; colEsq.classList.remove('aba-oculta'); }
+    if (colDir) { colDir.style.display = 'none'; colDir.classList.add('aba-oculta'); }
+    // Atualizar botões
+    var btnProd = document.getElementById('btn-orc-aba-produtos');
+    var btnPag = document.getElementById('btn-orc-aba-pagamento');
+    if (btnProd) { btnProd.style.background='rgba(201,168,76,.2)'; btnProd.style.borderBottom='3px solid #e8c96a'; btnProd.style.color='#e8c96a'; }
+    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.borderBottom='3px solid transparent'; btnPag.style.color='rgba(255,255,255,.5)'; }
   } else {
     if (abas) abas.style.display = 'none';
-    if (colEsq) colEsq.classList.remove('aba-oculta');
-    if (colDir) colDir.classList.remove('aba-oculta');
+    if (colEsq) { colEsq.style.display = ''; colEsq.classList.remove('aba-oculta'); }
+    if (colDir) { colDir.style.display = ''; colDir.classList.remove('aba-oculta'); }
   }
 }
 
