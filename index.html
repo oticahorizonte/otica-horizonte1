@@ -5651,8 +5651,13 @@ const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'o
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 var _saveDebounceTimers = {};
+var _sistemaInicializando = true; // Bloqueia sync durante seed inicial
+setTimeout(function(){ _sistemaInicializando = false; }, 5000); // Libera após 5s
+
 const save = function(k, v) {
   _saveBase(k, v);
+  // Não sincronizar com Firebase durante inicialização (seed)
+  if (_sistemaInicializando) return;
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore'];
   if (criticos.indexOf(k) === -1) return;
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
@@ -11875,7 +11880,8 @@ function saveOrcamentoNovo() {
   arr.push(orc);
   save('composicoes', arr);
   // Sync imediato ao Firebase (sem debounce) para não perder orçamentos
-  // Salvar no Firebase com retry robusto
+  // Salvar no Firebase com retry robusto (ignora flag de inicialização)
+  _sistemaInicializando = false; // Garantir que sync está ativo
   function _salvarOrcFirebase(tentativas) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection('composicoes', load('composicoes')).then(function(ok) {
@@ -13969,7 +13975,7 @@ function doPrintOrcamento() {
   win.document.write(c);win.document.close();setTimeout(()=>win.focus(),300);
 }
 
-function seedComposicoes(){if(!load('composicoes').length && localStorage.getItem(KEYS['composicoes'])===null)save('composicoes',[]);}
+function seedComposicoes(){if(!load('composicoes').length && localStorage.getItem(KEYS['composicoes'])===null){_saveBase('composicoes',[]);}}
 
 
 // ── Init modais com selects ───────────────────────────────────────
