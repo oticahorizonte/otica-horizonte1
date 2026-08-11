@@ -2111,6 +2111,17 @@ async function zerarVendasOS() {
                   if (window._fb) window._fb.saveCollection(k, data).catch(function(){});
                 }
               }
+              // PROTECAO ESPECIAL: nunca sobrescrever composicoes com menos dados
+              if (k === 'composicoes') {
+                var localComp = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                if (Array.isArray(data) && Array.isArray(localComp) && localComp.length > data.length) {
+                  console.log('PROTECAO: mantendo ' + localComp.length + ' orcamentos locais vs ' + data.length + ' na nuvem');
+                  // Subir os dados locais para a nuvem
+                  if (window._fb) window._fb.saveCollection('composicoes', localComp).catch(function(){});
+                  ok++;
+                  continue;
+                }
+              }
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
             }
