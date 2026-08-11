@@ -11776,7 +11776,7 @@ function renderSecOrcamentos() {
       '<td style="padding:6px 8px;font-size:11px">' + fmtDate(c.data) + '</td>' +
       '<td style="padding:10px 12px;font-size:12px;color:' + (vencido?'#dc2626':'#64748b') + '">' + validadeStr + (vencido?' ⚠️':'') + '</td>' +
       '<td style="padding:10px 12px"><strong>' + (clMap[c.clienteId]||'—') + '</strong></td>' +
-      '<td style="padding:6px 8px;font-size:11px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs.substring(0,50)+(c.obs.length>50?'...':'')+'</small>' : '') + '</td>' +
+      '<td style="padding:6px 8px;font-size:11px;color:#64748b;max-width:200px;white-space:pre-wrap;word-break:break-word">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs+'</small>' : '') + '</td>' +
       '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a;font-size:14px">' + fmtMoney(c.totalCli||0) + '</td>' +
       '<td style="padding:10px 12px"><span style="background:' + stBg + ';color:' + stColor + ';padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + stLabel + '</span></td>' +
       '<td style="padding:10px 12px"><div style="display:flex;gap:4px;flex-wrap:wrap">' + acoes + '</div></td>' +
