@@ -4489,6 +4489,19 @@ function instalarApp() {
 </div>
 
 <!-- CORPO: 2 COLUNAS -->
+<!-- Abas mobile - ocultas no PC -->
+<div id="orc-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
+  <div style="display:flex">
+    <button id="btn-orc-aba-produtos" onclick="abaOrc('produtos')"
+      style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
+      🔍 Produtos
+    </button>
+    <button id="btn-orc-aba-pagamento" onclick="abaOrc('pagamento')"
+      style="flex:1;padding:11px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer">
+      💰 Pagamento
+    </button>
+  </div>
+</div>
 <div id="orc-grid" style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
@@ -11674,6 +11687,7 @@ function abrirNovoOrcamentoModal() {
   if (descReais) descReais.value = '';
   // Popular selects de clientes e produtos
   initOrcModal();
+  iniciarAbasOrcMobile();
   openModal('modal-novo-orcamento');
 }
 
@@ -12175,17 +12189,37 @@ function onOrcUnifKeydown(e) {
 }
 
 function abaOrc(aba) {
-  var tabs = ['produtos','pagamento'];
-  tabs.forEach(function(t) {
-    var btn = document.getElementById('orc-tab-'+t);
-    var content = document.getElementById('orc-tab-content-'+t);
-    if (btn) btn.classList.toggle('active', t===aba);
-    if (content) content.classList.toggle('active', t===aba);
-  });
+  var colEsq = document.getElementById('orc-col-esq');
+  var colDir = document.getElementById('orc-col-dir');
+  var btnProd = document.getElementById('btn-orc-aba-produtos');
+  var btnPag = document.getElementById('btn-orc-aba-pagamento');
+  if (!colEsq || !colDir) return;
+  if (aba === 'produtos') {
+    colEsq.classList.remove('aba-oculta');
+    colDir.classList.add('aba-oculta');
+    if (btnProd) { btnProd.style.background='rgba(201,168,76,.2)'; btnProd.style.borderBottom='3px solid #e8c96a'; btnProd.style.color='#e8c96a'; }
+    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.borderBottom='3px solid transparent'; btnPag.style.color='rgba(255,255,255,.5)'; }
+  } else {
+    colEsq.classList.add('aba-oculta');
+    colDir.classList.remove('aba-oculta');
+    if (btnProd) { btnProd.style.background='transparent'; btnProd.style.borderBottom='3px solid transparent'; btnProd.style.color='rgba(255,255,255,.5)'; }
+    if (btnPag) { btnPag.style.background='rgba(201,168,76,.2)'; btnPag.style.borderBottom='3px solid #e8c96a'; btnPag.style.color='#e8c96a'; }
+  }
 }
 
+
 function iniciarAbasOrcMobile() {
-  if (window.innerWidth <= 768) abaOrc('produtos');
+  var abas = document.getElementById('orc-abas');
+  var colEsq = document.getElementById('orc-col-esq');
+  var colDir = document.getElementById('orc-col-dir');
+  if (window.innerWidth <= 768) {
+    if (abas) abas.style.display = 'block';
+    abaOrc('produtos');
+  } else {
+    if (abas) abas.style.display = 'none';
+    if (colEsq) colEsq.classList.remove('aba-oculta');
+    if (colDir) colDir.classList.remove('aba-oculta');
+  }
 }
 
 function initOrcModal() {
