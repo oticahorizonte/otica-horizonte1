@@ -2485,6 +2485,12 @@ function instalarApp() {
       text-overflow: ellipsis;
       max-width: 120px;
     }
+    /* Exceção: coluna de descrição de produtos */
+    #tb-produtos-table td:nth-child(2) {
+      white-space: pre-wrap !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+    }
     
     /* Coluna de ações não corta */
     th:last-child, td:last-child { 
@@ -2492,8 +2498,14 @@ function instalarApp() {
       max-width: none;
     }
     
-    /* Coluna de descrição pode ter mais espaço */
-    #tb-produtos-table td:nth-child(2) { max-width: 150px; }
+    /* Coluna de descrição permite quebra de linha */
+    #tb-produtos-table td:nth-child(2) { 
+      max-width: 180px; 
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+    }
   }
   
   /* No PC — mostrar todas as colunas */
