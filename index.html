@@ -3024,7 +3024,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
-<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th>Venda</th><th>Status</th><th>Ações</th></tr></thead>
+<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th style=\"width:55px\">Estq.</th><th>Mín.</th><th>Venda</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
@@ -8043,9 +8043,9 @@ function renderProdutos() {
   if (!theadProd) theadProd = document.querySelector('#tb-produtos thead tr');
   if (theadProd) {
     if (adminProdThead) {
-      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile col-custo-prod">Custo</th><th class="hide-mobile">Venda</th><th class="hide-mobile col-margem-prod">Margem</th><th>Status</th><th>Ações</th>';
+      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th style=\"width:55px\">Estq.</th><th class="hide-mobile">Mín.</th><th class="hide-mobile col-custo-prod">Custo</th><th class="hide-mobile">Venda</th><th class="hide-mobile col-margem-prod">Margem</th><th style=\"width:65px\">Status</th><th>Ações</th>';
     } else {
-      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile">Venda</th><th>Status</th><th>Ações</th>';
+      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile">Venda</th><th style=\"width:65px\">Status</th><th>Ações</th>';
     }
   }
   var adminProd = isAdmin();
@@ -8075,7 +8075,7 @@ function renderProdutos() {
     const margem = p.venda>0 ? (p.venda-p.custo)/p.venda*100 : 0;
     const status = (p.cat === 'Serviço') ? 'Serviço' : (p.qtd <= p.min ? 'Repor' : 'OK');
     return `<tr>
-      <td><strong>${p.cod}</strong></td><td>${p.foto?`<img src="${p.foto}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle"/>`:''}${p.desc}</td>
+      <td><strong>${p.cod}</strong></td><td style=\"white-space:pre-wrap;word-break:break-word;max-width:200px\">${p.foto?`<img src="${p.foto}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle"/>`:''}${p.desc}</td>
       <td class="hide-mobile"><span class="badge badge-info">${p.cat}</span></td>
       <td class="hide-mobile">${p.marca}</td>
       <td class="${p.qtd<=p.min?'text-danger fw-bold':'fw-bold'}">${p.qtd}</td>
