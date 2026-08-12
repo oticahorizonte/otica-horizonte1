@@ -10731,11 +10731,16 @@ function renderFluxoCaixa() {
   var diasMap = {};
   
   // Vendas
-  load('vendas').forEach(function(v) {
+  load('vendas').filter(function(v){ return v.status !== 'Pendente' && v.status !== 'Cancelado'; }).forEach(function(v) {
     var d = (v.data||'').slice(0,10);
     if (!d || d < dataInicioStr) return;
     if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
-    diasMap[d].entradas += calcTotal(v);
+    // Para crediário: contar apenas a entrada recebida
+    if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.entrada > 0) {
+      diasMap[d].entradas += v.crediario.entrada;
+    } else {
+      diasMap[d].entradas += calcTotal(v);
+    }
   });
   
   // OS conserto
@@ -10757,7 +10762,7 @@ function renderFluxoCaixa() {
   // Despesas
   load('despesas').forEach(function(d) {
     var dt = (d.data||'').slice(0,10);
-    if (!dt || new Date(dt) < dataInicio) return;
+    if (!dt || dt < dataInicioStr) return;
     if (!diasMap[dt]) diasMap[dt] = {entradas:0, saidas:0};
     diasMap[dt].saidas += (d.valor||0);
   });
