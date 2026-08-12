@@ -5696,15 +5696,15 @@ setTimeout(function(){ _sistemaInicializando = false; }, 5000); // Libera após 
 
 const save = function(k, v) {
   _saveBase(k, v);
-  // Não sincronizar com Firebase durante inicialização (seed)
-  if (_sistemaInicializando) return;
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore'];
   if (criticos.indexOf(k) === -1) return;
+  // Durante inicialização: usar delay maior para não conflitar com seed
+  var delay = _sistemaInicializando ? 6000 : 800;
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
     delete _saveDebounceTimers[k];
-    tentarSalvarFirebaseDebounced(k, v, 5);
-  }, 800);
+    tentarSalvarFirebaseDebounced(k, load(k), 10);
+  }, delay);
 };
 
 
