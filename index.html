@@ -2111,16 +2111,6 @@ async function zerarVendasOS() {
                   if (window._fb) window._fb.saveCollection(k, data).catch(function(){});
                 }
               }
-              // PROTECAO: nunca sobrescrever dados locais com menos dados da nuvem
-              var modulosProtegidos = ['composicoes','despesas','entradas','vendas','os','agendamentos','clientes','receitas','prolabore'];
-              if (modulosProtegidos.indexOf(k) !== -1) {
-                var localProt = JSON.parse(localStorage.getItem(keys[k])||'[]');
-                if (Array.isArray(data) && Array.isArray(localProt) && localProt.length > data.length) {
-                  if (window._fb) window._fb.saveCollection(k, localProt).catch(function(){});
-                  ok++;
-                  continue;
-                }
-              }
               localStorage.setItem(keys[k], JSON.stringify(data));
               ok++;
             }
@@ -6132,11 +6122,6 @@ function finalizarLogin(userObj, usuarios) {
   function aguardarFirebaseESync(tentativas) {
     if (window._firebaseReady && window._fb) {
       var loadingEl = document.getElementById('app-loading-overlay');
-      var _modulosBackup = ['composicoes','despesas','entradas','vendas','os'];
-      _modulosBackup.forEach(function(mod) {
-        var _bkp = JSON.parse(localStorage.getItem('otica_'+mod)||'[]');
-        if (_bkp.length > 0 && window._fb) window._fb.saveCollection(mod, _bkp).catch(function(){});
-      });
       window._fb.syncFromCloud(KEYS).then(function(ok) {
         // Carregar usuarios
         window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
