@@ -1002,7 +1002,7 @@
       width: 100% !important;
       overflow-y: auto !important;
     }
-    #venda-col-esq.aba-oculta, #venda-col-dir.aba-oculta, #orc-col-dir.aba-oculta {
+    #venda-col-esq.aba-oculta, #venda-col-dir.aba-oculta {
       display: none !important;
     }
   }
@@ -2111,12 +2111,11 @@ async function zerarVendasOS() {
                   if (window._fb) window._fb.saveCollection(k, data).catch(function(){});
                 }
               }
-              // PROTECAO ESPECIAL: nunca sobrescrever dados locais com menos dados da nuvem
+              // PROTECAO: nunca sobrescrever dados locais com menos dados da nuvem
               var modulosProtegidos = ['composicoes','despesas','entradas','vendas','os','agendamentos','clientes','receitas','prolabore'];
               if (modulosProtegidos.indexOf(k) !== -1) {
                 var localProt = JSON.parse(localStorage.getItem(keys[k])||'[]');
                 if (Array.isArray(data) && Array.isArray(localProt) && localProt.length > data.length) {
-                  console.log('PROTECAO: mantendo ' + localProt.length + ' registros locais de ' + k + ' vs ' + data.length + ' na nuvem');
                   if (window._fb) window._fb.saveCollection(k, localProt).catch(function(){});
                   ok++;
                   continue;
@@ -2408,21 +2407,6 @@ function instalarApp() {
 </style>
 <style>
   /* ===== MODAL NOVA VENDA — TELA CHEIA ===== */
-  #modal-novo-orcamento {
-    padding: 0 !important;
-    align-items: stretch !important;
-    justify-content: stretch !important;
-  }
-  #modal-novo-orcamento .modal {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
   #modal-venda {
     padding: 0 !important;
     align-items: stretch !important;
@@ -2500,12 +2484,6 @@ function instalarApp() {
       text-overflow: ellipsis;
       max-width: 120px;
     }
-    /* Exceção: coluna de descrição de produtos */
-    #tb-produtos-table td:nth-child(2) {
-      white-space: pre-wrap !important;
-      overflow: visible !important;
-      text-overflow: unset !important;
-    }
     
     /* Coluna de ações não corta */
     th:last-child, td:last-child { 
@@ -2513,14 +2491,8 @@ function instalarApp() {
       max-width: none;
     }
     
-    /* Coluna de descrição permite quebra de linha */
-    #tb-produtos-table td:nth-child(2) { 
-      max-width: 180px; 
-      white-space: pre-wrap !important;
-      word-break: break-word !important;
-      overflow: visible !important;
-      text-overflow: unset !important;
-    }
+    /* Coluna de descrição pode ter mais espaço */
+    #tb-produtos-table td:nth-child(2) { max-width: 150px; }
   }
   
   /* No PC — mostrar todas as colunas */
@@ -3039,7 +3011,7 @@ function instalarApp() {
 </div>
 </div>
 <div class="card-body" style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
-<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th style=\"width:55px\">Estq.</th><th>Mín.</th><th>Venda</th><th>Status</th><th>Ações</th></tr></thead>
+<table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th>Venda</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
 </div>
@@ -4492,11 +4464,11 @@ function instalarApp() {
 <!-- ABAS MOBILE - ocultas no PC -->
 <div id="orc-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
   <div style="display:flex">
-    <button id="btn-orc-aba-produtos" onclick="abaOrc('produtos')"
+    <button id="btn-aba-produtos" onclick="abaOrc('produtos')"
       style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
       🔍 Produtos
     </button>
-    <button id="btn-orc-aba-pagamento" onclick="abaOrc('pagamento')"
+    <button id="btn-aba-pagamento" onclick="abaOrc('pagamento')"
       style="flex:1;padding:11px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer">
       💰 Pagamento
     </button>
@@ -4504,19 +4476,6 @@ function instalarApp() {
 </div>
 
 <!-- CORPO: 2 COLUNAS -->
-<!-- Abas mobile - ocultas no PC -->
-<div id="orc-abas" style="display:none;background:#0d2b4e;border-bottom:2px solid rgba(201,168,76,.4)">
-  <div style="display:flex">
-    <button id="btn-orc-aba-produtos" onclick="abaOrc('produtos')"
-      style="flex:1;padding:11px;background:rgba(201,168,76,.2);border:none;border-bottom:3px solid #e8c96a;color:#e8c96a;font-size:13px;font-weight:700;cursor:pointer">
-      🔍 Produtos
-    </button>
-    <button id="btn-orc-aba-pagamento" onclick="abaOrc('pagamento')"
-      style="flex:1;padding:11px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer">
-      💰 Pagamento
-    </button>
-  </div>
-</div>
 <div id="orc-grid" style="display:grid;grid-template-columns:1fr 360px;height:calc(100dvh - 58px);overflow:hidden">
 
   <!-- COLUNA ESQUERDA: Busca + Itens -->
@@ -5691,12 +5650,11 @@ const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'o
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
 const _saveBase = (k,v) => localStorage.setItem(KEYS[k], JSON.stringify(v));
 var _saveDebounceTimers = {};
-var _sistemaInicializando = true; // Bloqueia sync durante seed inicial
-setTimeout(function(){ _sistemaInicializando = false; }, 5000); // Libera após 5s
+var _sistemaInicializando = true;
+setTimeout(function(){ _sistemaInicializando = false; }, 5000);
 
 const save = function(k, v) {
   _saveBase(k, v);
-  // Não sincronizar com Firebase durante inicialização (seed)
   if (_sistemaInicializando) return;
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore'];
   if (criticos.indexOf(k) === -1) return;
@@ -6174,7 +6132,6 @@ function finalizarLogin(userObj, usuarios) {
   function aguardarFirebaseESync(tentativas) {
     if (window._firebaseReady && window._fb) {
       var loadingEl = document.getElementById('app-loading-overlay');
-      // Backup de todos os módulos críticos antes de sincronizar
       var _modulosBackup = ['composicoes','despesas','entradas','vendas','os'];
       _modulosBackup.forEach(function(mod) {
         var _bkp = JSON.parse(localStorage.getItem('otica_'+mod)||'[]');
@@ -6454,7 +6411,7 @@ function fmtTel(el) {
 }
 
 // ── IDs ──────────────────────────────────────────────────────────
-function nextId(arr) { return arr.length ? Math.max(...arr.map(x=>parseInt(x.id)||0))+1 : 1; }
+function nextId(arr) { return arr.length ? Math.max(...arr.map(x=>x.id||0))+1 : 1; }
 function nextCode(arr, prefix) {
   const nums = arr.map(x => parseInt((x.id||'').replace(prefix+'-',''))||0);
   return prefix + '-' + String((nums.length?Math.max(...nums):0)+1).padStart(4,'0');
@@ -7673,7 +7630,6 @@ function saveCliente() {
   if (id) { const i=arr.findIndex(x=>x.id===parseInt(id)); arr[i]=obj; } else arr.push(obj);
   save('clientes', arr);
   // Sync imediato ao Firebase
-    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('clientes', load('clientes')).catch(function(e){ console.warn('Sync clientes error:', e); });
   }
@@ -7862,7 +7818,6 @@ function saveReceita() {
   if (id) { const i=arr.findIndex(x=>x.id===parseInt(id)); arr[i]=obj; } else arr.push(obj);
   save('receitas', arr);
   // Sync imediato ao Firebase
-    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('receitas', load('receitas')).catch(function(e){ console.warn('Sync receitas error:', e); });
   }
@@ -8078,9 +8033,9 @@ function renderProdutos() {
   if (!theadProd) theadProd = document.querySelector('#tb-produtos thead tr');
   if (theadProd) {
     if (adminProdThead) {
-      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th style=\"width:55px\">Estq.</th><th class="hide-mobile">Mín.</th><th class="hide-mobile col-custo-prod">Custo</th><th class="hide-mobile">Venda</th><th class="hide-mobile col-margem-prod">Margem</th><th style=\"width:65px\">Status</th><th>Ações</th>';
+      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile col-custo-prod">Custo</th><th class="hide-mobile">Venda</th><th class="hide-mobile col-margem-prod">Margem</th><th>Status</th><th>Ações</th>';
     } else {
-      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile">Venda</th><th style=\"width:65px\">Status</th><th>Ações</th>';
+      theadProd.innerHTML = '<th>Código</th><th>Descrição</th><th class="hide-mobile">Categoria</th><th class="hide-mobile">Marca</th><th>Estoque</th><th class="hide-mobile">Mín.</th><th class="hide-mobile">Venda</th><th>Status</th><th>Ações</th>';
     }
   }
   var adminProd = isAdmin();
@@ -8110,7 +8065,7 @@ function renderProdutos() {
     const margem = p.venda>0 ? (p.venda-p.custo)/p.venda*100 : 0;
     const status = (p.cat === 'Serviço') ? 'Serviço' : (p.qtd <= p.min ? 'Repor' : 'OK');
     return `<tr>
-      <td><strong>${p.cod}</strong></td><td style=\"white-space:pre-wrap;word-break:break-word;max-width:200px\">${p.foto?`<img src="${p.foto}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle"/>`:''}${p.desc}</td>
+      <td><strong>${p.cod}</strong></td><td>${p.foto?`<img src="${p.foto}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle"/>`:''}${p.desc}</td>
       <td class="hide-mobile"><span class="badge badge-info">${p.cat}</span></td>
       <td class="hide-mobile">${p.marca}</td>
       <td class="${p.qtd<=p.min?'text-danger fw-bold':'fw-bold'}">${p.qtd}</td>
@@ -8887,7 +8842,6 @@ function saveVenda() {
   renderVendas();
 
   // Sync imediato com Firebase após venda
-    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('vendas', load('vendas')).then(function(ok){
       if(ok) { localStorage.setItem('otica_ultimo_sync', Date.now().toString()); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
@@ -9195,7 +9149,7 @@ function atualizarStatusOS(id) {
   const novo = prompt('Novo status:\n' + statuses.map((s,i)=>`${i+1}. ${s}`).join('\n') + '\n\nDigite o número:');
   if (!novo || !statuses[parseInt(novo)-1]) return;
   const arr = load('os');
-  const i = arr.findIndex(x=>String(x.id)===String(id));
+  const i = arr.findIndex(x=>x.id===id);
   if (i>=0) {
     var statusAnterior = arr[i].status;
     arr[i].status = statuses[parseInt(novo)-1];
@@ -9397,7 +9351,6 @@ function saveOS() {
   if (idx) { const i=arr.findIndex(x=>x.id===idx); arr[i]=obj; } else arr.push(obj);
   save('os', arr);
   // Sync imediato ao Firebase
-    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('os', load('os')).catch(function(e){ console.warn('Sync os error:', e); });
   }
@@ -10416,45 +10369,15 @@ function renderAgendamentos() {
       <td>${clMap[a.clienteId]||'-'}</td>
       <td><span class="badge badge-info">${a.tipo}</span></td>
       <td>${a.prof||'-'}</td>
-      <td style="max-width:180px;white-space:pre-wrap;word-break:break-word;font-size:12px">${a.obs||'-'}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.obs||'-'}</td>
       <td><span class="badge ${statusMap[a.status]||'badge-gray'}">${a.status}</span></td>
       <td><div class="flex gap-2">
         <button class="btn btn-sm btn-outline" onclick="editAgendamento(${a.id})" data-tip="Editar agendamento">✏️</button>
         <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>
-        <button class="btn btn-sm" onclick="whatsappAgendamento(${a.id})" data-tip="WhatsApp" style="background:#16a34a;color:white">📱</button>
         ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
       </div></td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum agendamento encontrado</td></tr>';
-}
-
-
-function whatsappAgendamento(id) {
-  var a = load('agendamentos').find(function(x){ return String(x.id)===String(id); });
-  if (!a) return;
-  var clMap = Object.fromEntries(load('clientes').map(function(c){ return [c.id,c]; }));
-  var cliente = clMap[a.clienteId];
-  var nomeCliente = cliente ? cliente.nome : 'Cliente';
-  var telCliente = cliente ? (cliente.tel||cliente.telefone||'') : '';
-  var tel = telCliente.replace(/\D/g, '');
-  if (tel.length === 11) tel = '55' + tel;
-  else if (tel.length === 10) tel = '55' + tel;
-  var linhas = [];
-  linhas.push('Ola, ' + nomeCliente + '!');
-  linhas.push('');
-  linhas.push('Lembramos que voce tem uma consulta agendada na Otica Horizonte:');
-  linhas.push('');
-  linhas.push('Data: ' + fmtDate(a.data));
-  linhas.push('Horario: ' + a.hora);
-  linhas.push('Tipo: ' + (a.tipo||'Consulta'));
-  if (a.obs && a.obs.trim()) linhas.push('Obs: ' + a.obs);
-  linhas.push('');
-  linhas.push('Confirme sua presenca respondendo esta mensagem.');
-  linhas.push('Rua Henrique Martins, 481 - Galeria Fabrica dos Oculos, 2 piso, loja 10');
-  linhas.push('Tel: (92) 99289-0085');
-  var msg = linhas.join('\n');
-  var url = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
-  window.open(url, '_blank');
 }
 
 function saveAgendamento() {
@@ -10475,7 +10398,6 @@ function saveAgendamento() {
   if (idx) { const i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('agendamentos', arr);
   // Sync imediato ao Firebase
-    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('agendamentos', load('agendamentos')).catch(function(e){ console.warn('Sync agendamentos error:', e); });
   }
@@ -10485,7 +10407,7 @@ function saveAgendamento() {
 }
 
 function editAgendamento(id) {
-  const a = load('agendamentos').find(x=>String(x.id)===String(id));
+  const a = load('agendamentos').find(x=>x.id===id);
   if (!a) return;
   populateClienteSelect('agend-cliente');
   document.getElementById('agend-idx').value = id;
@@ -10507,7 +10429,7 @@ function editAgendamento(id) {
 
 function confirmarAgend(id) {
   const arr = load('agendamentos');
-  const i = arr.findIndex(x=>String(x.id)===String(id));
+  const i = arr.findIndex(x=>x.id===id);
   if (i>=0) {
     const novoStatus = arr[i].status === 'Agendado' ? 'Confirmado' : 'Realizado';
     arr[i].status = novoStatus;
@@ -10519,7 +10441,7 @@ function confirmarAgend(id) {
 
 function delAgendamento(id) {
   confirmar('Excluir agendamento?', function() {
-  save('agendamentos', load('agendamentos').filter(a=>String(a.id)!==String(id)));
+  save('agendamentos', load('agendamentos').filter(a=>a.id!==id));
   renderAgendamentos();
   showToast('Agendamento excluído!','warning');
   });
@@ -10815,7 +10737,6 @@ function renderFluxoCaixa() {
     case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); break;
     case 'tudo': dataInicio = new Date('2020-01-01'); break;
   }
-  // Converter dataInicio para string YYYY-MM-DD para comparação sem problema de timezone
   var dataInicioStr = dataInicio.getFullYear()+'-'+String(dataInicio.getMonth()+1).padStart(2,'0')+'-'+String(dataInicio.getDate()).padStart(2,'0');
   
   // Coletar todos os dias com movimentacao
@@ -10929,7 +10850,6 @@ function saveEntrada() {
   if (idx) { var i=arr.findIndex(function(x){ return x.id===parseInt(idx); }); arr[i]=obj; } else arr.push(obj);
   save('entradas', arr);
   // Sync imediato ao Firebase
-    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('entradas', load('entradas')).catch(function(e){ console.warn('Sync entradas error:', e); });
   }
@@ -11135,21 +11055,16 @@ function saveDespesa() {
   };
   if (idx) { var i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('despesas', arr);
-  // Sync imediato ao Firebase com retry (igual ao orçamento)
-  _sistemaInicializando = false; // Forçar sync ativo
-  function _salvarDespesaFirebase(tentativas) {
+  _sistemaInicializando = false;
+  function _salvarDespFirebase(t) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection('despesas', load('despesas')).then(function(ok) {
         if (ok) { console.log('Despesa salva no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
-        else if (tentativas > 0) setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 2000);
-      }).catch(function(e) {
-        if (tentativas > 0) setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 2000);
-      });
-    } else if (tentativas > 0) {
-      setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 1500);
-    }
+        else if (t > 0) setTimeout(function(){ _salvarDespFirebase(t-1); }, 2000);
+      }).catch(function(e) { if (t > 0) setTimeout(function(){ _salvarDespFirebase(t-1); }, 2000); });
+    } else if (t > 0) { setTimeout(function(){ _salvarDespFirebase(t-1); }, 1500); }
   }
-  _salvarDespesaFirebase(10);
+  _salvarDespFirebase(10);
   closeModal('modal-despesa');
   renderDespesas();
   showToast(idx ? 'Despesa atualizada!' : 'Despesa registrada!');
@@ -11727,7 +11642,6 @@ function abrirNovoOrcamentoModal() {
   // Popular selects de clientes e produtos
   initOrcModal();
   openModal('modal-novo-orcamento');
-  setTimeout(iniciarAbasOrcMobile, 50);
 }
 
 function renderSecOrcamentos() {
@@ -11841,7 +11755,7 @@ function renderSecOrcamentos() {
       '<td style="padding:6px 8px;font-size:11px">' + fmtDate(c.data) + '</td>' +
       '<td style="padding:10px 12px;font-size:12px;color:' + (vencido?'#dc2626':'#64748b') + '">' + validadeStr + (vencido?' ⚠️':'') + '</td>' +
       '<td style="padding:10px 12px"><strong>' + (clMap[c.clienteId]||'—') + '</strong></td>' +
-      '<td style="padding:6px 8px;font-size:11px;color:#64748b;max-width:200px;white-space:pre-wrap;word-break:break-word">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs+'</small>' : '') + '</td>' +
+      '<td style="padding:6px 8px;font-size:11px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.desc||'—') + (c.obs ? '<br><small style="color:#94a3b8;font-style:italic">'+c.obs.substring(0,50)+(c.obs.length>50?'...':'')+'</small>' : '') + '</td>' +
       '<td style="padding:10px 12px;text-align:right;font-weight:800;color:#16a34a;font-size:14px">' + fmtMoney(c.totalCli||0) + '</td>' +
       '<td style="padding:10px 12px"><span style="background:' + stBg + ';color:' + stColor + ';padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + stLabel + '</span></td>' +
       '<td style="padding:10px 12px"><div style="display:flex;gap:4px;flex-wrap:wrap">' + acoes + '</div></td>' +
@@ -11944,25 +11858,14 @@ function saveOrcamentoNovo() {
 
   arr.push(orc);
   save('composicoes', arr);
-  // Sync imediato ao Firebase (sem debounce) para não perder orçamentos
-  // Salvar no Firebase com retry robusto (ignora flag de inicialização)
-  _sistemaInicializando = false; // Garantir que sync está ativo
-  function _salvarOrcFirebase(tentativas) {
+  _sistemaInicializando = false;
+  function _salvarOrcFirebase(t) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection('composicoes', load('composicoes')).then(function(ok) {
-        if (ok) {
-          console.log('Orcamento salvo no Firebase!');
-          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-        } else if (tentativas > 0) {
-          setTimeout(function(){ _salvarOrcFirebase(tentativas-1); }, 2000);
-        }
-      }).catch(function(e) {
-        console.warn('Erro sync orcamento:', e);
-        if (tentativas > 0) setTimeout(function(){ _salvarOrcFirebase(tentativas-1); }, 2000);
-      });
-    } else if (tentativas > 0) {
-      setTimeout(function(){ _salvarOrcFirebase(tentativas-1); }, 1500);
-    }
+        if (ok) { console.log('Orcamento salvo no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
+        else if (t > 0) setTimeout(function(){ _salvarOrcFirebase(t-1); }, 2000);
+      }).catch(function(e) { if (t > 0) setTimeout(function(){ _salvarOrcFirebase(t-1); }, 2000); });
+    } else if (t > 0) { setTimeout(function(){ _salvarOrcFirebase(t-1); }, 1500); }
   }
   _salvarOrcFirebase(10);
 
@@ -12228,45 +12131,17 @@ function onOrcUnifKeydown(e) {
 }
 
 function abaOrc(aba) {
-  var colEsq = document.getElementById('orc-col-esq');
-  var colDir = document.getElementById('orc-col-dir');
-  var btnProd = document.getElementById('btn-orc-aba-produtos');
-  var btnPag = document.getElementById('btn-orc-aba-pagamento');
-  if (!colEsq || !colDir) return;
-  if (aba === 'produtos') {
-    colEsq.classList.remove('aba-oculta');
-    colDir.classList.add('aba-oculta');
-    if (btnProd) { btnProd.style.background='rgba(201,168,76,.2)'; btnProd.style.borderBottom='3px solid #e8c96a'; btnProd.style.color='#e8c96a'; }
-    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.borderBottom='3px solid transparent'; btnPag.style.color='rgba(255,255,255,.5)'; }
-  } else {
-    colEsq.classList.add('aba-oculta');
-    colDir.classList.remove('aba-oculta');
-    if (btnProd) { btnProd.style.background='transparent'; btnProd.style.borderBottom='3px solid transparent'; btnProd.style.color='rgba(255,255,255,.5)'; }
-    if (btnPag) { btnPag.style.background='rgba(201,168,76,.2)'; btnPag.style.borderBottom='3px solid #e8c96a'; btnPag.style.color='#e8c96a'; }
-  }
+  var tabs = ['produtos','pagamento'];
+  tabs.forEach(function(t) {
+    var btn = document.getElementById('orc-tab-'+t);
+    var content = document.getElementById('orc-tab-content-'+t);
+    if (btn) btn.classList.toggle('active', t===aba);
+    if (content) content.classList.toggle('active', t===aba);
+  });
 }
 
-
 function iniciarAbasOrcMobile() {
-  var abas = document.getElementById('orc-abas');
-  var colEsq = document.getElementById('orc-col-esq');
-  var colDir = document.getElementById('orc-col-dir');
-  var isMobile = window.innerWidth <= 768;
-  console.log('iniciarAbasOrcMobile - mobile:', isMobile, 'abas:', !!abas);
-  if (isMobile) {
-    if (abas) { abas.style.display = 'block'; abas.style.setProperty('display', 'block', 'important'); }
-    if (colEsq) { colEsq.style.display = 'flex'; colEsq.classList.remove('aba-oculta'); }
-    if (colDir) { colDir.style.display = 'none'; colDir.classList.add('aba-oculta'); }
-    // Atualizar botões
-    var btnProd = document.getElementById('btn-orc-aba-produtos');
-    var btnPag = document.getElementById('btn-orc-aba-pagamento');
-    if (btnProd) { btnProd.style.background='rgba(201,168,76,.2)'; btnProd.style.borderBottom='3px solid #e8c96a'; btnProd.style.color='#e8c96a'; }
-    if (btnPag) { btnPag.style.background='transparent'; btnPag.style.borderBottom='3px solid transparent'; btnPag.style.color='rgba(255,255,255,.5)'; }
-  } else {
-    if (abas) abas.style.display = 'none';
-    if (colEsq) { colEsq.style.display = ''; colEsq.classList.remove('aba-oculta'); }
-    if (colDir) { colDir.style.display = ''; colDir.classList.remove('aba-oculta'); }
-  }
+  if (window.innerWidth <= 768) abaOrc('produtos');
 }
 
 function initOrcModal() {
@@ -12368,7 +12243,7 @@ function whatsappOrcamento(id) {
     });
   } else { itensTexto = c.desc || 'Orçamento'; }
   var validade = new Date(new Date(c.data).getTime()+30*86400000).toLocaleDateString('pt-BR');
-  var msg = 'Olá, ' + nomeCliente + '! \n\n *Orçamento #' + c.id + ' — Otica Horizonte*\n\n' + itensTexto + '\n *Total: ' + fmtMoney(c.totalCli||0) + '*\n Válido até: ' + validade + '\n\nFicamos à disposicao!\n (92) 99289-0085';
+  var msg = 'Olá, ' + nomeCliente + '! 😊\n\n📋 *Orçamento #' + c.id + ' — Ótica Horizonte*\n\n' + itensTexto + '\n💰 *Total: ' + fmtMoney(c.totalCli||0) + '*\n📅 Válido até: ' + validade + '\n\nFicamos à disposição!\n📞 (92) 99289-0085';
   window.open('https://wa.me/' + (whatsappNum||'') + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -14068,7 +13943,7 @@ function doPrintOrcamento() {
   win.document.write(c);win.document.close();setTimeout(()=>win.focus(),300);
 }
 
-function seedComposicoes(){if(!load('composicoes').length && localStorage.getItem(KEYS['composicoes'])===null){_saveBase('composicoes',[]);}}
+function seedComposicoes(){if(!load('composicoes').length && localStorage.getItem(KEYS['composicoes'])===null)save('composicoes',[]);}
 
 
 // ── Init modais com selects ───────────────────────────────────────
@@ -15702,7 +15577,7 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
 }
 
 function whatsappCobranca(nome, vendaId, parcNum, parcTotal, data, valor) {
-  var msg = 'Ola '+nome.split(' ')[0]+'! \n\nPassando para lembrar sobre sua parcela do crediario na Otica Horizonte:\n\n Venda: '+vendaId+'\n Parcela: '+parcNum+'/'+parcTotal+'\n Vencimento: '+fmtDate(data)+'\n Valor: '+fmtMoney(valor)+'\n\nQualquer duvida estamos à disposicao!\n\n_Otica Horizonte — Seu olhar, nosso compromisso._';
+  var msg = 'Olá '+nome.split(' ')[0]+'! 😊\n\nPassando para lembrar sobre sua parcela do crediário na Ótica Horizonte:\n\n📋 Venda: '+vendaId+'\n💳 Parcela: '+parcNum+'/'+parcTotal+'\n📅 Vencimento: '+fmtDate(data)+'\n💰 Valor: '+fmtMoney(valor)+'\n\nQualquer dúvida estamos à disposição!\n\n_Ótica Horizonte — Seu olhar, nosso compromisso._';
   document.getElementById('whatsapp-msg-preview').innerHTML = msg.replace(/\n/g,'<br>');
   document.getElementById('whatsapp-msg-preview').dataset.msg = msg;
   document.getElementById('whatsapp-copiado').style.display='none';
@@ -17361,15 +17236,4 @@ var _keysOriginalPL = null;
 
 </aside>
 </body>
-</html
-    #orc-grid {
-      grid-template-columns: 1fr !important;
-      height: calc(100dvh - 100px) !important;
-    }
-    #orc-col-esq, #orc-col-dir {
-      width: 100% !important;
-      overflow-y: auto !important;
-    }
-    #orc-col-esq.aba-oculta, #orc-col-dir.aba-oculta {
-      display: none !important;
-    }>
+</html>
