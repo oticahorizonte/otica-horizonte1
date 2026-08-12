@@ -2111,13 +2111,13 @@ async function zerarVendasOS() {
                   if (window._fb) window._fb.saveCollection(k, data).catch(function(){});
                 }
               }
-              // PROTECAO ESPECIAL: nunca sobrescrever composicoes com menos dados
-              if (k === 'composicoes') {
-                var localComp = JSON.parse(localStorage.getItem(keys[k])||'[]');
-                if (Array.isArray(data) && Array.isArray(localComp) && localComp.length > data.length) {
-                  console.log('PROTECAO: mantendo ' + localComp.length + ' orcamentos locais vs ' + data.length + ' na nuvem');
-                  // Subir os dados locais para a nuvem
-                  if (window._fb) window._fb.saveCollection('composicoes', localComp).catch(function(){});
+              // PROTECAO ESPECIAL: nunca sobrescrever dados locais com menos dados da nuvem
+              var modulosProtegidos = ['composicoes','despesas','entradas','vendas','os','agendamentos','clientes','receitas','prolabore'];
+              if (modulosProtegidos.indexOf(k) !== -1) {
+                var localProt = JSON.parse(localStorage.getItem(keys[k])||'[]');
+                if (Array.isArray(data) && Array.isArray(localProt) && localProt.length > data.length) {
+                  console.log('PROTECAO: mantendo ' + localProt.length + ' registros locais de ' + k + ' vs ' + data.length + ' na nuvem');
+                  if (window._fb) window._fb.saveCollection(k, localProt).catch(function(){});
                   ok++;
                   continue;
                 }
@@ -6174,7 +6174,12 @@ function finalizarLogin(userObj, usuarios) {
   function aguardarFirebaseESync(tentativas) {
     if (window._firebaseReady && window._fb) {
       var loadingEl = document.getElementById('app-loading-overlay');
-      var _oL=JSON.parse(localStorage.getItem('otica_composicoes')||'[]'); if(_oL.length>0){window._fb.saveCollection('composicoes',_oL).catch(function(){});}
+      // Backup de todos os módulos críticos antes de sincronizar
+      var _modulosBackup = ['composicoes','despesas','entradas','vendas','os'];
+      _modulosBackup.forEach(function(mod) {
+        var _bkp = JSON.parse(localStorage.getItem('otica_'+mod)||'[]');
+        if (_bkp.length > 0 && window._fb) window._fb.saveCollection(mod, _bkp).catch(function(){});
+      });
       window._fb.syncFromCloud(KEYS).then(function(ok) {
         // Carregar usuarios
         window._fb.loadCollection('usuarios').then(function(usuariosCloud) {
