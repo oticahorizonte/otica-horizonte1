@@ -5696,15 +5696,15 @@ setTimeout(function(){ _sistemaInicializando = false; }, 5000); // Libera após 
 
 const save = function(k, v) {
   _saveBase(k, v);
+  // Não sincronizar com Firebase durante inicialização (seed)
+  if (_sistemaInicializando) return;
   var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore'];
   if (criticos.indexOf(k) === -1) return;
-  // Durante inicialização: usar delay maior para não conflitar com seed
-  var delay = _sistemaInicializando ? 6000 : 800;
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
     delete _saveDebounceTimers[k];
-    tentarSalvarFirebaseDebounced(k, load(k), 10);
-  }, delay);
+    tentarSalvarFirebaseDebounced(k, v, 5);
+  }, 800);
 };
 
 
@@ -7673,6 +7673,7 @@ function saveCliente() {
   if (id) { const i=arr.findIndex(x=>x.id===parseInt(id)); arr[i]=obj; } else arr.push(obj);
   save('clientes', arr);
   // Sync imediato ao Firebase
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('clientes', load('clientes')).catch(function(e){ console.warn('Sync clientes error:', e); });
   }
@@ -7861,6 +7862,7 @@ function saveReceita() {
   if (id) { const i=arr.findIndex(x=>x.id===parseInt(id)); arr[i]=obj; } else arr.push(obj);
   save('receitas', arr);
   // Sync imediato ao Firebase
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('receitas', load('receitas')).catch(function(e){ console.warn('Sync receitas error:', e); });
   }
@@ -8885,6 +8887,7 @@ function saveVenda() {
   renderVendas();
 
   // Sync imediato com Firebase após venda
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('vendas', load('vendas')).then(function(ok){
       if(ok) { localStorage.setItem('otica_ultimo_sync', Date.now().toString()); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
@@ -9394,6 +9397,7 @@ function saveOS() {
   if (idx) { const i=arr.findIndex(x=>x.id===idx); arr[i]=obj; } else arr.push(obj);
   save('os', arr);
   // Sync imediato ao Firebase
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('os', load('os')).catch(function(e){ console.warn('Sync os error:', e); });
   }
@@ -10471,6 +10475,7 @@ function saveAgendamento() {
   if (idx) { const i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('agendamentos', arr);
   // Sync imediato ao Firebase
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('agendamentos', load('agendamentos')).catch(function(e){ console.warn('Sync agendamentos error:', e); });
   }
@@ -10922,6 +10927,7 @@ function saveEntrada() {
   if (idx) { var i=arr.findIndex(function(x){ return x.id===parseInt(idx); }); arr[i]=obj; } else arr.push(obj);
   save('entradas', arr);
   // Sync imediato ao Firebase
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     window._fb.saveCollection('entradas', load('entradas')).catch(function(e){ console.warn('Sync entradas error:', e); });
   }
@@ -11127,21 +11133,20 @@ function saveDespesa() {
   };
   if (idx) { var i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('despesas', arr);
-  // Sync imediato ao Firebase com retry
+  // Sync imediato ao Firebase com retry (igual ao orçamento)
+  _sistemaInicializando = false; // Forçar sync ativo
   function _salvarDespesaFirebase(tentativas) {
     if (window._firebaseReady && window._fb) {
       window._fb.saveCollection('despesas', load('despesas')).then(function(ok) {
-        if (ok) console.log('Despesa salva no Firebase!');
+        if (ok) { console.log('Despesa salva no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
         else if (tentativas > 0) setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 2000);
       }).catch(function(e) {
-        console.warn('Sync despesas error:', e);
         if (tentativas > 0) setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 2000);
       });
     } else if (tentativas > 0) {
       setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 1500);
     }
   }
-  _sistemaInicializando = false; // Garantir que sync está ativo
   _salvarDespesaFirebase(10);
   closeModal('modal-despesa');
   renderDespesas();
