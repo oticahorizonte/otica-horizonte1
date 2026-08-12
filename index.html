@@ -11127,10 +11127,22 @@ function saveDespesa() {
   };
   if (idx) { var i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('despesas', arr);
-  // Sync imediato ao Firebase
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('despesas', load('despesas')).catch(function(e){ console.warn('Sync despesas error:', e); });
+  // Sync imediato ao Firebase com retry
+  function _salvarDespesaFirebase(tentativas) {
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection('despesas', load('despesas')).then(function(ok) {
+        if (ok) console.log('Despesa salva no Firebase!');
+        else if (tentativas > 0) setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 2000);
+      }).catch(function(e) {
+        console.warn('Sync despesas error:', e);
+        if (tentativas > 0) setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 2000);
+      });
+    } else if (tentativas > 0) {
+      setTimeout(function(){ _salvarDespesaFirebase(tentativas-1); }, 1500);
+    }
   }
+  _sistemaInicializando = false; // Garantir que sync está ativo
+  _salvarDespesaFirebase(10);
   closeModal('modal-despesa');
   renderDespesas();
   showToast(idx ? 'Despesa atualizada!' : 'Despesa registrada!');
