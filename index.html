@@ -10743,6 +10743,18 @@ function renderFluxoCaixa() {
     }
   });
   
+  // Parcelas pagas do crediário
+  load('vendas').filter(function(v){ return v.pag === 'Crediário Próprio' && v.crediario && v.crediario.parcelas; }).forEach(function(v) {
+    v.crediario.parcelas.forEach(function(p) {
+      if (p.status === 'Pago' && p.data) {
+        var dp = p.data.slice(0,10);
+        if (!dp || dp < dataInicioStr) return;
+        if (!diasMap[dp]) diasMap[dp] = {entradas:0, saidas:0};
+        diasMap[dp].entradas += (p.valor||0);
+      }
+    });
+  });
+
   // OS conserto
   load('os').filter(function(o){ return o.tipoOS!=='montagem'; }).forEach(function(o) {
     var d = (o.abertura||'').slice(0,10);
