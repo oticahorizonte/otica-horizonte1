@@ -5651,7 +5651,10 @@ const save = function(k, v) {
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
     delete _saveDebounceTimers[k];
-    tentarSalvarFirebaseDebounced(k, load(k), 5);
+    var dadosAtuais = load(k);
+    // Nunca enviar dados vazios para o Firebase
+    if (Array.isArray(dadosAtuais) && dadosAtuais.length === 0) return;
+    tentarSalvarFirebaseDebounced(k, dadosAtuais, 5);
   }, 800);
 };
 
