@@ -5661,7 +5661,7 @@ const save = function(k, v) {
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
     delete _saveDebounceTimers[k];
-    tentarSalvarFirebaseDebounced(k, v, 5);
+    tentarSalvarFirebaseDebounced(k, load(k), 5);
   }, 800);
 };
 
@@ -11056,15 +11056,11 @@ function saveDespesa() {
   if (idx) { var i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
   save('despesas', arr);
   _sistemaInicializando = false;
-  function _salvarDespFirebase(t) {
-    if (window._firebaseReady && window._fb) {
-      window._fb.saveCollection('despesas', load('despesas')).then(function(ok) {
-        if (ok) { console.log('Despesa salva no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
-        else if (t > 0) setTimeout(function(){ _salvarDespFirebase(t-1); }, 2000);
-      }).catch(function(e) { if (t > 0) setTimeout(function(){ _salvarDespFirebase(t-1); }, 2000); });
-    } else if (t > 0) { setTimeout(function(){ _salvarDespFirebase(t-1); }, 1500); }
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('despesas', load('despesas')).then(function(ok){
+      if(ok){ console.log('Despesa salva no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
+    }).catch(function(){});
   }
-  _salvarDespFirebase(10);
   closeModal('modal-despesa');
   renderDespesas();
   showToast(idx ? 'Despesa atualizada!' : 'Despesa registrada!');
@@ -11859,15 +11855,11 @@ function saveOrcamentoNovo() {
   arr.push(orc);
   save('composicoes', arr);
   _sistemaInicializando = false;
-  function _salvarOrcFirebase(t) {
-    if (window._firebaseReady && window._fb) {
-      window._fb.saveCollection('composicoes', load('composicoes')).then(function(ok) {
-        if (ok) { console.log('Orcamento salvo no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
-        else if (t > 0) setTimeout(function(){ _salvarOrcFirebase(t-1); }, 2000);
-      }).catch(function(e) { if (t > 0) setTimeout(function(){ _salvarOrcFirebase(t-1); }, 2000); });
-    } else if (t > 0) { setTimeout(function(){ _salvarOrcFirebase(t-1); }, 1500); }
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('composicoes', load('composicoes')).then(function(ok){
+      if(ok){ console.log('Orcamento salvo no Firebase!'); if(typeof atualizarSyncIndicator==='function') atualizarSyncIndicator(); }
+    }).catch(function(){});
   }
-  _salvarOrcFirebase(10);
 
   // Limpar modal
   closeModal('modal-novo-orcamento');
