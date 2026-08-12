@@ -10815,6 +10815,8 @@ function renderFluxoCaixa() {
     case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); break;
     case 'tudo': dataInicio = new Date('2020-01-01'); break;
   }
+  // Converter dataInicio para string YYYY-MM-DD para comparação sem problema de timezone
+  var dataInicioStr = dataInicio.getFullYear()+'-'+String(dataInicio.getMonth()+1).padStart(2,'0')+'-'+String(dataInicio.getDate()).padStart(2,'0');
   
   // Coletar todos os dias com movimentacao
   var diasMap = {};
@@ -10822,7 +10824,7 @@ function renderFluxoCaixa() {
   // Vendas
   load('vendas').forEach(function(v) {
     var d = (v.data||'').slice(0,10);
-    if (!d || new Date(d) < dataInicio) return;
+    if (!d || d < dataInicioStr) return;
     if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
     diasMap[d].entradas += calcTotal(v);
   });
@@ -10830,7 +10832,7 @@ function renderFluxoCaixa() {
   // OS conserto
   load('os').filter(function(o){ return o.tipoOS!=='montagem'; }).forEach(function(o) {
     var d = (o.abertura||'').slice(0,10);
-    if (!d || new Date(d) < dataInicio) return;
+    if (!d || d < dataInicioStr) return;
     if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
     diasMap[d].entradas += (o.valor||0);
   });
@@ -10838,7 +10840,7 @@ function renderFluxoCaixa() {
   // Entradas manuais
   load('entradas').forEach(function(e) {
     var d = (e.data||'').slice(0,10);
-    if (!d || new Date(d) < dataInicio) return;
+    if (!d || d < dataInicioStr) return;
     if (!diasMap[d]) diasMap[d] = {entradas:0, saidas:0};
     diasMap[d].entradas += (e.valor||0);
   });
