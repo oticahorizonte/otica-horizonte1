@@ -5634,7 +5634,7 @@ function updatePrintDate() {
 window.addEventListener('beforeprint', updatePrintDate);
 
 // ── Storage helpers ──────────────────────────────────────────────
-const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', entradas:'otica_entradas', usuarios:'otica_usuarios', metas_vendas:'otica_metas_vendas', config_comissao:'otica_config_comissao', meta_faturamento:'otica_meta_faturamento', prolabore:'otica_prolabore' }; // usuarios gerenciado separadamente
+const KEYS = { clientes:'otica_clientes', receitas:'otica_receitas', produtos:'otica_produtos', vendas:'otica_vendas', os:'otica_os', user:'otica_user', agendamentos:'otica_agendamentos', composicoes:'otica_composicoes', historico_estoque:'otica_historico_estoque', rascunho_venda:'otica_rascunho_venda', despesas:'otica_despesas', entradas:'otica_entradas', usuarios:'otica_usuarios', metas_vendas:'otica_metas_vendas', config_comissao:'otica_config_comissao', meta_faturamento:'otica_meta_faturamento', prolabore:'otica_prolabore', custos_precificacao:'otica_custos_precificacao' }; // usuarios gerenciado separadamente
 
 // ─── Storage helpers ─────────────────────────────────────────────────────────
 const load = k => JSON.parse(localStorage.getItem(KEYS[k]) || '[]');
@@ -5646,7 +5646,7 @@ setTimeout(function(){ _sistemaInicializando = false; }, 5000);
 const save = function(k, v) {
   _saveBase(k, v);
   if (_sistemaInicializando) return;
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore'];
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore','custos_precificacao'];
   if (criticos.indexOf(k) === -1) return;
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
@@ -5681,7 +5681,7 @@ async function syncLocalToCloud() {
     // Enviar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
-      'usuarios','metas_vendas','config_comissao','prolabore','meta_faturamento'];
+      'usuarios','metas_vendas','config_comissao','prolabore','meta_faturamento','custos_precificacao'];
     for (var k of modulosCriticos) {
       try {
         var data = JSON.parse(localStorage.getItem(KEYS[k] || ('otica_'+k)) || '[]');
@@ -5717,7 +5717,7 @@ async function syncFirebaseToLocal() {
     // Baixar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
-      'usuarios','metas_vendas','config_comissao','prolabore','meta_faturamento'];
+      'usuarios','metas_vendas','config_comissao','prolabore','meta_faturamento','custos_precificacao'];
     // Módulos que precisam de MESCLAGEM (nunca perder dados locais não sincronizados)
     var modulosMesclar = ['vendas','os','composicoes','clientes','receitas','agendamentos','despesas','entradas','prolabore'];
 
@@ -10104,6 +10104,7 @@ async function salvarCustosPrec() {
   // Salvar localmente
   localStorage.setItem('otica_custos_precificacao', JSON.stringify(data));
   // Salvar no Firebase
+    _sistemaInicializando = false;
   if (window._firebaseReady && window._fb) {
     await window._fb.saveCollection('custos_precificacao', data);
     showToast('✅ Custos salvos na nuvem!', 'success');
