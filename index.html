@@ -892,8 +892,7 @@
     /* Solução definitiva: padding-left no body empurra TODO o conteúdo */
     body { padding-left: var(--sidebar-w) !important; }
     .main { margin-left: 0 !important; }
-    /* Sidebar e modais não são afetados pelo padding-left do body */
-    .sidebar { margin-left: calc(-1 * var(--sidebar-w)); }
+    /* Sidebar position:fixed já ignora o padding-left do body automaticamente */
   }
 
   /* ═══════════════════════════════════════════════
