@@ -269,7 +269,7 @@
   body.dark .sidebar-logo-img { box-shadow: 0 4px 16px rgba(0,0,0,.5); }
 
   .main {
-    margin-left: var(--sidebar-w); /* controlado pelo JS */
+    margin-left: 0;
     padding: 20px;
     max-width: 100%;
     overflow-x: auto;
@@ -661,9 +661,10 @@
     .hamburger { display: flex !important; }
     .sidebar {
       transform: translateX(-100%); transition: transform .3s ease;
-      z-index: 150; width: 240px !important;
+      z-index: 150; width: 240px !important; margin-left: 0;
     }
     .sidebar.open { transform: translateX(0); }
+    body { padding-left: 0 !important; }
     .main { margin-left: 0 !important; padding: 12px; padding-top: 56px; }
     .topbar { flex-direction: column; align-items: flex-start; }
     .topbar-actions { width: 100%; flex-wrap: wrap; }
@@ -885,12 +886,14 @@
      PC GRANDE (>1024px) — Sidebar sempre fixa
   ═══════════════════════════════════════════════ */
   @media (min-width: 1025px) {
-    .sidebar { transform: translateX(0) !important; }
-    .main { margin-left: var(--sidebar-w) !important; }
+    .sidebar { transform: translateX(0) !important; position: fixed; left: 0; top: 0; bottom: 0; }
     .sidebar-toggle-btn { display: none !important; }
     .section.active { min-height: calc(100vh - 40px); overflow-x: auto; }
-    /* Garantir que sidebar nunca sobreponha o conteúdo em desktop */
-    body.sidebar-open .main { margin-left: var(--sidebar-w) !important; }
+    /* Solução definitiva: padding-left no body empurra TODO o conteúdo */
+    body { padding-left: var(--sidebar-w) !important; }
+    .main { margin-left: 0 !important; }
+    /* Sidebar e modais não são afetados pelo padding-left do body */
+    .sidebar { margin-left: calc(-1 * var(--sidebar-w)); }
   }
 
   /* ═══════════════════════════════════════════════
@@ -898,11 +901,10 @@
   ═══════════════════════════════════════════════ */
   @media (max-width: 1024px) and (min-width: 769px) {
     .sidebar-toggle-btn { display: flex; }
-    .main { margin-left: 0; padding: 16px; padding-top: 64px; }
-    .sidebar { transform: translateX(-100%); }
+    body { padding-left: 0 !important; }
+    .main { margin-left: 0 !important; padding: 16px; padding-top: 64px; }
+    .sidebar { transform: translateX(-100%); margin-left: 0; }
     .sidebar.sidebar-visible { transform: translateX(0); }
-    /* Quando sidebar está visível em tablet, empurrar o conteúdo */
-    body.sidebar-open .main { margin-left: 240px; }
     .cards-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
@@ -6171,11 +6173,8 @@ function showSection(id) {
   var secEl = document.getElementById('sec-'+id);
   if (!secEl) { console.error('Seção não encontrada: sec-'+id); return; }
   secEl.classList.add('active');
-  // Garantir margin-left correto em desktop (evita sidebar sobrepor conteúdo)
-  if (window.innerWidth > 1024) {
-    var mainEl = document.querySelector('.main');
-    if (mainEl) mainEl.style.marginLeft = 'var(--sidebar-w)';
-  }
+  // margin-left controlado exclusivamente pelo CSS (padding-left no body)
+  // Não manipular via JS para evitar conflitos
 
   // Reaplicar controle de acesso (garante nav-usuarios visível para admin)
   aplicarControleAcesso();
