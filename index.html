@@ -9563,7 +9563,7 @@ function renderRelatorios() {
   var estEl=document.getElementById('rel-estoque');
   if(estEl){
     var cats={};
-    produtos.forEach(p=>{var cat=p.cat||p.categoria||'Outros';cats[cat]=cats[cat]||{itens:0,qtd:0,custo:0,venda:0,margens:[]};cats[cat].itens++;cats[cat].qtd+=(p.qtd||0);cats[cat].custo+=(p.custo||0)*(p.qtd||0);cats[cat].venda+=(p.preco||0)*(p.qtd||0);if(p.custo>0&&p.preco>0)cats[cat].margens.push((p.preco-p.custo)/p.preco*100);});
+    produtos.forEach(p=>{var cat=p.cat||p.categoria||'Outros';cats[cat]=cats[cat]||{itens:0,qtd:0,custo:0,venda:0,margens:[]};cats[cat].itens++;cats[cat].qtd+=(p.qtd||0);cats[cat].custo+=(p.custo||0)*(p.qtd||0);cats[cat].venda+=(p.venda||0)*(p.qtd||0);if(p.custo>0&&p.venda>0)cats[cat].margens.push((p.venda-p.custo)/p.venda*100);});
     estEl.innerHTML=Object.entries(cats).sort((a,b)=>b[1].venda-a[1].venda).slice(0,5).map(([cat,d])=>{
       var mg=d.margens.length?d.margens.reduce((s,v)=>s+v,0)/d.margens.length:0;
       return `<tr><td style="font-weight:600">${cat}</td><td>${d.itens}</td><td>${d.qtd}</td><td>${fmtMoney(d.custo)}</td><td class="fw-bold">${fmtMoney(d.venda)}</td><td style="color:${mg>30?'#16a34a':'#dc2626'};font-weight:700">${mg.toFixed(1)}%</td></tr>`;}).join('')||'<tr><td colspan="6" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
