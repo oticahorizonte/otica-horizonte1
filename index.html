@@ -9540,13 +9540,12 @@ function renderRelatorios() {
       cliVendas[cid].compras++;cliVendas[cid].total+=calcTotal(v);
       if((v.data||'')>cliVendas[cid].ultima)cliVendas[cid].ultima=v.data||'';
     });
-    // Mostrar apenas os 5 últimos clientes que compraram
+    // Mostrar apenas 5 clientes (com compras primeiro, depois sem)
     var cliComCompras=clientes.filter(c=>cliVendas[c.id]&&cliVendas[c.id].compras>0)
-      .sort((a,b)=>(cliVendas[b.id]?.ultima||'').localeCompare(cliVendas[a.id]?.ultima||''))
-      .slice(0,5);
+      .sort((a,b)=>(cliVendas[b.id]?.ultima||'').localeCompare(cliVendas[a.id]?.ultima||''));
     var cliSemCompras=clientes.filter(c=>!cliVendas[c.id]||cliVendas[c.id].compras===0)
       .sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
-    var cliList=[...cliComCompras,...cliSemCompras];
+    var cliList=[...cliComCompras,...cliSemCompras].slice(0,5);
     cliCompEl.innerHTML=cliList.map(c=>{
       var cv=cliVendas[c.id]||{compras:0,total:0,ultima:''};
       var statusCor=c.status==='Inativo'?'color:#f87171':'color:#34d399';
