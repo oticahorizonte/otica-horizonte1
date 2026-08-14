@@ -9022,8 +9022,8 @@ function viewOS(id) {
       // Botoes sem duplicacao - sem Status (desnecessario em detalhes)
       var btnsHtml = '<button class="btn btn-primary" onclick="imprimirOS(\''+o.id+'\')" style="background:#0d2b4e">Imprimir OS</button>';
       // WhatsApp
-      var cliOS2 = (load(\'clientes\')||[]).find(function(c){ return String(c.id)===String(o.clienteId); });\
-      var tel = cliOS2 ? (cliOS2.tel||cliOS2.telefone||cliOS2.fone||\'\') : \'\'';\
+      var cliOS2 = (load('clientes')||[]).find(function(c){ return String(c.id)===String(o.clienteId); });
+      var tel = cliOS2 ? (cliOS2.tel||cliOS2.telefone||cliOS2.fone||'') : '';
       if (tel) btnsHtml += '<button class="btn btn-success" onclick="abrirWhatsAppOS(\''+o.id+'\')" style="margin-left:8px;background:#25d366">WhatsApp</button>';
       // Editar (admin)
       if (isAdmin()) btnsHtml += '<button class="btn btn-warning" onclick="closeModal(\'modal-view-os\');editOS(\''+o.id+'\')" style="margin-left:8px">Editar</button>';
