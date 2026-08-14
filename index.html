@@ -347,7 +347,7 @@
   }
   .card-header::before { display: none; }
   .card-header h3 { font-size: 14px; font-weight: 700; color: white; letter-spacing: .01em; padding-left: 0; }
-  .card-body { padding: 16px; }
+  .card-body { padding: 16px; overflow-x: auto; }
   /* ===== TABELAS DO DASHBOARD — ESTILO RELATÓRIOS ===== */
   .card-body table { width: 100%; border-collapse: collapse; }
   .card-body thead th {
@@ -2945,7 +2945,7 @@ function instalarApp() {
 <input id="search-receitas" oninput="renderReceitas()" placeholder="🔍 Buscar por cliente ou médico..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>ID</th><th>Nome</th><th class="hide-mobile">CPF</th><th>Telefone</th><th class="hide-mobile">Cidade</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-receitas"></tbody></table>
 </div>
@@ -2970,7 +2970,7 @@ function instalarApp() {
 <input id="search-historico" oninput="renderHistoricoEstoque()" placeholder="🔍 Buscar por produto..." style="background:rgba(255,255,255,.9);font-size:12px" type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <div style="display:flex;gap:8px;padding:12px 12px 0;flex-wrap:wrap">
 <select id="filtro-hist-tipo" onchange="renderHistoricoEstoque()" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px">
 <option value="">Todos os tipos</option>
@@ -3024,7 +3024,7 @@ function instalarApp() {
 <span id="registro-icon" style="color:#e8c96a;font-size:18px;font-weight:700;flex-shrink:0">▼</span>
 </div>
 <div id="registro-vendas-body">
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th class="hide-mobile">Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-vendas"></tbody></table>
 </div>
@@ -3037,7 +3037,7 @@ function instalarApp() {
 </div>
 <div class="card-body" id="contas-crediario-body-wrap">
 <div class="cards-grid" id="contas-crediario-cards" style="margin-bottom:12px"></div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto / Serviço</th><th>Total</th><th class="hide-mobile">Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="contas-crediario-body"></tbody></table>
 </div>
@@ -3081,7 +3081,7 @@ function instalarApp() {
 <input id="search-os" oninput="renderOS()" placeholder="🔍 Buscar por nº, cliente ou status..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Nº OS</th><th>Abertura</th><th>Previsão</th><th>Cliente</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-os"></tbody></table>
 </div>
@@ -3292,7 +3292,7 @@ function instalarApp() {
 <input id="search-agend" oninput="renderAgendamentos()" placeholder="🔍 Buscar por cliente, tipo ou status..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table id="tb-agend-table"><thead><tr><th>Nº</th><th>Data</th><th>Horário</th><th>Cliente</th><th>Tipo</th><th>Profissional</th><th>Observações</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-agend"></tbody></table>
 </div>
@@ -3315,14 +3315,14 @@ function instalarApp() {
 <div class="cards-grid" id="comissao-cards"></div>
 <div class="card">
 <div class="card-header"><h3>Relatório de Comissões por Vendedor</h3></div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Vendedor</th><th>Qtd. Vendas</th><th>Receita Total</th><th>% Comissão</th><th>Valor Comissão</th><th>Participação</th></tr></thead>
 <tbody id="tb-comissoes"></tbody></table>
 </div>
 </div>
 <div class="card" style="margin-top:20px">
 <div class="card-header"><h3>📋 Vendas Detalhadas por Vendedor</h3></div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Nº Venda</th><th>Data</th><th>Vendedor</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Comissão</th></tr></thead>
 <tbody id="tb-comissoes-det"></tbody></table>
 </div>
@@ -3359,14 +3359,14 @@ function instalarApp() {
 <div id="fin-panel-fluxo">
 <div class="card" style="margin-bottom:16px">
 <div class="card-header"><h3>📊 Fluxo de Caixa — Saldo Diário</h3></div>
-<div class="card-body" style="padding:0"><table><thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Saldo do Dia</th><th>Saldo Acumulado</th><th>Detalhes</th></tr></thead><tbody id="tb-fluxo-caixa"></tbody></table></div>
+<div class="card-body" style="padding:0;overflow-x:auto"><table><thead><tr><th>Data</th><th>Entradas</th><th>Saídas</th><th>Saldo do Dia</th><th>Saldo Acumulado</th><th>Detalhes</th></tr></thead><tbody id="tb-fluxo-caixa"></tbody></table></div>
 </div>
 </div>
 <!-- Saídas (despesas) -->
 <div id="fin-panel-saidas" style="display:none">
 <div class="card">
 <div class="card-header"><h3>💸 Registro de Saídas</h3></div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Recorrente</th><th>Ações</th></tr></thead>
 <tbody id="tb-despesas"></tbody></table>
 </div>
@@ -3376,7 +3376,7 @@ function instalarApp() {
 <div id="fin-panel-entradas" style="display:none">
 <div class="card">
 <div class="card-header"><h3>💵 Registro de Entradas</h3></div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
 <tbody id="tb-entradas"></tbody></table>
 </div>
@@ -3520,7 +3520,7 @@ function instalarApp() {
 <input id="search-orcamentos" oninput="renderSecOrcamentos()" placeholder="🔍 Buscar por cliente ou descrição..." style="background:rgba(255,255,255,.9)" type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table>
 <thead>
 <tr>
@@ -3695,7 +3695,7 @@ function instalarApp() {
 </div>
 <div class="card">
 <div class="card-header"><h3>👤 Usuários Cadastrados</h3></div>
-<div class="card-body" style="padding:0">
+<div class="card-body" style="padding:0;overflow-x:auto">
 <table><thead><tr><th>Nome</th><th>Login</th><th>Nível</th><th>Comissão</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-usuarios"></tbody></table>
 </div>
