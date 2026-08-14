@@ -269,7 +269,7 @@
   body.dark .sidebar-logo-img { box-shadow: 0 4px 16px rgba(0,0,0,.5); }
 
   .main {
-    margin-left: 0;
+    margin-left: var(--sidebar-w);
     padding: 20px;
     max-width: 100%;
     overflow-x: hidden;
@@ -664,7 +664,6 @@
       z-index: 150; width: 240px !important; margin-left: 0;
     }
     .sidebar.open { transform: translateX(0); }
-    body { padding-left: 0 !important; }
     .main { margin-left: 0 !important; padding: 12px; padding-top: 56px; }
     .topbar { flex-direction: column; align-items: flex-start; }
     .topbar-actions { width: 100%; flex-wrap: wrap; }
@@ -888,11 +887,10 @@
   @media (min-width: 1025px) {
     .sidebar { transform: translateX(0) !important; position: fixed; left: 0; top: 0; bottom: 0; }
     .sidebar-toggle-btn { display: none !important; }
-    .section.active { min-height: calc(100vh - 40px); overflow-x: hidden; }
-    /* Solução definitiva: padding-left no body empurra TODO o conteúdo */
-    body { padding-left: var(--sidebar-w) !important; }
-    .main { margin-left: 0 !important; }
-    /* Sidebar position:fixed já ignora o padding-left do body automaticamente */
+    .section.active { min-height: calc(100vh - 40px); }
+    /* Solução: margin-left no .main empurra o conteúdo após a sidebar */
+    body { padding-left: 0 !important; }
+    .main { margin-left: var(--sidebar-w) !important; }
   }
 
   /* ═══════════════════════════════════════════════
@@ -900,9 +898,8 @@
   ═══════════════════════════════════════════════ */
   @media (max-width: 1024px) and (min-width: 769px) {
     .sidebar-toggle-btn { display: flex; }
-    body { padding-left: 0 !important; }
     .main { margin-left: 0 !important; padding: 16px; padding-top: 64px; }
-    .sidebar { transform: translateX(-100%); margin-left: 0; }
+    .sidebar { transform: translateX(-100%); }
     .sidebar.sidebar-visible { transform: translateX(0); }
     .cards-grid { grid-template-columns: repeat(2, 1fr); }
   }
