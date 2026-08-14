@@ -13785,7 +13785,7 @@ function imprimirOrcamentoById(id) {
     '<div style="min-width:200px;background:#f8fafc;border-radius:8px;padding:10px">' +
     (descReais > 0 ?
       '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:11px"><span style="color:#64748b">Subtotal:</span><span>'+fmtMoney(subtotal)+'</span></div>' +
-      '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:11px"><span style="color:#dc2626">Desconto:</span><span style="color:#dc2626">- '+fmtMoney(descReais)+'</span></div>'
+      '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:11px"><span style="color:#dc2626">Desconto:</span><span style="color:#dc2626">- '+fmtMoney(descReais)+' ('+( subtotal>0 ? (descReais/subtotal*100).toFixed(1) : '0.0')+'%)</span></div>'
     : '') +
     '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:16px;font-weight:800"><span style="color:#1e3a5f">TOTAL:</span><span style="color:#16a34a">'+fmtMoney(total)+'</span></div>' +
     '</div></div>' +
