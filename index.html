@@ -2987,7 +2987,7 @@ function instalarApp() {
 <input id="search-produtos" oninput="renderProdutos()" placeholder="🔍 Buscar por código, descrição ou categoria..." type="text"/>
 </div>
 </div>
-<div class="card-body" style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch">
+<div class="card-body" style="padding:0;overflow-x:hidden">
 <table id="tb-produtos-table" style="width:100%"><thead><tr><th>Código</th><th>Descrição</th><th>Categoria</th><th>Marca</th><th>Estoque</th><th>Mín.</th><th>Venda</th><th>Status</th><th>Ações</th></tr></thead>
 <tbody id="tb-produtos"></tbody></table>
 </div>
@@ -12805,8 +12805,15 @@ function exportarExcel() {
 function ajustarTabelasMobile() {
   if (window.innerWidth > 768) return;
   document.querySelectorAll('.card-body').forEach(cb => {
-    cb.style.overflowX = 'auto';
-    cb.style.webkitOverflowScrolling = 'touch';
+    // Em desktop: overflow hidden para preservar espaçamento lateral
+    // Em mobile: overflow auto para permitir scroll horizontal nas tabelas
+    if (window.innerWidth <= 1024) {
+      cb.style.overflowX = 'auto';
+      cb.style.webkitOverflowScrolling = 'touch';
+    } else {
+      cb.style.overflowX = '';
+      cb.style.webkitOverflowScrolling = '';
+    }
   });
 }
 window.addEventListener('resize', ajustarTabelasMobile);
