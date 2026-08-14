@@ -6856,29 +6856,29 @@ function renderDashboard() {
     if (!topEl) return;
     var vendas2 = load('vendas');
     var prodCount = {};
+    // Cada registro de venda é um item individual (não array de itens)
     vendas2.forEach(function(v) {
-      if (v.status === 'Cancelado') return;
-      var itens = v.itens && v.itens.length > 0 ? v.itens : [{cod:v.produto, desc:v.desc_prod||v.produto, preco:v.preco||0, qtd:v.qtd||1}];
-      itens.forEach(function(it) {
-        // Tratar óculos completo — usar armação como produto principal
-        if (it.tipo === 'oculos-completo' || it.produto === 'OCULOS-COMPLETO') {
-          var detalhes = it.detalhes || [];
-          var arm = detalhes.find(function(d){ return d.isArmacao; });
-          var nome = arm ? (arm.desc || arm.nome || arm.cod || 'Óculos Completo') : (it.descricaoCompleta || 'Óculos Completo');
-          var chave = arm ? (arm.cod || 'OCULOS') : 'OCULOS';
-          var valor = (it.preco || 0) * (it.qtd || 1);
-          prodCount[chave] = prodCount[chave] || {desc: nome, qtd:0, total:0};
-          prodCount[chave].qtd += (it.qtd || 1);
-          prodCount[chave].total += valor;
-          return;
-        }
-        if (!it.cod || it.cod === 'OCULOS-COMPLETO' || it.cod === 'SERVICO') return;
-        // Ignorar exame de vista na composição (sem valor próprio)
-        if (it.tipo === 'exame' || (it.desc||'').toLowerCase().includes('exame')) return;
-        prodCount[it.cod] = prodCount[it.cod] || {desc: it.desc||it.nome||it.cod, qtd:0, total:0};
-        prodCount[it.cod].qtd += (it.qtd||1);
-        prodCount[it.cod].total += (it.preco||0)*(it.qtd||1);
-      });
+      if (v.status === 'Cancelado' || v.status === 'Pendente') return;
+      var valor = v.totalReal !== undefined ? v.totalReal : (v.preco||0)*(v.qtd||1);
+      // Óculos completo
+      if (v.tipo === 'oculos-completo' || v.produto === 'OCULOS-COMPLETO') {
+        var detalhes = v.detalhes || [];
+        var arm = detalhes.find(function(d){ return d.isArmacao; });
+        var nome = v.descricaoCompleta || (arm ? (arm.desc||arm.nome||arm.cod) : 'Óculos Completo');
+        var chave = arm ? (arm.cod || 'OCULOS') : 'OCULOS';
+        prodCount[chave] = prodCount[chave] || {desc: nome, qtd:0, total:0};
+        prodCount[chave].qtd += (v.qtd||1);
+        prodCount[chave].total += valor;
+        return;
+      }
+      // Produtos avulsos — ignorar serviços sem valor e exame
+      var cod = v.produto || v.cod;
+      if (!cod || cod === 'SERVICO') return;
+      var desc = v.descricaoCompleta || v.desc_prod || cod;
+      if ((desc||'').toLowerCase().includes('exame')) return;
+      prodCount[cod] = prodCount[cod] || {desc: desc, qtd:0, total:0};
+      prodCount[cod].qtd += (v.qtd||1);
+      prodCount[cod].total += valor;
     });
     var top5 = Object.entries(prodCount).sort(function(a,b){return b[1].total-a[1].total;}).slice(0,5);
     var maxVal = top5.length ? top5[0][1].total : 1;
