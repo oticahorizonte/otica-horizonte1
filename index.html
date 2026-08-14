@@ -9395,9 +9395,27 @@ function renderRelatorios() {
 
   // ── TOP PRODUTOS ──
   var prodCount={};
-  vendas.forEach(v=>{
-    var itens=v.itens&&v.itens.length>0?v.itens:[{cod:v.produto,desc:v.desc_prod||v.produto,preco:v.preco||0,qtd:v.qtd||1}];
-    itens.forEach(it=>{if(!it.cod)return;prodCount[it.cod]=prodCount[it.cod]||{desc:it.desc||it.cod,qtd:0,total:0};prodCount[it.cod].qtd+=(it.qtd||1);prodCount[it.cod].total+=(it.preco||0)*(it.qtd||1);});
+  vendas.forEach(function(v) {
+    if (v.status === 'Cancelado' || v.status === 'Pendente') return;
+    var valor = v.totalReal !== undefined ? v.totalReal : (v.preco||0)*(v.qtd||1);
+    // Óculos completo
+    if (v.tipo === 'oculos-completo' || v.produto === 'OCULOS-COMPLETO') {
+      var detalhes = v.detalhes || [];
+      var arm = detalhes.find(function(d){ return d.isArmacao; });
+      var nome = v.descricaoCompleta || (arm ? (arm.desc||arm.nome||arm.cod) : 'Óculos Completo');
+      var chave = arm ? (arm.cod || 'OCULOS') : 'OCULOS';
+      prodCount[chave] = prodCount[chave] || {desc: nome, qtd:0, total:0};
+      prodCount[chave].qtd += (v.qtd||1);
+      prodCount[chave].total += valor;
+      return;
+    }
+    var cod = v.produto || v.cod;
+    if (!cod || cod === 'SERVICO') return;
+    var desc = v.descricaoCompleta || v.desc_prod || cod;
+    if ((desc||'').toLowerCase().includes('exame')) return;
+    prodCount[cod] = prodCount[cod] || {desc: desc, qtd:0, total:0};
+    prodCount[cod].qtd += (v.qtd||1);
+    prodCount[cod].total += valor;
   });
   var topProdEl=document.getElementById('rel-top-produtos');
   if(topProdEl) topProdEl.innerHTML=Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).slice(0,5).map(([cod,d],i)=>`
