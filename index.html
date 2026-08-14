@@ -16338,9 +16338,15 @@ function verDetalhesPendente(chave) {
 function marcarPagoVenda(chave) {
   confirmar('Confirmar pagamento desta venda?', function() {
     var vendas = load('vendas');
+    // Data do pagamento = hoje (data real do recebimento)
+    var hoje = new Date();
+    var dataPagamento = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
     var atualizadas = vendas.map(function(v) {
       if ((v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data)) === chave) {
-        return Object.assign({}, v, {status: 'Pago'});
+        return Object.assign({}, v, {
+          status: 'Pago',
+          data: dataPagamento  // Atualiza a data para o dia do pagamento
+        });
       }
       return v;
     });
