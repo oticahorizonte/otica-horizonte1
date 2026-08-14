@@ -866,8 +866,8 @@
   /* ═══════════════════════════════════════════════
      TABELAS — SCROLL HORIZONTAL
   ═══════════════════════════════════════════════ */
-  .card-body { overflow-x: auto; }
-  table { min-width: 500px; }
+  .card-body { overflow-x: hidden; }
+  table { min-width: 0; }
 
   /* ═══════════════════════════════════════════════
      MODAIS — CONFORTÁVEIS EM QUALQUER TELA
@@ -963,7 +963,7 @@
     /* hide-mobile controlado por @media */
 
     /* Tabelas com scroll horizontal */
-    .card-body { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    .card-body { overflow-x: hidden !important; }
     table { min-width: 500px; }
   }
 
@@ -978,11 +978,9 @@
 
   /* ===== PRODUTOS & ESTOQUE - RESPONSIVO ===== */
   #sec-produtos .card-body {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden !important;
   }
   #tb-produtos-table {
-    min-width: 700px;
     width: 100%;
   }
 
@@ -2246,8 +2244,8 @@ function instalarApp() {
     .topbar-actions .btn { font-size: 11px; padding: 6px 10px; }
 
     /* Tabelas — scroll horizontal */
-    .card-body { padding: 0; overflow-x: auto; }
-    table { min-width: 500px; }
+    .card-body { padding: 0; overflow-x: hidden; }
+    table { min-width: 0; }
     th { font-size: 10px; padding: 8px 8px; white-space: nowrap; }
     td { font-size: 11px; padding: 7px 8px; }
 
@@ -2589,20 +2587,17 @@ function instalarApp() {
       overflow-x: hidden !important;
     }    /* Produtos precisa de scroll horizontal no portrait */
     #sec-produtos .card-body {
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch !important;
+      overflow-x: hidden !important;
     }
 
     /* Registro de Vendas precisa de scroll horizontal no portrait */
     #sec-vendas .card-body {
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch !important;
+      overflow-x: hidden !important;
     }
     /* Agendamentos e OS precisam de scroll horizontal no portrait */
     #sec-os .card-body,
     #sec-agendamentos .card-body {
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch !important;
+      overflow-x: hidden !important;
     }
   }
 
