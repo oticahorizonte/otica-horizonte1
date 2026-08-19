@@ -12033,10 +12033,30 @@ function adicionarLenteOrc(lenCod, qtd) {
 function adicionarExameOrc(exameCod, qtd) {
   var exameP = load('produtos').find(function(p){ return p.cod===exameCod; });
   if (!exameP) return;
-  var g = _orcGrupoAtual || ('ORC-EX-' + Date.now());
-  _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:g, isExame:true});
+  // Usar grupo ativo, ou último grupo de óculos completo existente
+  var g = _orcGrupoAtual;
+  if (!g) {
+    // Buscar último grupo de óculos completo no carrinho
+    var gruposExistentes = _orcItens.filter(function(i){ return i.tipo==='oculos-completo' && i.grupo; });
+    if (gruposExistentes.length > 0) {
+      g = gruposExistentes[gruposExistentes.length-1].grupo;
+    }
+  }
+  if (g) {
+    // Verificar se já tem exame nesse grupo
+    var jaTemExame = _orcItens.find(function(i){ return i.grupo===g && i.isExame; });
+    if (jaTemExame) { showToast('Exame já adicionado nesta composição!', 'warning'); return; }
+    _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:g, isExame:true});
+    showToast('👨‍⚕️ Exame adicionado à composição!', 'success');
+  } else {
+    // Sem composição ativa — adicionar como item avulso
+    var existente = _orcItens.find(function(i){ return i.cod===exameCod && i.tipo!=='oculos-completo'; });
+    if (existente) { existente.qtd += qtd; }
+    else { _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd}); }
+    showToast('👨‍⚕️ Exame adicionado!', 'success');
+  }
   calcOrcTotais();
-  showToast('👨‍⚕️ Exame adicionado!', 'success');
+  renderOrcCarrinho();
 }
 
 function onOrcUnifKeydown(e) {
