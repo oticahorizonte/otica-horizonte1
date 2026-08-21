@@ -11959,6 +11959,10 @@ function adicionarOrcItem(cod) {
   if (_orcGrupoAtual && p.cat === 'Lente') { adicionarLenteOrc(p.cod, qtd); if(qtdEl) qtdEl.value=1; return; }
   // Se há grupo em andamento e é serviço → adicionar como exame
   if (_orcGrupoAtual && p.cat === 'Serviço') { adicionarExameOrc(p.cod, qtd); if(qtdEl) qtdEl.value=1; return; }
+  // Se há grupo em andamento e produto não é lente/serviço → fechar grupo
+  if (_orcGrupoAtual && p.cat !== 'Lente' && p.cat !== 'Serviço') {
+    _orcGrupoAtual = null;
+  }
   // Verificar se é armação - perguntar se óculos completo
   if (p.cat === 'Armação') {
     _orcPendingArmacao = {cod: p.cod, qtd: qtd};
@@ -12026,8 +12030,8 @@ function adicionarLenteOrc(lenCod, qtd) {
   if (!lenP || !_orcGrupoAtual) return;
   _orcItens.push({cod:lenP.cod, nome:lenP.desc, cat:lenP.cat, preco:lenP.venda, custo:lenP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:_orcGrupoAtual, isLente:true});
   calcOrcTotais();
-  showToast('🔍 Lente adicionada! Óculos Completo montado.', 'success');
-  _orcGrupoAtual = null;
+  // Manter grupo ativo para receber exame (igual ao comportamento de Nova Venda)
+  showToast('🔍 Lente adicionada! Adicione o exame ou outro produto.', 'success');
 }
 
 function adicionarExameOrc(exameCod, qtd) {
@@ -12047,7 +12051,8 @@ function adicionarExameOrc(exameCod, qtd) {
     var jaTemExame = _orcItens.find(function(i){ return i.grupo===g && i.isExame; });
     if (jaTemExame) { showToast('Exame já adicionado nesta composição!', 'warning'); return; }
     _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:g, isExame:true});
-    showToast('👨‍⚕️ Exame adicionado à composição!', 'success');
+    _orcGrupoAtual = null; // Fechar grupo após exame (igual Nova Venda)
+    showToast('✅ Óculos Completo montado! Pode adicionar mais produtos.', 'success');
   } else {
     // Sem composição ativa — adicionar como item avulso
     var existente = _orcItens.find(function(i){ return i.cod===exameCod && i.tipo!=='oculos-completo'; });
