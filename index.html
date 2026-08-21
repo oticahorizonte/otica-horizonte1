@@ -8066,6 +8066,11 @@ function saveProduto() {
     venda:parseFloat(document.getElementById('prod-venda').value)||0,
     foto:document.getElementById('prod-foto').value||'',
     catalogo:document.getElementById('prod-catalogo').checked||false,
+    // Campos extras de lente
+    lenteIndice: (document.getElementById('prod-lente-indice')||{}).value||'',
+    lenteMaterial: (document.getElementById('prod-lente-material')||{}).value||'',
+    lenteTipo: (document.getElementById('prod-lente-tipo')||{}).value||'',
+    lenteTratamento: (document.getElementById('prod-lente-tratamento')||{}).value||'',
   };
   if (idx) { const i=arr.findIndex(x=>x.cod===idx); arr[i]=obj; }
   else {
