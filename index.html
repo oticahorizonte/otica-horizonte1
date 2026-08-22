@@ -4880,6 +4880,22 @@ function instalarApp() {
 </div>
 </div>
 </div>
+<!-- Taxas por Forma de Pagamento -->
+<div class="card" style="margin-bottom:16px">
+<div class="card-header"><h3>💳 Taxas por Forma de Pagamento</h3></div>
+<div class="card-body">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Configure as taxas cobradas pelas operadoras. Serão descontadas automaticamente do lucro nas vendas.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">PIX (%)</label><input id="taxa-pix" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="0.0"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Dinheiro (%)</label><input id="taxa-dinheiro" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="0.0"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Cartão Débito (%)</label><input id="taxa-debito" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="1.5"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito à Vista (%)</label><input id="taxa-credito-1x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="2.5"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 2x-6x (%)</label><input id="taxa-credito-6x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="3.2"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 7x-10x (%)</label><input id="taxa-credito-10x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="3.8"/></div>
+</div>
+<button class="btn btn-primary" onclick="salvarTaxasCartao()" style="width:100%">💾 Salvar Taxas</button>
+</div>
+</div>
 <!-- GitHub Token para Catalogo -->
 <div class="card" style="margin-bottom:16px">
 <div class="card-header"><h3>📋 Token GitHub — Catálogo Automático</h3></div>
@@ -5905,6 +5921,8 @@ function salvarGitHubToken() {
 }
 
 function abrirModalConfigGitHub() {
+  // Carregar taxas ao abrir configurações
+  carregarTaxasConfig();
   // Mostrar token atual (mascarado) ao abrir configuracoes
   var token = localStorage.getItem('otica_github_token') || '';
   var input = document.getElementById('github-token-input');
@@ -7054,6 +7072,30 @@ function renderPainelFinanceiroAdmin() {
   var entradasPeriodo = load('entradas').filter(function(e){ return (e.data||'')>=dataInicioEntStr; });
   var receitaEntradas = entradasPeriodo.reduce(function(s,e){ return s+(e.valor||0); },0);
 
+  // Descontos concedidos nas vendas do período
+  var totalDescontos = vendas.reduce(function(s,v){
+    var bruto = (v.preco||0)*(v.qtd||1);
+    var descItem = bruto*(v.desc||0)/100;
+    var descGlobal = v.descGlobal||0;
+    return s + descItem + descGlobal;
+  },0);
+
+  // Taxas de cartão das vendas do período
+  var totalTaxas = vendas.reduce(function(s,v){
+    // Se a venda já tem taxaValor salvo, usar diretamente
+    if (v.taxaValor && v.taxaValor > 0) return s + v.taxaValor;
+    // Senão calcular pela taxa configurada (vendas antigas)
+    var taxaPct = calcTaxaVenda(v.pag||'', v.parcelas||1);
+    if (taxaPct > 0) {
+      var totalV = v.totalReal !== undefined ? v.totalReal : calcTotal(v);
+      return s + totalV*(taxaPct/100);
+    }
+    return s;
+  },0);
+
+  // Receita líquida operacional (após descontos e taxas)
+  var receitaLiquidaOp = receita - totalTaxas;
+
   // Custo: soma dos custos dos itens de cada venda
   var custo = vendas.reduce(function(s,v){
     // Tentar calcular custo de várias formas
@@ -7126,7 +7168,7 @@ function renderPainelFinanceiroAdmin() {
   var despesasPeriodo = filtro==='tudo' ? todasDespesas : todasDespesas.filter(function(d){ return (d.data||'')>=dataInicioDesp; });
   var totalDespesas = despesasPeriodo.reduce(function(s,d){ return s+(d.valor||0); },0);
 
-  var lucroOperacional = receita + receitaEntradas - custo - comissaoTotal;
+  var lucroOperacional = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
   var lucroLiquido = lucroOperacional - totalDespesas;
   var margem = receita > 0 ? lucroLiquido/receita*100 : 0;
 
@@ -7152,7 +7194,7 @@ function renderPainelFinanceiroAdmin() {
       <div style="font-size:20px;font-weight:800;color:#fb923c">${fmtMoney(comissaoTotal)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5)">vendedores</div>
     </div>
-    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
+\n    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">\n      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">💳 Taxas Cartão</div>\n      <div style=\"font-size:20px;font-weight:800;color:#eab308\">${fmtMoney(totalTaxas)}</div>\n      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">operadoras</div>\n    </div>    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
       <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💸 Despesas</div>
       <div style="font-size:20px;font-weight:800;color:#f87171">${fmtMoney(totalDespesas)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5)">${despesasPeriodo.length} lançamentos</div>
@@ -7185,7 +7227,7 @@ function renderPainelFinanceiroAdmin() {
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Custo dos Produtos</span><span style="color:#fbbf24">(${fmtMoney(custo)})</span></div>
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.8);border-top:1px solid rgba(255,255,255,.15);padding-top:6px"><span>Lucro Bruto</span><span style="color:#34d399;font-weight:700">${fmtMoney(receita-custo)}</span></div>
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Comissões</span><span style="color:#fb923c">(${fmtMoney(comissaoTotal)})</span></div>
-          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Despesas Operacionais</span><span style="color:#f87171">(${fmtMoney(totalDespesas)})</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Taxas Cartão</span><span style=\"color:#eab308\">(${fmtMoney(totalTaxas)})</span></div>\n          <div style=\"display:flex;justify-content:space-between;color:rgba(255,255,255,.6)\"><span>(-) Despesas Operacionais</span><span style="color:#f87171">(${fmtMoney(totalDespesas)})</span></div>
           <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,.3);padding-top:8px;margin-top:4px"><span style="color:#fff;font-weight:700;font-size:14px">= Lucro Líquido</span><span style="color:${lucroLiquido>=0?'#34d399':'#f87171'};font-weight:800;font-size:16px">${fmtMoney(lucroLiquido)}</span></div>
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.5);font-size:11px"><span>Margem Líquida</span><span>${margem.toFixed(1)}%</span></div>
           ${lucroLiquido > 0 ? `
@@ -8620,6 +8662,10 @@ function saveVenda() {
     const descProporcional = subtotalCarrinho > 0 ? (itemTotal / subtotalCarrinho) * descGlobal : 0;
     const totalComDesc = itemTotal - descProporcional;
 
+    // Calcular taxa da operadora para esta venda
+    var taxaPct = calcTaxaVenda(pag, parcelas);
+    var taxaValor = taxaPct > 0 ? totalComDesc * (taxaPct/100) : 0;
+
     const venda = {
       id: nextCode(arr, 'V'),
       grupoVenda,
@@ -8631,6 +8677,8 @@ function saveVenda() {
       desc: item.desc,
       descGlobal: descProporcional,
       totalReal: totalComDesc,
+      taxaPct: taxaPct,
+      taxaValor: taxaValor,
       tipo: item.tipo||'normal',
       detalhes: item.detalhes || null,
       exame: item.exame || 0,
@@ -17083,6 +17131,59 @@ function salvarProLabore() {
   renderPainelFinanceiroAdmin();
   if (typeof renderFinanceiro === 'function') renderFinanceiro();
   if (typeof renderDespesas === 'function') renderDespesas();
+}
+
+// ── TAXAS DE CARTÃO ──────────────────────────────────────────
+var _taxasCartaoPadrao = {pix:0, dinheiro:0, debito:1.5, credito1x:2.5, credito6x:3.2, credito10x:3.8, crediario:0};
+
+function getTaxasCartao() {
+  try {
+    var salvo = JSON.parse(localStorage.getItem('otica_taxas_cartao')||'null');
+    return salvo || _taxasCartaoPadrao;
+  } catch(e) { return _taxasCartaoPadrao; }
+}
+
+function calcTaxaVenda(pag, parcelas) {
+  var t = getTaxasCartao();
+  var nParc = parseInt(parcelas)||1;
+  if (pag === 'PIX') return t.pix||0;
+  if (pag === 'Dinheiro') return t.dinheiro||0;
+  if (pag === 'Cartão Débito') return t.debito||0;
+  if (pag === 'Cartão Crédito') {
+    if (nParc <= 1) return t.credito1x||0;
+    if (nParc <= 6) return t.credito6x||0;
+    return t.credito10x||0;
+  }
+  if (pag === 'Crediário Próprio') return t.crediario||0;
+  return 0;
+}
+
+function salvarTaxasCartao() {
+  var taxas = {
+    pix: parseFloat(document.getElementById('taxa-pix').value)||0,
+    dinheiro: parseFloat(document.getElementById('taxa-dinheiro').value)||0,
+    debito: parseFloat(document.getElementById('taxa-debito').value)||0,
+    credito1x: parseFloat(document.getElementById('taxa-credito-1x').value)||0,
+    credito6x: parseFloat(document.getElementById('taxa-credito-6x').value)||0,
+    credito10x: parseFloat(document.getElementById('taxa-credito-10x').value)||0,
+    crediario: 0
+  };
+  localStorage.setItem('otica_taxas_cartao', JSON.stringify(taxas));
+  showToast('✅ Taxas salvas!', 'success');
+  closeModal('modal-config');
+}
+
+function carregarTaxasConfig() {
+  var t = getTaxasCartao();
+  var campos = {
+    'taxa-pix': t.pix, 'taxa-dinheiro': t.dinheiro,
+    'taxa-debito': t.debito, 'taxa-credito-1x': t.credito1x,
+    'taxa-credito-6x': t.credito6x, 'taxa-credito-10x': t.credito10x
+  };
+  Object.keys(campos).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = campos[id]||'';
+  });
 }
 
 function excluirProLabore(id) {
