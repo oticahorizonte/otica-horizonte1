@@ -17054,13 +17054,35 @@ function salvarProLabore() {
   historico.unshift(novo);
   save('prolabore', historico);
 
+  // Gerar saída automática no Financeiro
+  var despesas = load('despesas') || [];
+  var despesaPL = {
+    id: nextId(despesas),
+    data: data,
+    cat: 'Pró-Labore',
+    desc: 'Retirada Pró-Labore' + (ref ? ' — ' + ref : '') + (obs ? ' — ' + obs : ''),
+    valor: valor,
+    recorrente: 'Não',
+    obs: 'Gerado automaticamente pela retirada de pró-labore. Ref: ' + (ref||''),
+    prolaboreRef: novo.id
+  };
+  despesas.push(despesaPL);
+  save('despesas', despesas);
+  _sistemaInicializando = false;
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('despesas', load('despesas')).catch(function(){});
+    window._fb.saveCollection('prolabore', historico).catch(function(){});
+  }
+
   // Limpar campos
   document.getElementById('pl-valor').value = '';
   document.getElementById('pl-obs').value = '';
 
-  showToast('✅ Retirada de pró-labore registrada!', 'success');
+  showToast('✅ Retirada de pró-labore registrada e lançada no Financeiro!', 'success');
   renderHistoricoProLabore();
   renderPainelFinanceiroAdmin();
+  if (typeof renderFinanceiro === 'function') renderFinanceiro();
+  if (typeof renderDespesas === 'function') renderDespesas();
 }
 
 function excluirProLabore(id) {
