@@ -5921,7 +5921,6 @@ function salvarGitHubToken() {
 }
 
 function abrirModalConfigGitHub() {
-  // Carregar taxas ao abrir configurações
   carregarTaxasConfig();
   // Mostrar token atual (mascarado) ao abrir configuracoes
   var token = localStorage.getItem('otica_github_token') || '';
@@ -7058,6 +7057,20 @@ function renderPainelFinanceiroAdmin() {
 
   var vendas = getFiltroVendasAdmin();
   var receita = calcReceitaGrupos(vendas);
+
+  // Receita Bruta e Descontos
+  var receitaBruta = vendas.reduce(function(s,v){ if(v.status==='Cancelado') return s; return s+(v.preco||0)*(v.qtd||1); },0);
+  var totalDescontosAdmin = Math.max(0, receitaBruta - receita);
+
+  // Taxas de cartão
+  var totalTaxas = vendas.reduce(function(s,v){
+    if(v.taxaValor && v.taxaValor>0) return s+v.taxaValor;
+    var taxaPct = calcTaxaVenda(v.pag||'', v.parcelas||1);
+    if(taxaPct>0){ var tv=v.totalReal!==undefined?v.totalReal:calcTotal(v); return s+tv*(taxaPct/100); }
+    return s;
+  },0);
+  var receitaLiquidaOp = receita - totalTaxas;
+
   // Incluir entradas manuais (aportes, etc.)
   var filtro2 = document.getElementById('dash-fin-filtro')?.value || 'mes';
   var hoje3 = new Date();
@@ -7071,37 +7084,6 @@ function renderPainelFinanceiroAdmin() {
   var dataInicioEntStr = dataInicioEnt.getFullYear()+'-'+String(dataInicioEnt.getMonth()+1).padStart(2,'0')+'-'+String(dataInicioEnt.getDate()).padStart(2,'0');
   var entradasPeriodo = load('entradas').filter(function(e){ return (e.data||'')>=dataInicioEntStr; });
   var receitaEntradas = entradasPeriodo.reduce(function(s,e){ return s+(e.valor||0); },0);
-
-  // Receita Bruta: soma dos preços cheios sem desconto
-  var receitaBruta = vendas.reduce(function(s,v){
-    if (v.status === 'Cancelado') return s;
-    return s + (v.preco||0)*(v.qtd||1);
-  },0);
-
-  // Descontos concedidos nas vendas do período
-  var totalDescontos = vendas.reduce(function(s,v){
-    var bruto = (v.preco||0)*(v.qtd||1);
-    var descItem = bruto*(v.desc||0)/100;
-    var descGlobal = v.descGlobal||0;
-    return s + descItem + descGlobal;
-  },0);
-  var totalDescontosAdmin = totalDescontos;
-
-  // Taxas de cartão das vendas do período
-  var totalTaxas = vendas.reduce(function(s,v){
-    // Se a venda já tem taxaValor salvo, usar diretamente
-    if (v.taxaValor && v.taxaValor > 0) return s + v.taxaValor;
-    // Senão calcular pela taxa configurada (vendas antigas)
-    var taxaPct = calcTaxaVenda(v.pag||'', v.parcelas||1);
-    if (taxaPct > 0) {
-      var totalV = v.totalReal !== undefined ? v.totalReal : calcTotal(v);
-      return s + totalV*(taxaPct/100);
-    }
-    return s;
-  },0);
-
-  // Receita líquida operacional (após descontos e taxas)
-  var receitaLiquidaOp = receita - totalTaxas;
 
   // Custo: soma dos custos dos itens de cada venda
   var custo = vendas.reduce(function(s,v){
@@ -7201,7 +7183,7 @@ function renderPainelFinanceiroAdmin() {
       <div style="font-size:20px;font-weight:800;color:#fb923c">${fmtMoney(comissaoTotal)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5)">vendedores</div>
     </div>
-\n    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">\n      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">💳 Taxas Cartão</div>\n      <div style=\"font-size:20px;font-weight:800;color:#eab308\">${fmtMoney(totalTaxas)}</div>\n      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">operadoras</div>\n    </div>    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
       <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💸 Despesas</div>
       <div style="font-size:20px;font-weight:800;color:#f87171">${fmtMoney(totalDespesas)}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5)">${despesasPeriodo.length} lançamentos</div>
@@ -7222,12 +7204,19 @@ function renderPainelFinanceiroAdmin() {
       <div style="font-size:10px;color:rgba(255,255,255,.6)">Seu pagamento como dono</div>
     </div></div>
   `;
-  // Inserir card de Receita Bruta no início
+  // Card Receita Bruta (inserido no início)
   if (fin && receitaBruta > 0) {
     var cardBruta = document.createElement('div');
     cardBruta.style.cssText = 'background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center';
     cardBruta.innerHTML = '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Receita Bruta</div><div style=\"font-size:20px;font-weight:800;color:#a3e635\">' + fmtMoney(receitaBruta) + '</div><div style=\"font-size:10px;color:rgba(255,255,255,.5)\">preço cheio</div>';
     fin.insertBefore(cardBruta, fin.firstChild);
+  }
+  // Card Taxas Cartão
+  if (fin && totalTaxas > 0) {
+    var cardTaxas = document.createElement('div');
+    cardTaxas.style.cssText = 'background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center';
+    cardTaxas.innerHTML = '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Taxas Cartão</div><div style=\"font-size:20px;font-weight:800;color:#eab308\">' + fmtMoney(totalTaxas) + '</div><div style=\"font-size:10px;color:rgba(255,255,255,.5)\">operadoras</div>';
+    fin.appendChild(cardTaxas);
   }
 
   // DRE Simplificado
@@ -7241,7 +7230,10 @@ function renderPainelFinanceiroAdmin() {
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Custo dos Produtos</span><span style="color:#fbbf24">(${fmtMoney(custo)})</span></div>
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.8);border-top:1px solid rgba(255,255,255,.15);padding-top:6px"><span>Lucro Bruto</span><span style="color:#34d399;font-weight:700">${fmtMoney(receita-custo)}</span></div>
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Comissões</span><span style="color:#fb923c">(${fmtMoney(comissaoTotal)})</span></div>
-          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Taxas Cartão</span><span style=\"color:#eab308\">(${fmtMoney(totalTaxas)})</span></div>\n          <div style=\"display:flex;justify-content:space-between;color:rgba(255,255,255,.6)\"><span>(-) Despesas Operacionais</span><span style="color:#f87171">(${fmtMoney(totalDespesas)})</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Descontos</span><span style=\"color:#f472b6\">(${fmtMoney(totalDescontosAdmin)})</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Taxas Cartão</span><span style=\"color:#eab308\">(${fmtMoney(totalTaxas)})</span></div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)">
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.6)"><span>(-) Despesas Operacionais</span><span style="color:#f87171">(${fmtMoney(totalDespesas)})</span></div>
           <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,.3);padding-top:8px;margin-top:4px"><span style="color:#fff;font-weight:700;font-size:14px">= Lucro Líquido</span><span style="color:${lucroLiquido>=0?'#34d399':'#f87171'};font-weight:800;font-size:16px">${fmtMoney(lucroLiquido)}</span></div>
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.5);font-size:11px"><span>Margem Líquida</span><span>${margem.toFixed(1)}%</span></div>
           ${lucroLiquido > 0 ? `
@@ -8122,11 +8114,6 @@ function saveProduto() {
     venda:parseFloat(document.getElementById('prod-venda').value)||0,
     foto:document.getElementById('prod-foto').value||'',
     catalogo:document.getElementById('prod-catalogo').checked||false,
-    // Campos extras de lente
-    lenteIndice: (document.getElementById('prod-lente-indice')||{}).value||'',
-    lenteMaterial: (document.getElementById('prod-lente-material')||{}).value||'',
-    lenteTipo: (document.getElementById('prod-lente-tipo')||{}).value||'',
-    lenteTratamento: (document.getElementById('prod-lente-tratamento')||{}).value||'',
   };
   if (idx) { const i=arr.findIndex(x=>x.cod===idx); arr[i]=obj; }
   else {
@@ -8676,7 +8663,6 @@ function saveVenda() {
     const descProporcional = subtotalCarrinho > 0 ? (itemTotal / subtotalCarrinho) * descGlobal : 0;
     const totalComDesc = itemTotal - descProporcional;
 
-    // Calcular taxa da operadora para esta venda
     var taxaPct = calcTaxaVenda(pag, parcelas);
     var taxaValor = taxaPct > 0 ? totalComDesc * (taxaPct/100) : 0;
 
@@ -9089,8 +9075,8 @@ function viewOS(id) {
       // Botoes sem duplicacao - sem Status (desnecessario em detalhes)
       var btnsHtml = '<button class="btn btn-primary" onclick="imprimirOS(\''+o.id+'\')" style="background:#0d2b4e">Imprimir OS</button>';
       // WhatsApp
-      var cliOS2 = (load('clientes')||[]).find(function(c){ return String(c.id)===String(o.clienteId); });
-      var tel = cliOS2 ? (cliOS2.tel||cliOS2.telefone||cliOS2.fone||'') : '';
+      var clMap2 = Object.fromEntries(load('clientes').map(function(c){ return [c.id,c.tel||'']; }));
+      var tel = clMap2[o.clienteId]||'';
       if (tel) btnsHtml += '<button class="btn btn-success" onclick="abrirWhatsAppOS(\''+o.id+'\')" style="margin-left:8px;background:#25d366">WhatsApp</button>';
       // Editar (admin)
       if (isAdmin()) btnsHtml += '<button class="btn btn-warning" onclick="closeModal(\'modal-view-os\');editOS(\''+o.id+'\')" style="margin-left:8px">Editar</button>';
@@ -12026,10 +12012,6 @@ function adicionarOrcItem(cod) {
   if (_orcGrupoAtual && p.cat === 'Lente') { adicionarLenteOrc(p.cod, qtd); if(qtdEl) qtdEl.value=1; return; }
   // Se há grupo em andamento e é serviço → adicionar como exame
   if (_orcGrupoAtual && p.cat === 'Serviço') { adicionarExameOrc(p.cod, qtd); if(qtdEl) qtdEl.value=1; return; }
-  // Se há grupo em andamento e produto não é lente/serviço → fechar grupo
-  if (_orcGrupoAtual && p.cat !== 'Lente' && p.cat !== 'Serviço') {
-    _orcGrupoAtual = null;
-  }
   // Verificar se é armação - perguntar se óculos completo
   if (p.cat === 'Armação') {
     _orcPendingArmacao = {cod: p.cod, qtd: qtd};
@@ -12097,38 +12079,17 @@ function adicionarLenteOrc(lenCod, qtd) {
   if (!lenP || !_orcGrupoAtual) return;
   _orcItens.push({cod:lenP.cod, nome:lenP.desc, cat:lenP.cat, preco:lenP.venda, custo:lenP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:_orcGrupoAtual, isLente:true});
   calcOrcTotais();
-  // Manter grupo ativo para receber exame (igual ao comportamento de Nova Venda)
-  showToast('🔍 Lente adicionada! Adicione o exame ou outro produto.', 'success');
+  showToast('🔍 Lente adicionada! Óculos Completo montado.', 'success');
+  _orcGrupoAtual = null;
 }
 
 function adicionarExameOrc(exameCod, qtd) {
   var exameP = load('produtos').find(function(p){ return p.cod===exameCod; });
   if (!exameP) return;
-  // Usar grupo ativo, ou último grupo de óculos completo existente
-  var g = _orcGrupoAtual;
-  if (!g) {
-    // Buscar último grupo de óculos completo no carrinho
-    var gruposExistentes = _orcItens.filter(function(i){ return i.tipo==='oculos-completo' && i.grupo; });
-    if (gruposExistentes.length > 0) {
-      g = gruposExistentes[gruposExistentes.length-1].grupo;
-    }
-  }
-  if (g) {
-    // Verificar se já tem exame nesse grupo
-    var jaTemExame = _orcItens.find(function(i){ return i.grupo===g && i.isExame; });
-    if (jaTemExame) { showToast('Exame já adicionado nesta composição!', 'warning'); return; }
-    _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:g, isExame:true});
-    _orcGrupoAtual = null; // Fechar grupo após exame (igual Nova Venda)
-    showToast('✅ Óculos Completo montado! Pode adicionar mais produtos.', 'success');
-  } else {
-    // Sem composição ativa — adicionar como item avulso
-    var existente = _orcItens.find(function(i){ return i.cod===exameCod && i.tipo!=='oculos-completo'; });
-    if (existente) { existente.qtd += qtd; }
-    else { _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd}); }
-    showToast('👨‍⚕️ Exame adicionado!', 'success');
-  }
+  var g = _orcGrupoAtual || ('ORC-EX-' + Date.now());
+  _orcItens.push({cod:exameP.cod, nome:exameP.desc, cat:exameP.cat, preco:exameP.venda, custo:exameP.custo||0, qtd:qtd, tipo:'oculos-completo', grupo:g, isExame:true});
   calcOrcTotais();
-  renderOrcCarrinho();
+  showToast('👨‍⚕️ Exame adicionado!', 'success');
 }
 
 function onOrcUnifKeydown(e) {
@@ -17116,88 +17077,39 @@ function salvarProLabore() {
   historico.unshift(novo);
   save('prolabore', historico);
 
-  // Gerar saída automática no Financeiro
-  var despesas = load('despesas') || [];
-  var despesaPL = {
-    id: nextId(despesas),
-    data: data,
-    cat: 'Pró-Labore',
-    desc: 'Retirada Pró-Labore' + (ref ? ' — ' + ref : '') + (obs ? ' — ' + obs : ''),
-    valor: valor,
-    recorrente: 'Não',
-    obs: 'Gerado automaticamente pela retirada de pró-labore. Ref: ' + (ref||''),
-    prolaboreRef: novo.id
-  };
-  despesas.push(despesaPL);
-  save('despesas', despesas);
-  _sistemaInicializando = false;
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('despesas', load('despesas')).catch(function(){});
-    window._fb.saveCollection('prolabore', historico).catch(function(){});
-  }
-
   // Limpar campos
   document.getElementById('pl-valor').value = '';
   document.getElementById('pl-obs').value = '';
 
-  showToast('✅ Retirada de pró-labore registrada e lançada no Financeiro!', 'success');
+  showToast('✅ Retirada de pró-labore registrada!', 'success');
   renderHistoricoProLabore();
   renderPainelFinanceiroAdmin();
-  if (typeof renderFinanceiro === 'function') renderFinanceiro();
-  if (typeof renderDespesas === 'function') renderDespesas();
 }
 
 // ── TAXAS DE CARTÃO ──────────────────────────────────────────
-var _taxasCartaoPadrao = {pix:0, dinheiro:0, debito:1.5, credito1x:2.5, credito6x:3.2, credito10x:3.8, crediario:0};
-
 function getTaxasCartao() {
-  try {
-    var salvo = JSON.parse(localStorage.getItem('otica_taxas_cartao')||'null');
-    return salvo || _taxasCartaoPadrao;
-  } catch(e) { return _taxasCartaoPadrao; }
+  try { return JSON.parse(localStorage.getItem('otica_taxas_cartao')||'null') || {pix:0,dinheiro:0,debito:1.5,credito1x:2.5,credito6x:3.2,credito10x:3.8,crediario:0}; }
+  catch(e) { return {pix:0,dinheiro:0,debito:1.5,credito1x:2.5,credito6x:3.2,credito10x:3.8,crediario:0}; }
 }
-
 function calcTaxaVenda(pag, parcelas) {
-  var t = getTaxasCartao();
-  var nParc = parseInt(parcelas)||1;
-  if (pag === 'PIX') return t.pix||0;
-  if (pag === 'Dinheiro') return t.dinheiro||0;
-  if (pag === 'Cartão Débito') return t.debito||0;
-  if (pag === 'Cartão Crédito') {
-    if (nParc <= 1) return t.credito1x||0;
-    if (nParc <= 6) return t.credito6x||0;
-    return t.credito10x||0;
-  }
-  if (pag === 'Crediário Próprio') return t.crediario||0;
+  var t = getTaxasCartao(); var nParc = parseInt(parcelas)||1;
+  if (pag==='PIX') return t.pix||0;
+  if (pag==='Dinheiro') return t.dinheiro||0;
+  if (pag==='Cartão Débito') return t.debito||0;
+  if (pag==='Cartão Crédito') { if(nParc<=1) return t.credito1x||0; if(nParc<=6) return t.credito6x||0; return t.credito10x||0; }
+  if (pag==='Crediário Próprio') return t.crediario||0;
   return 0;
 }
-
 function salvarTaxasCartao() {
-  var taxas = {
-    pix: parseFloat(document.getElementById('taxa-pix').value)||0,
-    dinheiro: parseFloat(document.getElementById('taxa-dinheiro').value)||0,
-    debito: parseFloat(document.getElementById('taxa-debito').value)||0,
-    credito1x: parseFloat(document.getElementById('taxa-credito-1x').value)||0,
-    credito6x: parseFloat(document.getElementById('taxa-credito-6x').value)||0,
-    credito10x: parseFloat(document.getElementById('taxa-credito-10x').value)||0,
-    crediario: 0
-  };
+  var taxas = {pix:parseFloat(document.getElementById('taxa-pix').value)||0,dinheiro:parseFloat(document.getElementById('taxa-dinheiro').value)||0,debito:parseFloat(document.getElementById('taxa-debito').value)||0,credito1x:parseFloat(document.getElementById('taxa-credito-1x').value)||0,credito6x:parseFloat(document.getElementById('taxa-credito-6x').value)||0,credito10x:parseFloat(document.getElementById('taxa-credito-10x').value)||0,crediario:0};
   localStorage.setItem('otica_taxas_cartao', JSON.stringify(taxas));
   showToast('✅ Taxas salvas!', 'success');
   closeModal('modal-config');
 }
-
 function carregarTaxasConfig() {
   var t = getTaxasCartao();
-  var campos = {
-    'taxa-pix': t.pix, 'taxa-dinheiro': t.dinheiro,
-    'taxa-debito': t.debito, 'taxa-credito-1x': t.credito1x,
-    'taxa-credito-6x': t.credito6x, 'taxa-credito-10x': t.credito10x
-  };
-  Object.keys(campos).forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.value = campos[id]||'';
-  });
+  var campos = {'taxa-pix':t.pix,'taxa-dinheiro':t.dinheiro,'taxa-debito':t.debito,'taxa-credito-1x':t.credito1x,'taxa-credito-6x':t.credito6x,'taxa-credito-10x':t.credito10x};
+  Object.keys(campos).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=campos[id]||''; });
 }
 
 function excluirProLabore(id) {
@@ -17313,5 +17225,4 @@ var _keysOriginalPL = null;
 </div>
 </aside>
 </body>
-</html<div style=\"display:flex;justify-content:space-between;color:rgba(255,255,255,.6)\"><span>(-) Descontos</span><span style=\"color:#f472b6\">(${fmtMoney(totalDescontosAdmin)})</span></div>
-          >
+</html>
