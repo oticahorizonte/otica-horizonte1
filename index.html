@@ -4857,6 +4857,22 @@ function instalarApp() {
 </div>
 </div>
 </div>
+<!-- Taxas por Forma de Pagamento -->
+<div class="card" style="margin-bottom:16px">
+<div class="card-header"><h3>&#x1F4B3; Taxas por Forma de Pagamento</h3></div>
+<div class="card-body">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Configure as taxas cobradas pelas operadoras. Descontadas automaticamente do lucro nas vendas.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">PIX (%)</label><input id="taxa-pix" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="0.0"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Dinheiro (%)</label><input id="taxa-dinheiro" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="0.0"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Cartão Débito (%)</label><input id="taxa-debito" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="1.5"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito à Vista (%)</label><input id="taxa-credito-1x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="2.5"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 2x-6x (%)</label><input id="taxa-credito-6x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="3.2"/></div>
+  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 7x-10x (%)</label><input id="taxa-credito-10x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="3.8"/></div>
+</div>
+<button class="btn btn-primary" onclick="salvarTaxasCartao()" style="width:100%">&#x1F4BE; Salvar Taxas</button>
+</div>
+</div>
 <!-- Backup Local -->
 <div class="card" style="margin-bottom:16px">
 <div class="card-header"><h3>💾 Backup Local</h3></div>
@@ -5905,6 +5921,7 @@ function salvarGitHubToken() {
 }
 
 function abrirModalConfigGitHub() {
+  carregarTaxasConfig();
   // Mostrar token atual (mascarado) ao abrir configuracoes
   var token = localStorage.getItem('otica_github_token') || '';
   var input = document.getElementById('github-token-input');
