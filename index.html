@@ -3241,7 +3241,7 @@ function instalarApp() {
 <button onclick="imprimirSecao('rel-bloco-financeiro','Análise Financeira')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
 <div class="card-body" id="rel-bloco-financeiro" style="padding:0">
-<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Vendedor</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Comissão</th><th style="text-align:right">Lucro</th><th style="text-align:right">Margem</th></tr></thead>
+<table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Vendedor</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Comissão</th><th style=	ext-align:right\>Taxa</th><th style="text-align:right">Lucro</th><th style="text-align:right">Margem</th></tr></thead>
 <tbody id="rel-financeiro-tbody"></tbody>
 <tfoot id="rel-financeiro-tfoot"></tfoot></table>
 </div>
@@ -8647,6 +8647,10 @@ function saveVenda() {
     const descProporcional = subtotalCarrinho > 0 ? (itemTotal / subtotalCarrinho) * descGlobal : 0;
     const totalComDesc = itemTotal - descProporcional;
 
+    // Calcular taxa da operadora para esta venda
+    const taxaPctVenda = typeof calcTaxaVenda === 'function' ? calcTaxaVenda(pag, parcelas) : 0;
+    const taxaValorVenda = taxaPctVenda > 0 ? totalComDesc * (taxaPctVenda / 100) : 0;
+
     const venda = {
       id: nextCode(arr, 'V'),
       grupoVenda,
@@ -8658,6 +8662,8 @@ function saveVenda() {
       desc: item.desc,
       descGlobal: descProporcional,
       totalReal: totalComDesc,
+      taxaPct: taxaPctVenda,
+      taxaValor: taxaValorVenda,
       tipo: item.tipo||'normal',
       detalhes: item.detalhes || null,
       exame: item.exame || 0,
@@ -9337,6 +9343,11 @@ function renderRelatorios() {
   var totalVendas = calcReceitaGrupos(vendas);
   var totalOS = os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
   var totalDesc = vendas.reduce((s,v)=>{var b=(v.preco||0)*(v.qtd||1);return s+b*(v.desc||0)/100+(v.descGlobal||0);},0);
+  var totalTaxasRel = vendas.reduce(function(s,v){
+    if(v.taxaValor && v.taxaValor>0) return s+v.taxaValor;
+    if(typeof calcTaxaVenda==='function'){ var tp=calcTaxaVenda(v.pag||'',v.parcelas||1); if(tp>0){ var tv=v.totalReal!==undefined?v.totalReal:calcTotal(v); return s+tv*(tp/100); } }
+    return s;
+  },0);
   var ticketMedio = vendas.length ? totalVendas/vendas.length : 0;
   var baixoEstoque = produtos.filter(p=>p.qtd<=p.min&&p.categoria!=='Serviço').length;
   var osAberto = os.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelada').length;
@@ -9543,7 +9554,8 @@ function renderRelatorios() {
         var rec=calcReceitaGrupos(uvs);
         var com=rec*(pct/100);
         totalComissao+=com;
-        return `<tr><td style="font-weight:600">${u.nome}</td><td>${uvs.length}</td><td>${fmtMoney(rec)}</td><td>${pct}%</td><td style="text-align:right;font-weight:700;color:#c9a84c">${fmtMoney(com)}</td></tr>`;}).join('')||'<tr><td colspan="5" style="padding:16px;text-align:center;color:#94a3b8">Sem vendedores</td></tr>';
+        return `<tr><td style="font-weight:600">${u.nome}</td><td>${uvs.length}</td><td>${fmtMoney(rec)}</td><td>${pct}%</td><td style="text-align:right;font-weight:700;color:#c9a84c">${fmtMoney(com)}</td>
+          <td style=\"text-align:right;color:#eab308\">${fmtMoney(taxaGrupo)}</td></tr>`;}).join('')||'<tr><td colspan="5" style="padding:16px;text-align:center;color:#94a3b8">Sem vendedores</td></tr>';
       if(comFoot) comFoot.innerHTML=`<tr style="background:#f8fafc;font-weight:700"><td colspan="4">Total a Pagar</td><td style="text-align:right;color:#c9a84c">${fmtMoney(totalComissao)}</td></tr>`;
     }
 
@@ -9606,7 +9618,20 @@ function renderRelatorios() {
         var pct=0;
         if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
         var com=rec*(pct/100);
-        var lucro=rec-custo-com;
+        var taxaGrupo=(function(){
+          var t=0;
+          vendas.forEach(function(vv){
+            if((vv.grupoVenda||vv.id)===(v.grupoVenda||v.id)){
+              if(vv.taxaValor&&vv.taxaValor>0) t+=vv.taxaValor;
+              else if(typeof calcTaxaVenda==='function'){
+                var tp=calcTaxaVenda(vv.pag||'',vv.parcelas||1);
+                if(tp>0){ var tv=vv.totalReal!==undefined?vv.totalReal:calcTotal(vv); t+=tv*(tp/100); }
+              }
+            }
+          });
+          return t;
+        })();
+        var lucro=rec-custo-com-taxaGrupo;
         var margem=rec>0?lucro/rec*100:0;
         totRec+=rec;totCusto+=custo;totCom+=com;totLucro+=lucro;
         return `<tr>
