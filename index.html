@@ -7168,56 +7168,57 @@ function renderPainelFinanceiroAdmin() {
 
   var fin = document.getElementById('dash-fin-cards');
   if (fin) fin.innerHTML = `
-    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
-      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💰 Receita</div>
-      <div style="font-size:20px;font-weight:800;color:#34d399">${fmtMoney(receita)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5)">${vendas.length} vendas</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Receita Bruta</div>
+      <div style=\"font-size:20px;font-weight:800;color:#a3e635\">${fmtMoney(receitaBruta)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">preço cheio</div>
     </div>
-    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
-      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">📦 Custo Produtos</div>
-      <div style="font-size:20px;font-weight:800;color:#fbbf24">${fmtMoney(custo)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5)">mercadoria</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B5; Receita Líquida</div>
+      <div style=\"font-size:20px;font-weight:800;color:#34d399\">${fmtMoney(receita)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">${vendas.length} vendas</div>
     </div>
-    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
-      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🏷️ Comissões</div>
-      <div style="font-size:20px;font-weight:800;color:#fb923c">${fmtMoney(comissaoTotal)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5)">vendedores</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4E6; Custo Produtos</div>
+      <div style=\"font-size:20px;font-weight:800;color:#fbbf24\">${fmtMoney(custo)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">mercadoria</div>
     </div>
-    <div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">
-      <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💸 Despesas</div>
-      <div style="font-size:20px;font-weight:800;color:#f87171">${fmtMoney(totalDespesas)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5)">${despesasPeriodo.length} lançamentos</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F488; Comissões</div>
+      <div style=\"font-size:20px;font-weight:800;color:#fb923c\">${fmtMoney(comissaoTotal)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">vendedores</div>
     </div>
-    <div style="background:linear-gradient(135deg,${lucroLiquido>=0?'#166534,#16a34a':'#991b1b,#dc2626'});border-radius:12px;padding:14px;text-align:center;grid-column:span 2">
-      <div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">📊 Lucro Líquido Real</div>
-      <div style="font-size:26px;font-weight:800;color:white">${fmtMoney(lucroLiquido)}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.7)">Margem: ${margem.toFixed(1)}% | Receita - Custo - Comissões - Despesas</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B8; Despesas</div>
+      <div style=\"font-size:20px;font-weight:800;color:#f87171\">${fmtMoney(totalDespesas)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">${despesasPeriodo.length} lançamentos</div>
     </div>
-    <div style="grid-column:span 2;display:flex;gap:10px"><div style=\"flex:1;background:linear-gradient(135deg,#1a4a7a,#1e6bb8);border-radius:12px;padding:14px;text-align:center;border:2px solid #c9a84c">
-      <div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">🏦 Capital de Giro (40%)</div>
-      <div style="font-size:22px;font-weight:800;color:#c9a84c">${fmtMoney(lucroLiquido>0?lucroLiquido*0.4:0)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.6)">Reserva para a ótica</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Taxas Cartão</div>
+      <div style=\"font-size:20px;font-weight:800;color:#eab308\">${fmtMoney(totalTaxas)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">operadoras</div>
     </div>
-    <div style="background:linear-gradient(135deg,#1a4a2a,#16a34a);border-radius:12px;padding:14px;text-align:center;border:2px solid #34d399">
-      <div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">💼 Pró-labore (60%)</div>
-      <div style="font-size:22px;font-weight:800;color:#34d399">${fmtMoney(lucroLiquido>0?lucroLiquido*0.6:0)}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.6)">Seu pagamento como dono</div>
+    <div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F3F7;&#xFE0F; Descontos</div>
+      <div style=\"font-size:20px;font-weight:800;color:#f472b6\">${fmtMoney(totalDescontosAdmin)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.5)\">concedidos</div>
+    </div>
+    <div style=\"background:linear-gradient(135deg,${lucroLiquido>=0?\'#166534,#16a34a\':\'#991b1b,#dc2626\'});border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4CA; Lucro Líquido Real</div>
+      <div style=\"font-size:26px;font-weight:800;color:white\">${fmtMoney(lucroLiquido)}</div>
+      <div style=\"font-size:11px;color:rgba(255,255,255,.7)\">Margem: ${margem.toFixed(1)}% | Receita - Custo - Comissões - Taxas - Despesas</div>
+    </div>
+    <div style=\"grid-column:span 2;display:flex;gap:10px\"><div style=\"flex:1;background:linear-gradient(135deg,#1a3a5c,#c9a84c);border-radius:12px;padding:14px;text-align:center\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Capital de Giro (40%)</div>
+      <div style=\"font-size:22px;font-weight:800;color:#c9a84c\">${fmtMoney(lucroLiquido>0?lucroLiquido*0.4:0)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.6)\">Reserva para a ótica</div>
+    </div>
+    <div style=\"background:linear-gradient(135deg,#1a4a2a,#16a34a);border-radius:12px;padding:14px;text-align:center;flex:1\">
+      <div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Pró-Labore (60%)</div>
+      <div style=\"font-size:22px;font-weight:800;color:#34d399\">${fmtMoney(lucroLiquido>0?lucroLiquido*0.6:0)}</div>
+      <div style=\"font-size:10px;color:rgba(255,255,255,.6)\">Seu pagamento como dono</div>
     </div></div>
   `;
-  // Card Receita Bruta (inserido no início)
-  if (fin && receitaBruta > 0) {
-    var cardBruta = document.createElement('div');
-    cardBruta.style.cssText = 'background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center';
-    cardBruta.innerHTML = '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Receita Bruta</div><div style=\"font-size:20px;font-weight:800;color:#a3e635\">' + fmtMoney(receitaBruta) + '</div><div style=\"font-size:10px;color:rgba(255,255,255,.5)\">preço cheio</div>';
-    fin.insertBefore(cardBruta, fin.firstChild);
-  }
-  // Card Taxas Cartão
-  if (fin && totalTaxas > 0) {
-    var cardTaxas = document.createElement('div');
-    cardTaxas.style.cssText = 'background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center';
-    cardTaxas.innerHTML = '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Taxas Cartão</div><div style=\"font-size:20px;font-weight:800;color:#eab308\">' + fmtMoney(totalTaxas) + '</div><div style=\"font-size:10px;color:rgba(255,255,255,.5)\">operadoras</div>';
-    fin.appendChild(cardTaxas);
-  }
 
   // DRE Simplificado
   var dreEl = document.getElementById('dash-dre');
