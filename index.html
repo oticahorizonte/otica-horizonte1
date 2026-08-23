@@ -9555,7 +9555,8 @@ function renderRelatorios() {
         var com=rec*(pct/100);
         totalComissao+=com;
         return `<tr><td style="font-weight:600">${u.nome}</td><td>${uvs.length}</td><td>${fmtMoney(rec)}</td><td>${pct}%</td><td style="text-align:right;font-weight:700;color:#c9a84c">${fmtMoney(com)}</td>
-          <td style=\"text-align:right;color:#eab308\">${fmtMoney(taxaGrupo)}</td></tr>`;}).join('')||'<tr><td colspan="5" style="padding:16px;text-align:center;color:#94a3b8">Sem vendedores</td></tr>';
+          <td style=\"text-align:right;color:#eab308\">${fmtMoney(taxaGrupo)}</td>
+          `;}).join('')||'<tr><td colspan="5" style="padding:16px;text-align:center;color:#94a3b8">Sem vendedores</td></tr>';
       if(comFoot) comFoot.innerHTML=`<tr style="background:#f8fafc;font-weight:700"><td colspan="4">Total a Pagar</td><td style="text-align:right;color:#c9a84c">${fmtMoney(totalComissao)}</td></tr>`;
     }
 
