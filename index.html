@@ -3216,7 +3216,7 @@ function instalarApp() {
 <button onclick="imprimirSecao('rel-bloco-comissoes','Comissões por Vendedor')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
 <div class="card-body" id="rel-bloco-comissoes" style="padding:0">
-<table><thead><tr><th>Vendedor</th><th>Nº Vendas</th><th>Receita</th><th>% Comissão</th><th style="text-align:right">Valor a Pagar</th></tr></thead>
+<table><thead><tr><th>Vendedor</th><th>Nº Vendas</th><th>Receita</th><th>% Comissão</th><th style=\"text-align:right\">Taxa</th><th style="text-align:right">Valor a Pagar</th></tr></thead>
 <tbody id="rel-comissoes-tbody"></tbody>
 <tfoot id="rel-comissoes-tfoot"></tfoot></table>
 </div>
@@ -9608,44 +9608,68 @@ function renderRelatorios() {
       });
       // Mostrar apenas os 5 últimos
       var gruposFinShow=gruposFinArr.slice(0,5);
-      finEl.innerHTML=gruposFinShow.map(function(grupo){
-        var v=grupo.v;
-        var rec=grupo.total;
-        var custo=grupo.custo;
-        var vend=(v.vendedor||'').toLowerCase();
-        var isAdminVend=admins2.indexOf(vend)!==-1;
-        var pct=0;
-        if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
-        var com=rec*(pct/100);
-        // Calcular taxa do grupo de vendas
-        var taxaGrupoRel=0;
-        vendas.forEach(function(vv){
-          if((vv.grupoVenda||vv.id)===(v.grupoVenda||v.id)){
-            if(vv.taxaValor&&vv.taxaValor>0) taxaGrupoRel+=vv.taxaValor;
-            else if(typeof calcTaxaVenda==='function'){
-              var tp=calcTaxaVenda(vv.pag||'',vv.parcelas||1);
-              if(tp>0){ var tv=vv.totalReal!==undefined?vv.totalReal:calcTotal(vv); taxaGrupoRel+=tv*(tp/100); }
+      finEl.innerHTML='';
+      var totTaxa=0;
+      if(gruposFinShow.length===0){
+        var emptyRow=document.createElement('tr');
+        emptyRow.innerHTML='<td colspan="10" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td>';
+        finEl.appendChild(emptyRow);
+      } else {
+        gruposFinShow.forEach(function(grupo){
+          var v=grupo.v;
+          var rec=grupo.total;
+          var custo=grupo.custo;
+          var vend=(v.vendedor||'').toLowerCase();
+          var isAdminVend=admins2.indexOf(vend)!==-1;
+          var pct=0;
+          if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
+          var com=rec*(pct/100);
+          var taxaGrupoRel=0;
+          vendas.forEach(function(vv){
+            if((vv.grupoVenda||vv.id)===(v.grupoVenda||v.id)){
+              if(vv.taxaValor&&vv.taxaValor>0) taxaGrupoRel+=vv.taxaValor;
+              else if(typeof calcTaxaVenda==='function'){
+                var tp=calcTaxaVenda(vv.pag||'',vv.parcelas||1);
+                if(tp>0){ var tv=vv.totalReal!==undefined?vv.totalReal:calcTotal(vv); taxaGrupoRel+=tv*(tp/100); }
+              }
             }
-          }
+          });
+          var lucro=rec-custo-com-taxaGrupoRel;
+          var margem=rec>0?lucro/rec*100:0;
+          totRec+=rec;totCusto+=custo;totCom+=com;totTaxa+=taxaGrupoRel;totLucro+=lucro;
+          var tr=document.createElement('tr');
+          var lucroColor=lucro>=0?'#16a34a':'#dc2626';
+          tr.innerHTML=
+            '<td style="font-weight:700;color:#0d2b4e">'+v.id+'</td>'+
+            '<td>'+(v.data?new Date(v.data+'T12:00').toLocaleDateString('pt-BR'):'-')+'</td>'+
+            '<td>'+(v.clienteNome||cliNomeMap[v.clienteId]||'-')+'</td>'+
+            '<td>'+(v.vendedor||'-')+'</td>'+
+            '<td style="text-align:right">'+fmtMoney(rec)+'</td>'+
+            '<td style="text-align:right;color:#fbbf24">'+fmtMoney(custo)+'</td>'+
+            '<td style="text-align:right;color:#fb923c">'+fmtMoney(com)+'</td>'+
+            '<td style="text-align:right;color:#eab308">'+fmtMoney(taxaGrupoRel)+'</td>'+
+            '<td style="text-align:right;color:'+lucroColor+';font-weight:700">'+fmtMoney(lucro)+'</td>'+
+            '<td style="text-align:right">'+margem.toFixed(1)+'%</td>';
+          finEl.appendChild(tr);
         });
-        var lucro=rec-custo-com-taxaGrupoRel;
-        var margem=rec>0?lucro/rec*100:0;
-        totRec+=rec;totCusto+=custo;totCom+=com;totLucro+=lucro;
-        return `<tr>
-          <td style="font-weight:700;color:#0d2b4e">${v.id}</td>
-          <td>${v.data?new Date(v.data+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
-          <td>${v.clienteNome||cliNomeMap[v.clienteId]||'-'}</td>
-          <td>${v.vendedor||'-'}</td>
-          <td style="text-align:right">${fmtMoney(rec)}</td>
-          <td style="text-align:right;color:#fbbf24">${fmtMoney(custo)}</td>
-          <td style="text-align:right;color:#fb923c">${fmtMoney(com)}</td>
-          <td style="text-align:right;color:${lucro>=0?'#16a34a':'#dc2626'};font-weight:700">${fmtMoney(lucro)}</td>
-          <td style="text-align:right">${margem.toFixed(1)}%</td>
-        </tr>`;
-      }).join('')||'<tr><td colspan="9" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+      }
       // Linha de totais
-      if(finFoot){var totMarg=totRec>0?totLucro/totRec*100:0;finFoot.innerHTML=`<tr style="background:#0f2744;color:white;font-weight:700"><td colspan="4">TOTAL (5 últimos)</td><td style="text-align:right">${fmtMoney(totRec)}</td><td style="text-align:right;color:#fbbf24">${fmtMoney(totCusto)}</td><td style="text-align:right;color:#fb923c">${fmtMoney(totCom)}</td><td style="text-align:right;color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td><td style="text-align:right">${totMarg.toFixed(1)}%</td></tr>`;}
-
+      if(finFoot){
+        var totMarg=totRec>0?totLucro/totRec*100:0;
+        var totColor=totLucro>=0?'#34d399':'#f87171';
+        var tfr=document.createElement('tr');
+        tfr.style.cssText='background:#0f2744;color:white;font-weight:700';
+        tfr.innerHTML=
+          '<td colspan="4">TOTAL (5 últimos)</td>'+
+          '<td style="text-align:right">'+fmtMoney(totRec)+'</td>'+
+          '<td style="text-align:right;color:#fbbf24">'+fmtMoney(totCusto)+'</td>'+
+          '<td style="text-align:right;color:#fb923c">'+fmtMoney(totCom)+'</td>'+
+          '<td style="text-align:right;color:#eab308">'+fmtMoney(totTaxa)+'</td>'+
+          '<td style="text-align:right;color:'+totColor+'">'+fmtMoney(totLucro)+'</td>'+
+          '<td style="text-align:right">'+totMarg.toFixed(1)+'%</td>';
+        finFoot.innerHTML='';
+        finFoot.appendChild(tfr);
+      }
     }
   } else {
     var comAdminEl2=document.getElementById('rel-comissoes-admin');
