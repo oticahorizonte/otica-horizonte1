@@ -9582,19 +9582,38 @@ function renderRelatorios() {
     if(credAdminEl) credAdminEl.style.display='block';
     if(credEl){
       var parcelas=[];
+      var cliMapCred=Object.fromEntries(load('clientes').map(function(c){ return [String(c.id),c.nome]; }));
+      // Agrupar por grupoVenda para evitar duplicatas
+      var gruposCredMap={};
       todasVendas.filter(v=>v.pag==='Crediário Próprio'&&v.crediario&&v.crediario.parcelas).forEach(v=>{
-        v.crediario.parcelas.forEach(p=>{
-          parcelas.push({cliente:v.clienteNome||v.cliente||'-',venda:v.num||v.id||'-',parcela:p.num||'-',venc:p.data||'',valor:p.valor||0,pago:p.pago||false});
-        });
+        var gk=v.grupoVenda||v.id;
+        if(!gruposCredMap[gk]){
+          gruposCredMap[gk]=true;
+          var nomeCliente=v.clienteNome||cliMapCred[String(v.clienteId)]||v.cliente||'-';
+          var vendaId=v.grupoVenda?v.grupoVenda.replace('GV-','V-').slice(0,8):v.id;
+          var totalParc=v.crediario.parcelas.length;
+          v.crediario.parcelas.forEach(function(p,idx){
+            parcelas.push({
+              cliente:nomeCliente,
+              venda:v.id||'-',
+              parcela:(idx+1)+'/'+totalParc,
+              venc:p.data||'',
+              valor:p.valor||0,
+              pago:p.status==='Pago'||p.pago||false,
+              status:p.status||''
+            });
+          });
+        }
       });
       parcelas.sort((a,b)=>(a.venc||'').localeCompare(b.venc||''));
       var hoje2=new Date().toISOString().slice(0,10);
       var totalPend=parcelas.filter(p=>!p.pago).reduce((s,p)=>s+p.valor,0);
       var totalVenc=parcelas.filter(p=>!p.pago&&p.venc<hoje2).reduce((s,p)=>s+p.valor,0);
       credEl.innerHTML=parcelas.map(p=>{
-        var vencida=!p.pago&&p.venc<hoje2;
-        var cor=p.pago?'color:#34d399':vencida?'color:#f87171':'color:#fbbf24';
-        var status=p.pago?'✅ Pago':vencida?'⚠️ Vencida':'⏳ Pendente';
+        var isPago=p.pago||(p.status==='Pago');
+        var vencida=!isPago&&p.venc<hoje2;
+        var cor=isPago?'color:#34d399':vencida?'color:#f87171':'color:#fbbf24';
+        var status=isPago?'✅ Pago':vencida?'⚠️ Vencida':'⏳ Pendente';
         return `<tr style="${vencida&&!p.pago?'background:#fff5f5':''}">
           <td style="font-weight:600">${p.cliente}</td><td>${p.venda}</td><td>${p.parcela}</td>
           <td>${p.venc?new Date(p.venc+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
