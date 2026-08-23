@@ -5514,7 +5514,7 @@ setTimeout(function(){ _sistemaInicializando = false; }, 5000);
 const save = function(k, v) {
   _saveBase(k, v);
   if (_sistemaInicializando) return;
-  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore','custos_precificacao'];
+  var criticos = ['vendas','os','produtos','clientes','receitas','agendamentos','despesas','composicoes','entradas','historico_estoque','usuarios','metas_vendas','config_comissao','meta_faturamento','prolabore','custos_precificacao','taxas_cartao'];
   if (criticos.indexOf(k) === -1) return;
   if (_saveDebounceTimers[k]) clearTimeout(_saveDebounceTimers[k]);
   _saveDebounceTimers[k] = setTimeout(function() {
@@ -17138,6 +17138,17 @@ function getTaxasCartao() {
   try { return JSON.parse(localStorage.getItem('otica_taxas_cartao')||'null') || {pix:0,dinheiro:0,debito:1.5,credito1x:2.5,credito6x:3.2,credito10x:3.8,crediario:0}; }
   catch(e) { return {pix:0,dinheiro:0,debito:1.5,credito1x:2.5,credito6x:3.2,credito10x:3.8,crediario:0}; }
 }
+// Carregar taxas do Firebase ao iniciar
+window.addEventListener('firebaseReady', function() {
+  if (window._fb) {
+    window._fb.loadCollection('taxas_cartao').then(function(data) {
+      if (data && data.length > 0) {
+        localStorage.setItem('otica_taxas_cartao', JSON.stringify(data[0]));
+        console.log('✅ Taxas carregadas do Firebase');
+      }
+    }).catch(function(){});
+  }
+});
 function calcTaxaVenda(pag, parcelas) {
   var t=getTaxasCartao(); var nParc=parseInt(parcelas)||1;
   if(pag==='PIX') return t.pix||0;
@@ -17150,7 +17161,11 @@ function calcTaxaVenda(pag, parcelas) {
 function salvarTaxasCartao() {
   var taxas={pix:parseFloat(document.getElementById('taxa-pix').value)||0,dinheiro:parseFloat(document.getElementById('taxa-dinheiro').value)||0,debito:parseFloat(document.getElementById('taxa-debito').value)||0,credito1x:parseFloat(document.getElementById('taxa-credito-1x').value)||0,credito6x:parseFloat(document.getElementById('taxa-credito-6x').value)||0,credito10x:parseFloat(document.getElementById('taxa-credito-10x').value)||0,crediario:0};
   localStorage.setItem('otica_taxas_cartao',JSON.stringify(taxas));
-  showToast('✅ Taxas salvas!','success');
+  // Salvar no Firebase para sincronizar entre dispositivos
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('taxas_cartao', [taxas]).catch(function(){});
+  }
+  showToast('✅ Taxas salvas e sincronizadas!','success');
   closeModal('modal-config');
 }
 function carregarTaxasConfig() {
