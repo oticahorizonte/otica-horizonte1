@@ -15370,7 +15370,13 @@ function onChangePagamento() {
   var selParcelas = document.getElementById('venda-parcelas');
   if (painelCred) painelCred.style.display = pag === 'Crediário Próprio' ? 'block' : 'none';
   // Ocultar select de parcelas padrão quando crediário
-  if (selParcelas) selParcelas.style.display = pag === 'Crediário Próprio' ? 'none' : '';
+  if (selParcelas) {
+    selParcelas.style.display = pag === 'Crediário Próprio' ? 'none' : '';
+    // Resetar parcelas para 1 quando não for Cartão Crédito
+    if (pag !== 'Cartão Crédito' && pag !== 'Crediário Próprio') {
+      selParcelas.value = '1';
+    }
+  }
   if (pag === 'Crediário Próprio') {
     // Definir data padrão da primeira parcela (30 dias)
     var d = new Date(); d.setDate(d.getDate()+30);
