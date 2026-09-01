@@ -17078,35 +17078,28 @@ document.addEventListener('DOMContentLoaded', function() {
 // PRÓ-LABORE — Funções
 // ══════════════════════════════════════════════════════════════
 function abrirModalProLabore() {
-  // Usar o lucro calculado pelo painel financeiro (mais preciso)
+  // Calcular lucro líquido atual (mês)
+  var vendas = load('vendas');
   var hoje = new Date();
   var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
-  var vendas = load('vendas');
-  var vendasMes = vendas.filter(function(v){ return (v.data||'') >= inicioMes && v.status !== 'Cancelado' && v.status !== 'Pendente'; });
-  var receita = typeof calcReceitaGrupos === 'function' ? calcReceitaGrupos(vendasMes) : vendasMes.reduce(function(s,v){ return s+calcTotal(v); },0);
+  var vendasMes = vendas.filter(function(v){ return (v.data||'') >= inicioMes; });
+  var receita = vendasMes.reduce(function(s,v){ return s + calcTotal(v); }, 0);
   var custo = vendasMes.reduce(function(s,v){
+    var itens = v.itens || [];
+    if (itens.length > 0) return s + itens.reduce(function(si,it){ return si+(it.custo||0)*(it.qtd||1); },0);
     if (v.custo && v.custo > 0) return s + (v.custo||0)*(v.qtd||1);
-    if (v.tipo === 'oculos-completo' && v.detalhes) {
-      var prodMap = Object.fromEntries(load('produtos').map(function(p){ return [p.cod,p]; }));
-      return s + v.detalhes.reduce(function(si,d){ var p=prodMap[d.cod]; return si+(p?p.custo*(d.qtd||1):0); },0);
-    }
     return s;
-  },0);
+  }, 0);
   var despesas = load('despesas').filter(function(d){ return (d.data||'') >= inicioMes; });
   var totalDesp = despesas.reduce(function(s,d){ return s+(d.valor||0); },0);
-  var entradas = load('entradas').filter(function(e){ return (e.data||'') >= inicioMes; });
-  var totalEnt = entradas.reduce(function(s,e){ return s+(e.valor||0); },0);
-  var lucro = receita + totalEnt - custo - totalDesp;
+  var lucro = receita - custo - totalDesp;
   if (lucro < 0) lucro = 0;
-  var prolaboreHist = load('prolabore') || [];
-  var jaRetirado = prolaboreHist.filter(function(p){ return (p.data||'') >= inicioMes; }).reduce(function(s,p){ return s+(p.valor||0); },0);
-  var saldoPL = Math.max(0, lucro*0.6 - jaRetirado);
 
   // Preencher sugestões
   var elGiro = document.getElementById('pl-sugestao-giro');
   var elPL = document.getElementById('pl-sugestao-prolabore');
   if (elGiro) elGiro.textContent = fmtMoney(lucro * 0.4);
-  if (elPL) elPL.textContent = fmtMoney(saldoPL);
+  if (elPL) elPL.textContent = fmtMoney(lucro * 0.6);
 
   // Preencher data e referência padrão
   var dataEl = document.getElementById('pl-data');
@@ -17119,7 +17112,7 @@ function abrirModalProLabore() {
 
   // Preencher valor sugerido
   var valorEl = document.getElementById('pl-valor');
-  if (valorEl) valorEl.value = saldoPL > 0 ? saldoPL.toFixed(2) : "";
+  if (valorEl) valorEl.value = (lucro * 0.6).toFixed(2);
 
   // Renderizar histórico
   renderHistoricoProLabore();
