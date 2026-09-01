@@ -17078,69 +17078,26 @@ document.addEventListener('DOMContentLoaded', function() {
 // PRÓ-LABORE — Funções
 // ══════════════════════════════════════════════════════════════
 function abrirModalProLabore() {
-  // Calcular lucro líquido usando a mesma lógica do painel financeiro
-  var vendas = load('vendas');
+  // Usar o lucro calculado pelo painel financeiro (mais preciso)
   var hoje = new Date();
   var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
-  var vendasMes = vendas.filter(function(v){
-    return (v.data||'') >= inicioMes && v.status !== 'Cancelado' && v.status !== 'Pendente';
-  });
-
-  // Receita usando calcReceitaGrupos (igual ao painel)
+  var vendas = load('vendas');
+  var vendasMes = vendas.filter(function(v){ return (v.data||'') >= inicioMes && v.status !== 'Cancelado' && v.status !== 'Pendente'; });
   var receita = typeof calcReceitaGrupos === 'function' ? calcReceitaGrupos(vendasMes) : vendasMes.reduce(function(s,v){ return s+calcTotal(v); },0);
-
-  // Custo real dos produtos
-  var prodMap = Object.fromEntries(load('produtos').map(function(p){ return [p.cod,p]; }));
   var custo = vendasMes.reduce(function(s,v){
     if (v.custo && v.custo > 0) return s + (v.custo||0)*(v.qtd||1);
     if (v.tipo === 'oculos-completo' && v.detalhes) {
-      return s + v.detalhes.reduce(function(si,d){
-        var prod = prodMap[d.cod];
-        return si + (prod ? prod.custo*(d.qtd||1) : 0);
-      },0);
-    }
-    if (v.produto && v.produto !== 'OCULOS-COMPLETO') {
-      var prod2 = prodMap[v.produto];
-      if (prod2) return s + prod2.custo*(v.qtd||1);
+      var prodMap = Object.fromEntries(load('produtos').map(function(p){ return [p.cod,p]; }));
+      return s + v.detalhes.reduce(function(si,d){ var p=prodMap[d.cod]; return si+(p?p.custo*(d.qtd||1):0); },0);
     }
     return s;
   },0);
-
-  // Comissões
-  var cfg = JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-  var usuarios = typeof getUsuarios === 'function' ? getUsuarios() : [];
-  var admins = usuarios.filter(function(u){ return u.nivel==='Admin'; }).map(function(u){ return (u.nome||'').toLowerCase(); });
-  var comissoes = vendasMes.reduce(function(s,v){
-    var vend = (v.vendedor||'').toLowerCase();
-    if (admins.indexOf(vend) !== -1) return s;
-    var uv = usuarios.find(function(u){ return (u.nome||'').toLowerCase()===vend; });
-    var pct = uv ? (uv.comissao||cfg[uv.login]||0) : (cfg[vend]||0);
-    return s + calcTotal(v)*(pct/100);
-  },0);
-
-  // Taxas de cartão
-  var taxas = vendasMes.reduce(function(s,v){
-    if (v.taxaValor && v.taxaValor > 0) return s + v.taxaValor;
-    if (typeof calcTaxaVenda === 'function') {
-      var tp = calcTaxaVenda(v.pag||'', v.parcelas||1);
-      if (tp > 0) { var tv = v.totalReal !== undefined ? v.totalReal : calcTotal(v); return s + tv*(tp/100); }
-    }
-    return s;
-  },0);
-
-  // Despesas do mês
   var despesas = load('despesas').filter(function(d){ return (d.data||'') >= inicioMes; });
   var totalDesp = despesas.reduce(function(s,d){ return s+(d.valor||0); },0);
-
-  // Entradas manuais
   var entradas = load('entradas').filter(function(e){ return (e.data||'') >= inicioMes; });
   var totalEnt = entradas.reduce(function(s,e){ return s+(e.valor||0); },0);
-
-  // Lucro líquido real
-  var lucro = receita - taxas + totalEnt - custo - comissoes - totalDesp;
+  var lucro = receita + totalEnt - custo - totalDesp;
   if (lucro < 0) lucro = 0;
-
-  // Já retirado no mês
   var prolaboreHist = load('prolabore') || [];
   var jaRetirado = prolaboreHist.filter(function(p){ return (p.data||'') >= inicioMes; }).reduce(function(s,p){ return s+(p.valor||0); },0);
   var saldoPL = Math.max(0, lucro*0.6 - jaRetirado);
@@ -17149,7 +17106,7 @@ function abrirModalProLabore() {
   var elGiro = document.getElementById('pl-sugestao-giro');
   var elPL = document.getElementById('pl-sugestao-prolabore');
   if (elGiro) elGiro.textContent = fmtMoney(lucro * 0.4);
-  if (elPL) elPL.textContent = fmtMoney(saldoPL) + (jaRetirado > 0 ? ' (já retirado: ' + fmtMoney(jaRetirado) + ')' : '');
+  if (elPL) elPL.textContent = fmtMoney(saldoPL);
 
   // Preencher data e referência padrão
   var dataEl = document.getElementById('pl-data');
@@ -17162,7 +17119,7 @@ function abrirModalProLabore() {
 
   // Preencher valor sugerido
   var valorEl = document.getElementById('pl-valor');
-  if (valorEl) valorEl.value = saldoPL > 0 ? saldoPL.toFixed(2) : '';
+  if (valorEl) valorEl.value = saldoPL > 0 ? saldoPL.toFixed(2) : "";
 
   // Renderizar histórico
   renderHistoricoProLabore();
