@@ -33,57 +33,61 @@
     width: 210mm; min-height: 297mm;
     margin: 24px auto; background: white;
     box-shadow: 0 4px 24px rgba(0,0,0,.15);
-    border-radius: 4px;
-    overflow: hidden;
+    border-radius: 4px; overflow: hidden;
   }
-  .page-inner { padding: 0 16mm 14mm; }
+  .page-inner { padding: 10mm 12mm 12mm; }
 
-  /* ── CABEÇALHO ── */
+  /* ── CABEÇALHO AZUL ── */
   .header {
     background: linear-gradient(135deg, #0d2b4e 0%, #1a4a7a 100%);
-    padding: 16px 16mm;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 18px 12mm;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
     border-bottom: 4px solid #c9a84c;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
-  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-left { display: flex; align-items: center; gap: 18px; }
   .header img {
-    width: 68px; height: 68px; object-fit: contain;
-    border-radius: 50%; background: white; padding: 4px;
-    border: 2px solid #c9a84c;
+    width: 100px; height: 100px; object-fit: contain;
+    border-radius: 50%; background: white; padding: 5px;
+    border: 3px solid #c9a84c;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
   }
-  .header-text h1 { font-size: 22px; font-weight: 800; color: white; margin: 0; }
-  .header-text .slogan { font-style: italic; color: rgba(255,255,255,.7); font-size: 12px; margin: 2px 0 0; }
-  .header-text .info { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 3px; }
-  .header-os {
-    text-align: right;
-  }
+  .header-text h1 { font-size: 24px; font-weight: 800; color: white; margin: 0; line-height: 1.1; }
+  .header-text .slogan { font-style: italic; color: rgba(255,255,255,.7); font-size: 12px; margin: 4px 0 0; }
+  .header-text .info { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 5px; line-height: 1.5; }
+
+  .header-os { text-align: right; flex-shrink: 0; }
   .os-title-box {
-    background: rgba(255,255,255,.1);
+    background: rgba(255,255,255,.08);
     border: 1px solid rgba(201,168,76,.5);
-    border-radius: 8px; padding: 10px 16px; display: inline-block;
+    border-radius: 10px; padding: 14px 22px; display: inline-block;
     border-bottom: 3px solid #c9a84c;
   }
-  .os-title-box .label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #c9a84c; }
-  .os-title-box .num { font-size: 26px; font-weight: 800; line-height: 1.1; color: white; }
-  .os-title-box .dt { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 2px; }
+  .os-title-box .label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #c9a84c; margin-bottom: 4px;
+  }
+  .os-title-box .num {
+    font-size: 28px; font-weight: 800; color: white; line-height: 1.1;
+    letter-spacing: 1px;
+  }
 
   /* ── TÍTULO DE SEÇÃO ── */
   .sec-title {
     background: #1a3a5c; color: white;
     padding: 7px 14px; border-radius: 6px;
     font-size: 11px; font-weight: 700; letter-spacing: .5px;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
   }
 
   /* ── CARDS DE DADOS ── */
-  .cards-row { display: grid; gap: 10px; margin-bottom: 16px; }
+  .cards-row { display: grid; gap: 8px; margin-bottom: 10px; }
   .cards-row.col2 { grid-template-columns: 1fr 1fr; }
   .cards-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
 
   .info-card {
     background: #f8fafc; border-radius: 8px;
-    padding: 10px 12px; border-left: 4px solid #1a3a5c;
+    padding: 9px 12px; border-left: 4px solid #1a3a5c;
   }
   .info-card.gold  { border-left-color: #c9a84c; }
   .info-card.blue  { border-left-color: #0ea5e9; }
@@ -99,7 +103,7 @@
   }
 
   /* ── TABELA DE GRAUS ── */
-  .graus-wrap { margin-bottom: 16px; }
+  .graus-wrap { margin-bottom: 14px; }
   .graus-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .graus-table thead tr:first-child th {
     background: #1a3a5c; color: white;
@@ -124,39 +128,37 @@
   .graus-table tbody tr.perto td:first-child { color: #065f46; }
 
   /* ── ADIÇÃO + DNP ── */
-  .add-box {
-    border-radius: 10px; padding: 12px; text-align: center;
-  }
+  .add-box { border-radius: 10px; padding: 10px 12px; text-align: center; }
   .add-box.gold  { background: #fefce8; border-left: 4px solid #f59e0b; }
   .add-box.slate { background: #f8fafc; border-left: 4px solid #64748b; }
-  .add-box .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+  .add-box .lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
   .add-box.gold  .lbl { color: #92400e; }
   .add-box.slate .lbl { color: #64748b; }
-  .add-box .val { font-size: 22px; font-weight: 800; }
+  .add-box .val { font-size: 20px; font-weight: 800; }
   .add-box.gold  .val { color: #d97706; }
   .add-box.slate .val { color: #1a3a5c; }
 
   /* ── OBS ── */
-  .obs-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #92400e; margin-bottom: 6px; }
+  .obs-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #92400e; margin-bottom: 5px; letter-spacing: .5px; }
   .obs-box {
     background: #fffbeb; border: 1px solid #fde68a;
-    border-radius: 10px; padding: 12px 14px;
-    min-height: 60px; margin-bottom: 16px;
+    border-radius: 10px; padding: 10px 14px;
+    min-height: 64px; margin-bottom: 14px;
     font-size: 12px; color: #78350f;
   }
 
   /* ── ASSINATURAS ── */
   .assinaturas {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
-    margin-top: 20px; padding-top: 14px; border-top: 1px dashed #cbd5e1;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+    margin-top: 18px; padding-top: 12px; border-top: 1px dashed #cbd5e1;
   }
   .assin-box { text-align: center; }
-  .assin-line { border-top: 2px solid #1a3a5c; margin-top: 40px; margin-bottom: 6px; }
+  .assin-line { border-top: 2px solid #1a3a5c; margin-top: 44px; margin-bottom: 6px; }
   .assin-lbl { font-size: 10px; color: #64748b; font-weight: 600; }
 
   /* ── RODAPÉ ── */
   .footer {
-    margin-top: 16px; padding-top: 10px;
+    margin-top: 14px; padding-top: 10px;
     border-top: 2px solid #1a3a5c;
     text-align: center;
     font-size: 10px; color: #94a3b8; font-style: italic;
@@ -168,7 +170,7 @@
     body { background: white; }
     .preview-bar { display: none !important; }
     .page { margin: 0; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; }
-    .page-inner { padding: 0 13mm 12mm; }
+    .page-inner { padding: 8mm 11mm 10mm; }
     @page { size: A4; margin: 0; }
   }
 </style>
@@ -192,14 +194,16 @@
       <div class="header-text">
         <h1>Ótica Horizonte</h1>
         <div class="slogan">Seu olhar, nosso compromisso.</div>
-        <div class="info">CNPJ: 64.448.745/0001-09 &nbsp;|&nbsp; Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM</div>
+        <div class="info">
+          CNPJ: 64.448.745/0001-09<br>
+          Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM
+        </div>
       </div>
     </div>
     <div class="header-os">
       <div class="os-title-box">
         <div class="label">Ordem de Serviço</div>
-        <div class="num">OS-_______</div>
-        <div class="dt">Data: ___/___/______</div>
+        <div class="num">OS-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
       </div>
     </div>
   </div>
@@ -211,27 +215,15 @@
     <div class="cards-row" style="margin-bottom:16px;">
       <div class="info-card blue">
         <div class="lbl">Nome do Cliente</div>
-        <div class="val">&nbsp;</div>
+        <div class="val" style="min-height:22px;">&nbsp;</div>
       </div>
     </div>
 
     <!-- ── DADOS DA OS ── -->
     <div class="sec-title">🔧 Dados da Ordem de Serviço</div>
-    <div class="cards-row col3" style="margin-bottom:10px;">
-      <div class="info-card gold">
-        <div class="lbl">Tipo de OS</div>
-        <div class="val">&nbsp;</div>
-      </div>
-      <div class="info-card">
-        <div class="lbl">Armação (Cód.)</div>
-        <div class="val">&nbsp;</div>
-      </div>
-      <div class="info-card">
-        <div class="lbl">Laboratório</div>
-        <div class="val">&nbsp;</div>
-      </div>
-    </div>
-    <div class="cards-row col2" style="margin-bottom:10px;">
+
+    <!-- Linha 1: Data abertura | Previsão entrega | Tipo OS -->
+    <div class="cards-row col3">
       <div class="info-card">
         <div class="lbl">Data de Abertura</div>
         <div class="val">&nbsp;</div>
@@ -240,7 +232,25 @@
         <div class="lbl">Previsão de Entrega</div>
         <div class="val">&nbsp;</div>
       </div>
+      <div class="info-card gold">
+        <div class="lbl">Tipo de OS</div>
+        <div class="val">&nbsp;</div>
+      </div>
     </div>
+
+    <!-- Linha 2: Laboratório | Armação -->
+    <div class="cards-row col2">
+      <div class="info-card">
+        <div class="lbl">Laboratório</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="info-card">
+        <div class="lbl">Armação (Cód.)</div>
+        <div class="val">&nbsp;</div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Tipo de Lente | Tratamentos -->
     <div class="cards-row col2" style="margin-bottom:16px;">
       <div class="info-card blue">
         <div class="lbl">🔍 Tipo de Lente</div>
@@ -284,7 +294,7 @@
     </div>
 
     <!-- ── ADIÇÃO + DNP + MÉDICO ── -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;margin-bottom:14px;">
       <div class="add-box gold">
         <div class="lbl">➕ Adição (ADD)</div>
         <div class="val">&nbsp;</div>
