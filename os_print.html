@@ -33,39 +33,40 @@
     width: 210mm; min-height: 297mm;
     margin: 24px auto; background: white;
     box-shadow: 0 4px 24px rgba(0,0,0,.15);
-    border-radius: 4px; padding: 14mm 16mm;
-    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
   }
-  .via-tag {
-    position: absolute; top: 14mm; right: 16mm;
-    font-size: 8px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: #94a3b8;
-    border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 4px;
-  }
+  .page-inner { padding: 0 16mm 14mm; }
 
   /* ── CABEÇALHO ── */
   .header {
-    display: flex; align-items: center; gap: 16px;
-    padding-bottom: 14px; border-bottom: 3px solid #1a3a5c;
+    background: linear-gradient(135deg, #0d2b4e 0%, #1a4a7a 100%);
+    padding: 16px 16mm;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    border-bottom: 4px solid #c9a84c;
     margin-bottom: 20px;
   }
+  .header-left { display: flex; align-items: center; gap: 14px; }
   .header img {
-    width: 72px; height: 72px; object-fit: contain;
-    border-radius: 50%; background: #f8fafc; padding: 4px;
+    width: 68px; height: 68px; object-fit: contain;
+    border-radius: 50%; background: white; padding: 4px;
     border: 2px solid #c9a84c;
   }
-  .header-text { flex: 1; }
-  .header-text h1 { font-size: 22px; font-weight: 800; color: #1a3a5c; margin: 0; }
-  .header-text p { font-style: italic; color: #64748b; font-size: 12px; margin: 2px 0 0; }
-  .header-os { text-align: right; }
+  .header-text h1 { font-size: 22px; font-weight: 800; color: white; margin: 0; }
+  .header-text .slogan { font-style: italic; color: rgba(255,255,255,.7); font-size: 12px; margin: 2px 0 0; }
+  .header-text .info { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 3px; }
+  .header-os {
+    text-align: right;
+  }
   .os-title-box {
-    background: #1a3a5c; color: white;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(201,168,76,.5);
     border-radius: 8px; padding: 10px 16px; display: inline-block;
     border-bottom: 3px solid #c9a84c;
   }
   .os-title-box .label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #c9a84c; }
-  .os-title-box .num { font-size: 26px; font-weight: 800; line-height: 1.1; }
-  .os-title-box .dt { font-size: 10px; color: rgba(255,255,255,.7); margin-top: 2px; }
+  .os-title-box .num { font-size: 26px; font-weight: 800; line-height: 1.1; color: white; }
+  .os-title-box .dt { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 2px; }
 
   /* ── TÍTULO DE SEÇÃO ── */
   .sec-title {
@@ -76,22 +77,17 @@
   }
 
   /* ── CARDS DE DADOS ── */
-  .cards-row {
-    display: grid; gap: 10px; margin-bottom: 16px;
-  }
+  .cards-row { display: grid; gap: 10px; margin-bottom: 16px; }
   .cards-row.col2 { grid-template-columns: 1fr 1fr; }
   .cards-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
-  .cards-row.col4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
   .info-card {
     background: #f8fafc; border-radius: 8px;
     padding: 10px 12px; border-left: 4px solid #1a3a5c;
   }
-  .info-card.gold { border-left-color: #c9a84c; }
-  .info-card.blue { border-left-color: #0ea5e9; }
+  .info-card.gold  { border-left-color: #c9a84c; }
+  .info-card.blue  { border-left-color: #0ea5e9; }
   .info-card.green { border-left-color: #16a34a; }
-  .info-card.orange { border-left-color: #d97706; }
-  .info-card.red { border-left-color: #dc2626; }
 
   .info-card .lbl {
     font-size: 9px; font-weight: 700; text-transform: uppercase;
@@ -99,11 +95,8 @@
   }
   .info-card .val {
     font-size: 13px; font-weight: 700; color: #1a3a5c;
-    min-height: 18px; border-bottom: 1px dashed #e2e8f0;
-    padding-bottom: 2px;
+    min-height: 18px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 2px;
   }
-  .info-card .val.big { font-size: 18px; font-weight: 800; color: #c9a84c; }
-  .info-card .val.empty { color: #cbd5e1; font-style: italic; font-weight: 400; font-size: 12px; }
 
   /* ── TABELA DE GRAUS ── */
   .graus-wrap { margin-bottom: 16px; }
@@ -130,36 +123,26 @@
   .graus-table tbody tr.perto td { background: #f0fdf4; }
   .graus-table tbody tr.perto td:first-child { color: #065f46; }
 
-  /* ── ADICÃO + DNP ── */
-  .add-dnp {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
-  }
+  /* ── ADIÇÃO + DNP ── */
   .add-box {
     border-radius: 10px; padding: 12px; text-align: center;
   }
-  .add-box.gold { background: #fefce8; border-left: 4px solid #f59e0b; }
+  .add-box.gold  { background: #fefce8; border-left: 4px solid #f59e0b; }
   .add-box.slate { background: #f8fafc; border-left: 4px solid #64748b; }
   .add-box .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
-  .add-box.gold .lbl { color: #92400e; }
+  .add-box.gold  .lbl { color: #92400e; }
   .add-box.slate .lbl { color: #64748b; }
   .add-box .val { font-size: 22px; font-weight: 800; }
-  .add-box.gold .val { color: #d97706; }
+  .add-box.gold  .val { color: #d97706; }
   .add-box.slate .val { color: #1a3a5c; }
 
   /* ── OBS ── */
+  .obs-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #92400e; margin-bottom: 6px; }
   .obs-box {
     background: #fffbeb; border: 1px solid #fde68a;
     border-radius: 10px; padding: 12px 14px;
-    min-height: 52px; margin-bottom: 14px;
+    min-height: 60px; margin-bottom: 16px;
     font-size: 12px; color: #78350f;
-  }
-  .obs-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #92400e; margin-bottom: 6px; }
-
-  /* ── AVISO CLIENTE ── */
-  .aviso {
-    background: #eff6ff; border: 1px solid #bfdbfe;
-    border-radius: 8px; padding: 10px 14px;
-    font-size: 11px; color: #1e40af; margin-bottom: 14px;
   }
 
   /* ── ASSINATURAS ── */
@@ -175,29 +158,17 @@
   .footer {
     margin-top: 16px; padding-top: 10px;
     border-top: 2px solid #1a3a5c;
-    display: flex; justify-content: space-between; align-items: center;
+    text-align: center;
     font-size: 10px; color: #94a3b8; font-style: italic;
   }
   .footer strong { color: #1a3a5c; font-style: normal; }
-
-  /* ── STATUS ── */
-  .status-pill {
-    display: inline-block; padding: 3px 10px; border-radius: 20px;
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .5px; margin-top: 6px;
-  }
-  .s-aberta { background: #dbeafe; color: #1d4ed8; }
-  .s-andamento { background: #fef3c7; color: #92400e; }
-  .s-pronta { background: #d1fae5; color: #065f46; }
-  .s-entregue { background: #e0e7ff; color: #3730a3; }
-  .s-cancelada { background: #fee2e2; color: #991b1b; }
 
   /* ── PRINT ── */
   @media print {
     body { background: white; }
     .preview-bar { display: none !important; }
-    .page { margin: 0; box-shadow: none; border-radius: 0; padding: 10mm 13mm; width: 100%; min-height: auto; }
-    .page-break { page-break-after: always; }
+    .page { margin: 0; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; }
+    .page-inner { padding: 0 13mm 12mm; }
     @page { size: A4; margin: 0; }
   }
 </style>
@@ -207,407 +178,151 @@
 <div class="preview-bar">
   <div>
     <h2>🖨️ Ordem de Serviço — Ótica Horizonte</h2>
-    <small>Formulário em branco para preenchimento manual · 2 vias (Ótica + Cliente)</small>
+    <small>Formulário em branco para preenchimento manual</small>
   </div>
   <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
 </div>
 
-<!-- ══════════════════════════════════════
-     VIA DA ÓTICA
-══════════════════════════════════════ -->
 <div class="page">
-  <div class="via-tag">Via da Ótica</div>
 
-  <!-- Cabeçalho -->
+  <!-- ── CABEÇALHO AZUL ── -->
   <div class="header">
-    <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
-    <div class="header-text">
-      <h1>Ótica Horizonte</h1>
-      <p>Seu olhar, nosso compromisso.</p>
-      <p style="font-size:11px;color:#94a3b8;font-style:normal;margin-top:2px;">
-        CNPJ: 64.448.745/0001-09 &nbsp;|&nbsp; Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM
-      </p>
+    <div class="header-left">
+      <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
+      <div class="header-text">
+        <h1>Ótica Horizonte</h1>
+        <div class="slogan">Seu olhar, nosso compromisso.</div>
+        <div class="info">CNPJ: 64.448.745/0001-09 &nbsp;|&nbsp; Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM</div>
+      </div>
     </div>
     <div class="header-os">
       <div class="os-title-box">
         <div class="label">Ordem de Serviço</div>
-        <div class="num" id="v1-num">OS-_______</div>
-        <div class="dt" id="v1-data">Data: ___/___/______</div>
+        <div class="num">OS-_______</div>
+        <div class="dt">Data: ___/___/______</div>
       </div>
-      <div><span class="status-pill s-aberta" id="v1-status">Aberta</span></div>
     </div>
   </div>
 
-  <!-- Dados do Cliente -->
-  <div class="sec-title">👤 Dados do Cliente</div>
-  <div class="cards-row col2" style="margin-bottom:10px;">
-    <div class="info-card blue" style="grid-column:1/2">
-      <div class="lbl">Nome do Cliente</div>
-      <div class="val" id="v1-cliente">&nbsp;</div>
-    </div>
-    <div class="info-card blue">
-      <div class="lbl">Telefone / WhatsApp</div>
-      <div class="val" id="v1-tel">&nbsp;</div>
-    </div>
-  </div>
-  <div class="cards-row col3" style="margin-bottom:16px;">
-    <div class="info-card" style="grid-column:1/3">
-      <div class="lbl">Endereço</div>
-      <div class="val" id="v1-end">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Convênio / Plano</div>
-      <div class="val" id="v1-convenio">&nbsp;</div>
-    </div>
-  </div>
+  <div class="page-inner">
 
-  <!-- Dados da OS -->
-  <div class="sec-title">🔧 Dados da Ordem de Serviço</div>
-  <div class="cards-row col3" style="margin-bottom:10px;">
-    <div class="info-card gold">
-      <div class="lbl">Tipo de OS</div>
-      <div class="val" id="v1-tipo">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Armação (Cód.)</div>
-      <div class="val" id="v1-armacao">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Técnico Responsável</div>
-      <div class="val" id="v1-tecnico">&nbsp;</div>
-    </div>
-  </div>
-  <div class="cards-row col4" style="margin-bottom:10px;">
-    <div class="info-card">
-      <div class="lbl">Data de Abertura</div>
-      <div class="val" id="v1-abertura">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Previsão de Entrega</div>
-      <div class="val" id="v1-previsao">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Vendedor</div>
-      <div class="val" id="v1-vendedor">&nbsp;</div>
-    </div>
-    <div class="info-card gold">
-      <div class="lbl">Valor Total (R$)</div>
-      <div class="val big" id="v1-valor">&nbsp;</div>
-    </div>
-  </div>
-  <div class="cards-row col2" style="margin-bottom:16px;">
-    <div class="info-card blue">
-      <div class="lbl">🔍 Tipo de Lente</div>
-      <div class="val" id="v1-tipo-lente">&nbsp;</div>
-    </div>
-    <div class="info-card green">
-      <div class="lbl">✨ Tratamentos</div>
-      <div class="val" id="v1-tratamentos">&nbsp;</div>
-    </div>
-  </div>
-
-  <!-- Graus -->
-  <div class="sec-title">👁️ Graus da Receita</div>
-  <div class="graus-wrap">
-    <table class="graus-table">
-      <thead>
-        <tr>
-          <th style="text-align:left;width:120px;">Distância</th>
-          <th colspan="3">👁️ Olho Direito (OD)</th>
-          <th colspan="3">👁️ Olho Esquerdo (OE)</th>
-        </tr>
-        <tr>
-          <th></th>
-          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
-          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="longe">
-          <td>LONGE</td>
-          <td id="v1-od-esf">&nbsp;</td><td id="v1-od-cil">&nbsp;</td><td id="v1-od-eixo">&nbsp;</td>
-          <td id="v1-oe-esf">&nbsp;</td><td id="v1-oe-cil">&nbsp;</td><td id="v1-oe-eixo">&nbsp;</td>
-        </tr>
-        <tr class="perto">
-          <td>PERTO</td>
-          <td id="v1-od-perto-esf">&nbsp;</td><td id="v1-od-perto-cil">&nbsp;</td><td id="v1-od-perto-eixo">&nbsp;</td>
-          <td id="v1-oe-perto-esf">&nbsp;</td><td id="v1-oe-perto-cil">&nbsp;</td><td id="v1-oe-perto-eixo">&nbsp;</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Adição + DNP + Médico -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;">
-    <div class="add-box gold">
-      <div class="lbl">➕ Adição (ADD)</div>
-      <div class="val" id="v1-adicao">&nbsp;</div>
-    </div>
-    <div class="add-box slate">
-      <div class="lbl">📏 DNP (mm)</div>
-      <div class="val" id="v1-dnp">&nbsp;</div>
-    </div>
-    <div class="info-card" style="border-left-color:#1a3a5c;">
-      <div class="lbl">👨‍⚕️ Médico / CRM</div>
-      <div class="val" id="v1-medico">&nbsp;</div>
-    </div>
-  </div>
-
-  <!-- Observações -->
-  <div class="obs-lbl">📝 Observações / Descrição do Serviço</div>
-  <div class="obs-box" id="v1-obs">&nbsp;</div>
-
-  <!-- Assinaturas -->
-  <div class="assinaturas">
-    <div class="assin-box">
-      <div class="assin-line"></div>
-      <div class="assin-lbl">Assinatura do Cliente</div>
-    </div>
-    <div class="assin-box">
-      <div class="assin-line"></div>
-      <div class="assin-lbl">Responsável — Ótica Horizonte</div>
-    </div>
-  </div>
-
-  <!-- Rodapé -->
-  <div class="footer">
-    <span><strong>Ótica Horizonte</strong> — CNPJ 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM</span>
-    <span id="v1-rodape"></span>
-  </div>
-</div>
-
-<!-- Separador de vias -->
-<div style="text-align:center;margin:8px auto;width:210mm;font-size:10px;color:#94a3b8;letter-spacing:2px;">
-  ✂ ─────────────────────────────────────────────────────────────────────────────────── ✂
-</div>
-
-<!-- ══════════════════════════════════════
-     VIA DO CLIENTE
-══════════════════════════════════════ -->
-<div class="page">
-  <div class="via-tag">Via do Cliente</div>
-
-  <!-- Cabeçalho -->
-  <div class="header">
-    <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
-    <div class="header-text">
-      <h1>Ótica Horizonte</h1>
-      <p>Seu olhar, nosso compromisso.</p>
-      <p style="font-size:11px;color:#94a3b8;font-style:normal;margin-top:2px;">
-        CNPJ: 64.448.745/0001-09 &nbsp;|&nbsp; Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM
-      </p>
-    </div>
-    <div class="header-os">
-      <div class="os-title-box">
-        <div class="label">Ordem de Serviço</div>
-        <div class="num" id="v2-num">OS-_______</div>
-        <div class="dt" id="v2-data">Data: ___/___/______</div>
+    <!-- ── DADOS DO CLIENTE ── -->
+    <div class="sec-title">👤 Dados do Cliente</div>
+    <div class="cards-row" style="margin-bottom:16px;">
+      <div class="info-card blue">
+        <div class="lbl">Nome do Cliente</div>
+        <div class="val">&nbsp;</div>
       </div>
-      <div><span class="status-pill s-aberta" id="v2-status">Aberta</span></div>
     </div>
-  </div>
 
-  <!-- Dados do Cliente -->
-  <div class="sec-title">👤 Dados do Cliente</div>
-  <div class="cards-row col2" style="margin-bottom:10px;">
-    <div class="info-card blue">
-      <div class="lbl">Nome do Cliente</div>
-      <div class="val" id="v2-cliente">&nbsp;</div>
+    <!-- ── DADOS DA OS ── -->
+    <div class="sec-title">🔧 Dados da Ordem de Serviço</div>
+    <div class="cards-row col3" style="margin-bottom:10px;">
+      <div class="info-card gold">
+        <div class="lbl">Tipo de OS</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="info-card">
+        <div class="lbl">Armação (Cód.)</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="info-card">
+        <div class="lbl">Laboratório</div>
+        <div class="val">&nbsp;</div>
+      </div>
     </div>
-    <div class="info-card blue">
-      <div class="lbl">Telefone / WhatsApp</div>
-      <div class="val" id="v2-tel">&nbsp;</div>
+    <div class="cards-row col2" style="margin-bottom:10px;">
+      <div class="info-card">
+        <div class="lbl">Data de Abertura</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="info-card">
+        <div class="lbl">Previsão de Entrega</div>
+        <div class="val">&nbsp;</div>
+      </div>
     </div>
-  </div>
-  <div class="cards-row col3" style="margin-bottom:16px;">
-    <div class="info-card" style="grid-column:1/3">
-      <div class="lbl">Endereço</div>
-      <div class="val" id="v2-end">&nbsp;</div>
+    <div class="cards-row col2" style="margin-bottom:16px;">
+      <div class="info-card blue">
+        <div class="lbl">🔍 Tipo de Lente</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="info-card green">
+        <div class="lbl">✨ Tratamentos</div>
+        <div class="val">&nbsp;</div>
+      </div>
     </div>
-    <div class="info-card">
-      <div class="lbl">Convênio / Plano</div>
-      <div class="val" id="v2-convenio">&nbsp;</div>
-    </div>
-  </div>
 
-  <!-- Dados da OS -->
-  <div class="sec-title">🔧 Dados da Ordem de Serviço</div>
-  <div class="cards-row col3" style="margin-bottom:10px;">
-    <div class="info-card gold">
-      <div class="lbl">Tipo de OS</div>
-      <div class="val" id="v2-tipo">&nbsp;</div>
+    <!-- ── GRAUS ── -->
+    <div class="sec-title">👁️ Graus da Receita</div>
+    <div class="graus-wrap">
+      <table class="graus-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;width:110px;">Distância</th>
+            <th colspan="3">👁️ Olho Direito (OD)</th>
+            <th colspan="3">👁️ Olho Esquerdo (OE)</th>
+          </tr>
+          <tr>
+            <th></th>
+            <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
+            <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="longe">
+            <td>LONGE</td>
+            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+          <tr class="perto">
+            <td>PERTO</td>
+            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="info-card">
-      <div class="lbl">Armação (Cód.)</div>
-      <div class="val" id="v2-armacao">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Técnico Responsável</div>
-      <div class="val" id="v2-tecnico">&nbsp;</div>
-    </div>
-  </div>
-  <div class="cards-row col3" style="margin-bottom:10px;">
-    <div class="info-card">
-      <div class="lbl">Data de Abertura</div>
-      <div class="val" id="v2-abertura">&nbsp;</div>
-    </div>
-    <div class="info-card">
-      <div class="lbl">Previsão de Entrega</div>
-      <div class="val" id="v2-previsao">&nbsp;</div>
-    </div>
-    <div class="info-card gold">
-      <div class="lbl">Valor Total (R$)</div>
-      <div class="val big" id="v2-valor">&nbsp;</div>
-    </div>
-  </div>
-  <div class="cards-row col2" style="margin-bottom:16px;">
-    <div class="info-card blue">
-      <div class="lbl">🔍 Tipo de Lente</div>
-      <div class="val" id="v2-tipo-lente">&nbsp;</div>
-    </div>
-    <div class="info-card green">
-      <div class="lbl">✨ Tratamentos</div>
-      <div class="val" id="v2-tratamentos">&nbsp;</div>
-    </div>
-  </div>
 
-  <!-- Graus -->
-  <div class="sec-title">👁️ Graus da Receita</div>
-  <div class="graus-wrap">
-    <table class="graus-table">
-      <thead>
-        <tr>
-          <th style="text-align:left;width:120px;">Distância</th>
-          <th colspan="3">👁️ Olho Direito (OD)</th>
-          <th colspan="3">👁️ Olho Esquerdo (OE)</th>
-        </tr>
-        <tr>
-          <th></th>
-          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
-          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="longe">
-          <td>LONGE</td>
-          <td id="v2-od-esf">&nbsp;</td><td id="v2-od-cil">&nbsp;</td><td id="v2-od-eixo">&nbsp;</td>
-          <td id="v2-oe-esf">&nbsp;</td><td id="v2-oe-cil">&nbsp;</td><td id="v2-oe-eixo">&nbsp;</td>
-        </tr>
-        <tr class="perto">
-          <td>PERTO</td>
-          <td id="v2-od-perto-esf">&nbsp;</td><td id="v2-od-perto-cil">&nbsp;</td><td id="v2-od-perto-eixo">&nbsp;</td>
-          <td id="v2-oe-perto-esf">&nbsp;</td><td id="v2-oe-perto-cil">&nbsp;</td><td id="v2-oe-perto-eixo">&nbsp;</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Adição + DNP + Médico -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;">
-    <div class="add-box gold">
-      <div class="lbl">➕ Adição (ADD)</div>
-      <div class="val" id="v2-adicao">&nbsp;</div>
+    <!-- ── ADIÇÃO + DNP + MÉDICO ── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;">
+      <div class="add-box gold">
+        <div class="lbl">➕ Adição (ADD)</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="add-box slate">
+        <div class="lbl">📏 DNP (mm)</div>
+        <div class="val">&nbsp;</div>
+      </div>
+      <div class="info-card">
+        <div class="lbl">👨‍⚕️ Médico / CRM</div>
+        <div class="val">&nbsp;</div>
+      </div>
     </div>
-    <div class="add-box slate">
-      <div class="lbl">📏 DNP (mm)</div>
-      <div class="val" id="v2-dnp">&nbsp;</div>
+
+    <!-- ── OBSERVAÇÕES ── -->
+    <div class="obs-lbl">📝 Observações / Descrição do Serviço</div>
+    <div class="obs-box">&nbsp;</div>
+
+    <!-- ── ASSINATURAS ── -->
+    <div class="assinaturas">
+      <div class="assin-box">
+        <div class="assin-line"></div>
+        <div class="assin-lbl">Assinatura do Cliente</div>
+      </div>
+      <div class="assin-box">
+        <div class="assin-line"></div>
+        <div class="assin-lbl">Responsável — Ótica Horizonte</div>
+      </div>
     </div>
-    <div class="info-card" style="border-left-color:#1a3a5c;">
-      <div class="lbl">👨‍⚕️ Médico / CRM</div>
-      <div class="val" id="v2-medico">&nbsp;</div>
+
+    <!-- ── RODAPÉ ── -->
+    <div class="footer">
+      <strong>Ótica Horizonte</strong> — CNPJ 64.448.745/0001-09 &nbsp;|&nbsp;
+      Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM
     </div>
-  </div>
 
-  <!-- Observações -->
-  <div class="obs-lbl">📝 Observações</div>
-  <div class="obs-box" id="v2-obs">&nbsp;</div>
+  </div><!-- /page-inner -->
+</div><!-- /page -->
 
-  <!-- Aviso ao cliente -->
-  <div class="aviso">
-    <strong>ℹ️ Informações ao Cliente:</strong> Guarde este comprovante para retirada do serviço.
-    Prazo de garantia: <strong>90 dias</strong> para defeitos de fabricação.
-    Após <strong>30 dias</strong> sem retirada, a Ótica Horizonte não se responsabiliza pelo produto.
-  </div>
-
-  <!-- Validade -->
-  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#166534;text-align:center;">
-    ✅ Receita válida por <strong>1 ano</strong> a partir da data de emissão.
-  </div>
-
-  <!-- Assinaturas -->
-  <div class="assinaturas">
-    <div class="assin-box">
-      <div class="assin-line"></div>
-      <div class="assin-lbl">Assinatura do Cliente</div>
-    </div>
-    <div class="assin-box">
-      <div class="assin-line"></div>
-      <div class="assin-lbl">Responsável — Ótica Horizonte</div>
-    </div>
-  </div>
-
-  <!-- Rodapé -->
-  <div class="footer">
-    <span><strong>Ótica Horizonte</strong> — CNPJ 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM</span>
-    <span id="v2-rodape"></span>
-  </div>
-</div>
-
-<script>
-const agora = new Date();
-const dataStr = agora.toLocaleDateString('pt-BR');
-const horaStr = agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-const emitido = 'Emitido em ' + dataStr + ' às ' + horaStr;
-document.getElementById('v1-rodape').textContent = emitido;
-document.getElementById('v2-rodape').textContent = emitido;
-
-const p = new URLSearchParams(window.location.search);
-function fill(id, val) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (val && String(val).trim()) { el.textContent = val; }
-  else { el.innerHTML = '&nbsp;'; }
-}
-function both(suf, val) { fill('v1-'+suf, val); fill('v2-'+suf, val); }
-
-const statusMap = { 'Aberta':'s-aberta','Em andamento':'s-andamento','Pronta':'s-pronta','Entregue':'s-entregue','Cancelada':'s-cancelada' };
-const st = p.get('status') || 'Aberta';
-[1,2].forEach(v => {
-  fill('v'+v+'-num', p.get('num') || 'OS-_______');
-  fill('v'+v+'-data', p.get('data') ? 'Data: '+p.get('data') : 'Data: ___/___/______');
-  const el = document.getElementById('v'+v+'-status');
-  if (el) { el.textContent = st; el.className = 'status-pill ' + (statusMap[st]||'s-aberta'); }
-});
-
-both('cliente', p.get('cliente'));
-both('tel', p.get('tel'));
-both('end', p.get('end'));
-both('convenio', p.get('convenio'));
-both('tipo', p.get('tipo'));
-both('armacao', p.get('armacao'));
-both('tecnico', p.get('tecnico'));
-both('abertura', p.get('abertura'));
-both('previsao', p.get('previsao'));
-fill('v1-vendedor', p.get('vendedor'));
-both('tipo-lente', p.get('tipoLente'));
-both('tratamentos', p.get('tratamentos'));
-both('od-esf', p.get('odEsf'));
-both('od-cil', p.get('odCil'));
-both('od-eixo', p.get('odEixo') ? p.get('odEixo')+'°' : '');
-both('oe-esf', p.get('oeEsf'));
-both('oe-cil', p.get('oeCil'));
-both('oe-eixo', p.get('oeEixo') ? p.get('oeEixo')+'°' : '');
-both('od-perto-esf', p.get('odPertoEsf'));
-both('od-perto-cil', p.get('odPertoCil'));
-both('od-perto-eixo', p.get('odPertoEixo') ? p.get('odPertoEixo')+'°' : '');
-both('oe-perto-esf', p.get('oePertoEsf'));
-both('oe-perto-cil', p.get('oePertoCil'));
-both('oe-perto-eixo', p.get('oePertoEixo') ? p.get('oePertoEixo')+'°' : '');
-both('adicao', p.get('adicao') ? '+'+p.get('adicao') : '');
-both('dnp', p.get('dnp'));
-both('medico', p.get('medico'));
-both('valor', p.get('valor') ? 'R$ '+p.get('valor') : '');
-both('obs', p.get('obs'));
-</script>
 </body>
 </html>
