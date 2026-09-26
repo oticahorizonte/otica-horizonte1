@@ -15565,6 +15565,7 @@ function renderContasCrediario() {
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-success" onclick="pagarParcelaCrediario('${p.vendaId}',${p.parcIdx})" data-tip="Marcar como pago">✅ Pagar</button>`:''}
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-outline" onclick="editarDataParcela('${p.vendaId}',${p.parcIdx},'${p.data}')" data-tip="Editar data">📅</button>`:''}
         <button class="btn btn-sm btn-primary" onclick="whatsappCobranca('${p.clienteNome}','${p.vendaId}',${p.parcIdx+1},${p.total},'${p.data}',${p.valor})" style="background:#16a34a" data-tip="Cobrar via WhatsApp">📱</button>
+        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="excluirVendaCrediario('${p.grupoVenda||p.vendaId}')" data-tip="Excluir venda e todas as parcelas" style="font-size:11px" title="Excluir venda">🗑️</button>`:''}
       </td>
     </tr>`;
   }).join('') : '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-muted)">Nenhuma parcela de crediário</td></tr>';
@@ -15612,6 +15613,23 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
   save('vendas', vendas);
   renderContasCrediario();
   showToast('✅ Parcela marcada como paga!', 'success');
+}
+
+function excluirVendaCrediario(grupoVenda) {
+  confirmar('Excluir esta venda de crediário e todas as suas parcelas? Esta ação não pode ser desfeita.', function() {
+    var vendas = load('vendas');
+    var novas = vendas.filter(function(v) {
+      return (v.grupoVenda || v.id) !== grupoVenda;
+    });
+    save('vendas', novas);
+    _sistemaInicializando = false;
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection('vendas', novas).catch(function(){});
+    }
+    showToast('🗑️ Venda de crediário excluída!', 'warning');
+    renderContasCrediario();
+    if (typeof renderDashboard === 'function') renderDashboard();
+  });
 }
 
 function whatsappCobranca(nome, vendaId, parcNum, parcTotal, data, valor) {
