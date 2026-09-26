@@ -167,7 +167,7 @@
 
   /* ── PRINT ── */
   @media print {
-    body { background: white; }
+    body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .preview-bar { display: none !important; }
     .page { margin: 0; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; }
     .page-inner { padding: 8mm 11mm 10mm; }
