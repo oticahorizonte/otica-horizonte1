@@ -5,288 +5,198 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Ordem de Serviço — Ótica Horizonte</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f3f8; color: #1e293b; font-size: 13px; }
 
-  body {
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    background: #f0f3f8;
-    color: #1a2744;
-    font-size: 13px;
-  }
-
-  /* ── TELA: preview antes de imprimir ── */
+  /* ── BARRA DE PREVIEW ── */
   .preview-bar {
-    background: #0d2b4e;
-    color: white;
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    background: linear-gradient(135deg, #0d2b4e 0%, #1a4a7a 100%);
+    color: white; padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(13,43,78,.3);
+    border-bottom: 3px solid #c9a84c;
   }
   .preview-bar h2 { font-size: 15px; font-weight: 700; }
   .preview-bar small { font-size: 11px; color: rgba(255,255,255,.6); }
   .btn-print {
-    background: linear-gradient(135deg, #c9a84c, #e8c96a);
-    color: #0d2b4e;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 24px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    background: linear-gradient(135deg, #c9a84c 0%, #e8c96a 100%);
+    color: #0d2b4e; border: none; border-radius: 8px;
+    padding: 10px 22px; font-size: 14px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 2px 8px rgba(201,168,76,.4);
   }
   .btn-print:hover { opacity: .9; }
 
   /* ── PÁGINA A4 ── */
   .page {
-    width: 210mm;
-    min-height: 297mm;
-    margin: 24px auto;
-    background: white;
+    width: 210mm; min-height: 297mm;
+    margin: 24px auto; background: white;
     box-shadow: 0 4px 24px rgba(0,0,0,.15);
-    border-radius: 4px;
-    padding: 16mm 18mm;
+    border-radius: 4px; padding: 14mm 16mm;
     position: relative;
+  }
+  .via-tag {
+    position: absolute; top: 14mm; right: 16mm;
+    font-size: 8px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #94a3b8;
+    border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 4px;
   }
 
   /* ── CABEÇALHO ── */
   .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 14px;
-    border-bottom: 3px solid #0d2b4e;
-    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 16px;
+    padding-bottom: 14px; border-bottom: 3px solid #1a3a5c;
+    margin-bottom: 20px;
   }
-  .header-logo {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .header-logo img {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    border-radius: 12px;
+  .header img {
+    width: 72px; height: 72px; object-fit: contain;
+    border-radius: 50%; background: #f8fafc; padding: 4px;
     border: 2px solid #c9a84c;
-    background: #f8fafc;
-    padding: 3px;
   }
-  .header-info h1 {
-    font-size: 20px;
-    font-weight: 800;
-    color: #0d2b4e;
-    line-height: 1.1;
+  .header-text { flex: 1; }
+  .header-text h1 { font-size: 22px; font-weight: 800; color: #1a3a5c; margin: 0; }
+  .header-text p { font-style: italic; color: #64748b; font-size: 12px; margin: 2px 0 0; }
+  .header-os { text-align: right; }
+  .os-title-box {
+    background: #1a3a5c; color: white;
+    border-radius: 8px; padding: 10px 16px; display: inline-block;
+    border-bottom: 3px solid #c9a84c;
   }
-  .header-info p {
-    font-size: 10px;
-    color: #64748b;
-    margin-top: 3px;
-    line-height: 1.5;
-  }
-  .header-os {
-    text-align: right;
-  }
-  .os-badge {
-    background: linear-gradient(135deg, #0d2b4e, #1a4a7a);
-    color: white;
-    border-radius: 10px;
-    padding: 10px 18px;
-    display: inline-block;
-  }
-  .os-badge .os-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #c9a84c; }
-  .os-badge .os-num { font-size: 26px; font-weight: 800; line-height: 1.1; }
-  .os-badge .os-data { font-size: 10px; color: rgba(255,255,255,.7); margin-top: 2px; }
+  .os-title-box .label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #c9a84c; }
+  .os-title-box .num { font-size: 26px; font-weight: 800; line-height: 1.1; }
+  .os-title-box .dt { font-size: 10px; color: rgba(255,255,255,.7); margin-top: 2px; }
 
-  /* ── STATUS BADGE ── */
-  .status-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    margin-top: 6px;
-  }
-  .status-aberta { background: #dbeafe; color: #1d4ed8; }
-  .status-andamento { background: #fef3c7; color: #92400e; }
-  .status-pronta { background: #d1fae5; color: #065f46; }
-  .status-entregue { background: #e0e7ff; color: #3730a3; }
-  .status-cancelada { background: #fee2e2; color: #991b1b; }
-
-  /* ── SEÇÕES ── */
-  .section-title {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #c9a84c;
-    background: #0d2b4e;
-    padding: 4px 10px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    display: inline-block;
+  /* ── TÍTULO DE SEÇÃO ── */
+  .sec-title {
+    background: #1a3a5c; color: white;
+    padding: 7px 14px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
   }
 
-  /* ── GRID DE DADOS ── */
-  .data-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 20px;
-    margin-bottom: 16px;
+  /* ── CARDS DE DADOS ── */
+  .cards-row {
+    display: grid; gap: 10px; margin-bottom: 16px;
   }
-  .data-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .data-grid.cols-1 { grid-template-columns: 1fr; }
+  .cards-row.col2 { grid-template-columns: 1fr 1fr; }
+  .cards-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cards-row.col4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
-  .field { }
-  .field label {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    color: #94a3b8;
-    display: block;
-    margin-bottom: 2px;
+  .info-card {
+    background: #f8fafc; border-radius: 8px;
+    padding: 10px 12px; border-left: 4px solid #1a3a5c;
   }
-  .field .value {
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a2744;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 4px;
-    min-height: 22px;
+  .info-card.gold { border-left-color: #c9a84c; }
+  .info-card.blue { border-left-color: #0ea5e9; }
+  .info-card.green { border-left-color: #16a34a; }
+  .info-card.orange { border-left-color: #d97706; }
+  .info-card.red { border-left-color: #dc2626; }
+
+  .info-card .lbl {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: #64748b; margin-bottom: 4px;
   }
-  .field .value.empty { color: #cbd5e1; font-style: italic; font-weight: 400; }
+  .info-card .val {
+    font-size: 13px; font-weight: 700; color: #1a3a5c;
+    min-height: 18px; border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 2px;
+  }
+  .info-card .val.big { font-size: 18px; font-weight: 800; color: #c9a84c; }
+  .info-card .val.empty { color: #cbd5e1; font-style: italic; font-weight: 400; font-size: 12px; }
 
   /* ── TABELA DE GRAUS ── */
-  .graus-section { margin-bottom: 16px; }
-  .graus-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
+  .graus-wrap { margin-bottom: 16px; }
+  .graus-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .graus-table thead tr:first-child th {
+    background: #1a3a5c; color: white;
+    padding: 8px 10px; text-align: center;
+    font-size: 11px; font-weight: 700;
   }
-  .graus-table th {
-    background: #0d2b4e;
-    color: white;
-    padding: 6px 10px;
-    text-align: center;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .5px;
+  .graus-table thead tr:first-child th:first-child { text-align: left; border-radius: 6px 0 0 0; }
+  .graus-table thead tr:last-child th {
+    background: #d6e4f0; color: #1a3a5c;
+    padding: 6px 10px; text-align: center;
+    font-size: 10px; font-weight: 700; border: 1px solid #e2e8f0;
   }
-  .graus-table th:first-child { text-align: left; border-radius: 4px 0 0 0; }
-  .graus-table th:last-child { border-radius: 0 4px 0 0; }
-  .graus-table td {
-    padding: 7px 10px;
-    text-align: center;
-    border-bottom: 1px solid #e2e8f0;
-    font-weight: 600;
+  .graus-table thead tr:last-child th:first-child { text-align: left; }
+  .graus-table tbody td {
+    padding: 10px; border: 1px solid #e2e8f0;
+    text-align: center; font-size: 14px; font-weight: 700;
   }
-  .graus-table td:first-child { text-align: left; font-weight: 700; color: #0d2b4e; }
-  .graus-table tr:nth-child(even) td { background: #f8fafc; }
-  .graus-table .adicao-row td { background: #eff6ff; color: #1d4ed8; font-weight: 700; }
+  .graus-table tbody td:first-child { text-align: left; font-size: 12px; font-weight: 700; }
+  .graus-table tbody tr.longe td { background: #eff6ff; }
+  .graus-table tbody tr.longe td:first-child { color: #1d4ed8; }
+  .graus-table tbody tr.perto td { background: #f0fdf4; }
+  .graus-table tbody tr.perto td:first-child { color: #065f46; }
 
-  /* ── OBSERVAÇÕES ── */
+  /* ── ADICÃO + DNP ── */
+  .add-dnp {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+  }
+  .add-box {
+    border-radius: 10px; padding: 12px; text-align: center;
+  }
+  .add-box.gold { background: #fefce8; border-left: 4px solid #f59e0b; }
+  .add-box.slate { background: #f8fafc; border-left: 4px solid #64748b; }
+  .add-box .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+  .add-box.gold .lbl { color: #92400e; }
+  .add-box.slate .lbl { color: #64748b; }
+  .add-box .val { font-size: 22px; font-weight: 800; }
+  .add-box.gold .val { color: #d97706; }
+  .add-box.slate .val { color: #1a3a5c; }
+
+  /* ── OBS ── */
   .obs-box {
-    border: 1.5px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px 14px;
-    min-height: 60px;
-    font-size: 12px;
-    color: #475569;
-    margin-bottom: 16px;
-    background: #f8fafc;
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-radius: 10px; padding: 12px 14px;
+    min-height: 52px; margin-bottom: 14px;
+    font-size: 12px; color: #78350f;
+  }
+  .obs-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #92400e; margin-bottom: 6px; }
+
+  /* ── AVISO CLIENTE ── */
+  .aviso {
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 11px; color: #1e40af; margin-bottom: 14px;
   }
 
   /* ── ASSINATURAS ── */
   .assinaturas {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px dashed #cbd5e1;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    margin-top: 20px; padding-top: 14px; border-top: 1px dashed #cbd5e1;
   }
-  .assinatura-box { text-align: center; }
-  .assinatura-line {
-    border-top: 1.5px solid #0d2b4e;
-    margin-bottom: 6px;
-    margin-top: 40px;
-  }
-  .assinatura-label { font-size: 10px; color: #64748b; font-weight: 600; }
+  .assin-box { text-align: center; }
+  .assin-line { border-top: 2px solid #1a3a5c; margin-top: 40px; margin-bottom: 6px; }
+  .assin-lbl { font-size: 10px; color: #64748b; font-weight: 600; }
 
   /* ── RODAPÉ ── */
   .footer {
-    margin-top: 20px;
-    padding-top: 12px;
-    border-top: 2px solid #0d2b4e;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 9px;
-    color: #94a3b8;
+    margin-top: 16px; padding-top: 10px;
+    border-top: 2px solid #1a3a5c;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: #94a3b8; font-style: italic;
   }
-  .footer strong { color: #0d2b4e; }
+  .footer strong { color: #1a3a5c; font-style: normal; }
 
-  /* ── VIA ── */
-  .via-label {
-    position: absolute;
-    top: 16mm;
-    right: 18mm;
-    font-size: 8px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #94a3b8;
-    border: 1px solid #e2e8f0;
-    padding: 2px 8px;
-    border-radius: 4px;
+  /* ── STATUS ── */
+  .status-pill {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; margin-top: 6px;
   }
-
-  /* ── SEPARADOR DE VIA ── */
-  .page-break {
-    border: none;
-    border-top: 2px dashed #cbd5e1;
-    margin: 0 18mm;
-    page-break-after: always;
-  }
-
-  /* ── TIPO OS BADGE ── */
-  .tipo-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
-  .tipo-badge.conserto { background: #fef3c7; color: #92400e; }
+  .s-aberta { background: #dbeafe; color: #1d4ed8; }
+  .s-andamento { background: #fef3c7; color: #92400e; }
+  .s-pronta { background: #d1fae5; color: #065f46; }
+  .s-entregue { background: #e0e7ff; color: #3730a3; }
+  .s-cancelada { background: #fee2e2; color: #991b1b; }
 
   /* ── PRINT ── */
   @media print {
     body { background: white; }
     .preview-bar { display: none !important; }
-    .page {
-      margin: 0;
-      box-shadow: none;
-      border-radius: 0;
-      padding: 12mm 15mm;
-      width: 100%;
-      min-height: auto;
-    }
+    .page { margin: 0; box-shadow: none; border-radius: 0; padding: 10mm 13mm; width: 100%; min-height: auto; }
     .page-break { page-break-after: always; }
     @page { size: A4; margin: 0; }
   }
@@ -294,480 +204,410 @@
 </head>
 <body>
 
-<!-- Barra de preview (só na tela) -->
 <div class="preview-bar">
   <div>
-    <h2>📄 Ordem de Serviço — Ótica Horizonte</h2>
-    <small>Preencha os campos em branco manualmente após imprimir</small>
+    <h2>🖨️ Ordem de Serviço — Ótica Horizonte</h2>
+    <small>Formulário em branco para preenchimento manual · 2 vias (Ótica + Cliente)</small>
   </div>
   <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
 </div>
 
-<!-- ════════════════════════════════════════════
+<!-- ══════════════════════════════════════
      VIA DA ÓTICA
-════════════════════════════════════════════ -->
-<div class="page" id="via-otica">
-  <div class="via-label">Via da Ótica</div>
+══════════════════════════════════════ -->
+<div class="page">
+  <div class="via-tag">Via da Ótica</div>
 
   <!-- Cabeçalho -->
   <div class="header">
-    <div class="header-logo">
-      <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
-      <div class="header-info">
-        <h1>Ótica Horizonte</h1>
-        <p>CNPJ: 64.448.745/0001-09<br>
-        Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos<br>
-        2º piso, loja 10 — Manaus/AM<br>
-        <em>Seu olhar, nosso compromisso.</em></p>
-      </div>
+    <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
+    <div class="header-text">
+      <h1>Ótica Horizonte</h1>
+      <p>Seu olhar, nosso compromisso.</p>
+      <p style="font-size:11px;color:#94a3b8;font-style:normal;margin-top:2px;">
+        CNPJ: 64.448.745/0001-09 &nbsp;|&nbsp; Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM
+      </p>
     </div>
     <div class="header-os">
-      <div class="os-badge">
-        <div class="os-label">Ordem de Serviço</div>
-        <div class="os-num" id="os-num-1">OS-____</div>
-        <div class="os-data" id="os-data-1">Data: ___/___/______</div>
+      <div class="os-title-box">
+        <div class="label">Ordem de Serviço</div>
+        <div class="num" id="v1-num">OS-_______</div>
+        <div class="dt" id="v1-data">Data: ___/___/______</div>
       </div>
-      <div style="margin-top:6px;">
-        <span class="status-badge status-aberta" id="os-status-1">Aberta</span>
-      </div>
+      <div><span class="status-pill s-aberta" id="v1-status">Aberta</span></div>
     </div>
   </div>
 
   <!-- Dados do Cliente -->
-  <div class="section-title">👤 Dados do Cliente</div>
-  <div class="data-grid cols-3" style="margin-bottom:16px;">
-    <div class="field" style="grid-column:1/3">
-      <label>Nome do Cliente</label>
-      <div class="value" id="os-cliente-1">&nbsp;</div>
+  <div class="sec-title">👤 Dados do Cliente</div>
+  <div class="cards-row col2" style="margin-bottom:10px;">
+    <div class="info-card blue" style="grid-column:1/2">
+      <div class="lbl">Nome do Cliente</div>
+      <div class="val" id="v1-cliente">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Telefone</label>
-      <div class="value" id="os-tel-1">&nbsp;</div>
+    <div class="info-card blue">
+      <div class="lbl">Telefone / WhatsApp</div>
+      <div class="val" id="v1-tel">&nbsp;</div>
     </div>
-    <div class="field" style="grid-column:1/3">
-      <label>Endereço</label>
-      <div class="value" id="os-end-1">&nbsp;</div>
+  </div>
+  <div class="cards-row col3" style="margin-bottom:16px;">
+    <div class="info-card" style="grid-column:1/3">
+      <div class="lbl">Endereço</div>
+      <div class="val" id="v1-end">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Convênio / Plano</label>
-      <div class="value" id="os-convenio-1">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Convênio / Plano</div>
+      <div class="val" id="v1-convenio">&nbsp;</div>
     </div>
   </div>
 
   <!-- Dados da OS -->
-  <div class="section-title">🔧 Dados da Ordem de Serviço</div>
-  <div class="data-grid cols-3" style="margin-bottom:16px;">
-    <div class="field">
-      <label>Tipo de OS</label>
-      <div class="value" id="os-tipo-1">&nbsp;</div>
+  <div class="sec-title">🔧 Dados da Ordem de Serviço</div>
+  <div class="cards-row col3" style="margin-bottom:10px;">
+    <div class="info-card gold">
+      <div class="lbl">Tipo de OS</div>
+      <div class="val" id="v1-tipo">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Armação (Cód.)</label>
-      <div class="value" id="os-armacao-1">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Armação (Cód.)</div>
+      <div class="val" id="v1-armacao">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Técnico Responsável</label>
-      <div class="value" id="os-tecnico-1">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Técnico Responsável</div>
+      <div class="val" id="v1-tecnico">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Data de Abertura</label>
-      <div class="value" id="os-abertura-1">&nbsp;</div>
+  </div>
+  <div class="cards-row col4" style="margin-bottom:10px;">
+    <div class="info-card">
+      <div class="lbl">Data de Abertura</div>
+      <div class="val" id="v1-abertura">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Previsão de Entrega</label>
-      <div class="value" id="os-previsao-1">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Previsão de Entrega</div>
+      <div class="val" id="v1-previsao">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Vendedor</label>
-      <div class="value" id="os-vendedor-1">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Vendedor</div>
+      <div class="val" id="v1-vendedor">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Tipo de Lente</label>
-      <div class="value" id="os-tipo-lente-1">&nbsp;</div>
+    <div class="info-card gold">
+      <div class="lbl">Valor Total (R$)</div>
+      <div class="val big" id="v1-valor">&nbsp;</div>
     </div>
-    <div class="field" style="grid-column:2/4">
-      <label>Tratamentos</label>
-      <div class="value" id="os-tratamentos-1">&nbsp;</div>
+  </div>
+  <div class="cards-row col2" style="margin-bottom:16px;">
+    <div class="info-card blue">
+      <div class="lbl">🔍 Tipo de Lente</div>
+      <div class="val" id="v1-tipo-lente">&nbsp;</div>
+    </div>
+    <div class="info-card green">
+      <div class="lbl">✨ Tratamentos</div>
+      <div class="val" id="v1-tratamentos">&nbsp;</div>
     </div>
   </div>
 
   <!-- Graus -->
-  <div class="graus-section">
-    <div class="section-title">👁️ Graus da Receita</div>
+  <div class="sec-title">👁️ Graus da Receita</div>
+  <div class="graus-wrap">
     <table class="graus-table">
       <thead>
         <tr>
-          <th>Olho</th>
-          <th>Esférico</th>
-          <th>Cilíndrico</th>
-          <th>Eixo</th>
-          <th>DNP</th>
+          <th style="text-align:left;width:120px;">Distância</th>
+          <th colspan="3">👁️ Olho Direito (OD)</th>
+          <th colspan="3">👁️ Olho Esquerdo (OE)</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
+          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>OD (Longe)</td>
-          <td id="od-esf-1">&nbsp;</td>
-          <td id="od-cil-1">&nbsp;</td>
-          <td id="od-eixo-1">&nbsp;</td>
-          <td id="od-dnp-1">&nbsp;</td>
+        <tr class="longe">
+          <td>LONGE</td>
+          <td id="v1-od-esf">&nbsp;</td><td id="v1-od-cil">&nbsp;</td><td id="v1-od-eixo">&nbsp;</td>
+          <td id="v1-oe-esf">&nbsp;</td><td id="v1-oe-cil">&nbsp;</td><td id="v1-oe-eixo">&nbsp;</td>
         </tr>
-        <tr>
-          <td>OE (Longe)</td>
-          <td id="oe-esf-1">&nbsp;</td>
-          <td id="oe-cil-1">&nbsp;</td>
-          <td id="oe-eixo-1">&nbsp;</td>
-          <td id="oe-dnp-1">&nbsp;</td>
-        </tr>
-        <tr>
-          <td>OD (Perto)</td>
-          <td id="od-perto-esf-1">&nbsp;</td>
-          <td id="od-perto-cil-1">&nbsp;</td>
-          <td id="od-perto-eixo-1">&nbsp;</td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr>
-          <td>OE (Perto)</td>
-          <td id="oe-perto-esf-1">&nbsp;</td>
-          <td id="oe-perto-cil-1">&nbsp;</td>
-          <td id="oe-perto-eixo-1">&nbsp;</td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr class="adicao-row">
-          <td>Adição (ADD)</td>
-          <td id="adicao-1" colspan="4">&nbsp;</td>
+        <tr class="perto">
+          <td>PERTO</td>
+          <td id="v1-od-perto-esf">&nbsp;</td><td id="v1-od-perto-cil">&nbsp;</td><td id="v1-od-perto-eixo">&nbsp;</td>
+          <td id="v1-oe-perto-esf">&nbsp;</td><td id="v1-oe-perto-cil">&nbsp;</td><td id="v1-oe-perto-eixo">&nbsp;</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Médico -->
-  <div class="data-grid" style="margin-bottom:16px;">
-    <div class="field">
-      <label>Médico / CRM</label>
-      <div class="value" id="os-medico-1">&nbsp;</div>
+  <!-- Adição + DNP + Médico -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;">
+    <div class="add-box gold">
+      <div class="lbl">➕ Adição (ADD)</div>
+      <div class="val" id="v1-adicao">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Valor Total (R$)</label>
-      <div class="value" id="os-valor-1" style="font-size:16px;font-weight:800;color:#0d2b4e;">&nbsp;</div>
+    <div class="add-box slate">
+      <div class="lbl">📏 DNP (mm)</div>
+      <div class="val" id="v1-dnp">&nbsp;</div>
+    </div>
+    <div class="info-card" style="border-left-color:#1a3a5c;">
+      <div class="lbl">👨‍⚕️ Médico / CRM</div>
+      <div class="val" id="v1-medico">&nbsp;</div>
     </div>
   </div>
 
   <!-- Observações -->
-  <div class="section-title">📝 Observações / Descrição do Serviço</div>
-  <div class="obs-box" id="os-obs-1">&nbsp;</div>
+  <div class="obs-lbl">📝 Observações / Descrição do Serviço</div>
+  <div class="obs-box" id="v1-obs">&nbsp;</div>
 
   <!-- Assinaturas -->
   <div class="assinaturas">
-    <div class="assinatura-box">
-      <div class="assinatura-line"></div>
-      <div class="assinatura-label">Assinatura do Cliente</div>
+    <div class="assin-box">
+      <div class="assin-line"></div>
+      <div class="assin-lbl">Assinatura do Cliente</div>
     </div>
-    <div class="assinatura-box">
-      <div class="assinatura-line"></div>
-      <div class="assinatura-label">Responsável pela OS — Ótica Horizonte</div>
+    <div class="assin-box">
+      <div class="assin-line"></div>
+      <div class="assin-lbl">Responsável — Ótica Horizonte</div>
     </div>
   </div>
 
   <!-- Rodapé -->
   <div class="footer">
     <span><strong>Ótica Horizonte</strong> — CNPJ 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM</span>
-    <span id="footer-data-1"></span>
+    <span id="v1-rodape"></span>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
+<!-- Separador de vias -->
+<div style="text-align:center;margin:8px auto;width:210mm;font-size:10px;color:#94a3b8;letter-spacing:2px;">
+  ✂ ─────────────────────────────────────────────────────────────────────────────────── ✂
+</div>
+
+<!-- ══════════════════════════════════════
      VIA DO CLIENTE
-════════════════════════════════════════════ -->
-<div class="page" id="via-cliente">
-  <div class="via-label">Via do Cliente</div>
+══════════════════════════════════════ -->
+<div class="page">
+  <div class="via-tag">Via do Cliente</div>
 
   <!-- Cabeçalho -->
   <div class="header">
-    <div class="header-logo">
-      <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
-      <div class="header-info">
-        <h1>Ótica Horizonte</h1>
-        <p>CNPJ: 64.448.745/0001-09<br>
-        Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos<br>
-        2º piso, loja 10 — Manaus/AM<br>
-        <em>Seu olhar, nosso compromisso.</em></p>
-      </div>
+    <img src="icon-192.png" alt="Ótica Horizonte" onerror="this.style.display='none'"/>
+    <div class="header-text">
+      <h1>Ótica Horizonte</h1>
+      <p>Seu olhar, nosso compromisso.</p>
+      <p style="font-size:11px;color:#94a3b8;font-style:normal;margin-top:2px;">
+        CNPJ: 64.448.745/0001-09 &nbsp;|&nbsp; Rua Henrique Martins, 481 — Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM
+      </p>
     </div>
     <div class="header-os">
-      <div class="os-badge">
-        <div class="os-label">Ordem de Serviço</div>
-        <div class="os-num" id="os-num-2">OS-____</div>
-        <div class="os-data" id="os-data-2">Data: ___/___/______</div>
+      <div class="os-title-box">
+        <div class="label">Ordem de Serviço</div>
+        <div class="num" id="v2-num">OS-_______</div>
+        <div class="dt" id="v2-data">Data: ___/___/______</div>
       </div>
-      <div style="margin-top:6px;">
-        <span class="status-badge status-aberta" id="os-status-2">Aberta</span>
-      </div>
+      <div><span class="status-pill s-aberta" id="v2-status">Aberta</span></div>
     </div>
   </div>
 
   <!-- Dados do Cliente -->
-  <div class="section-title">👤 Dados do Cliente</div>
-  <div class="data-grid cols-3" style="margin-bottom:16px;">
-    <div class="field" style="grid-column:1/3">
-      <label>Nome do Cliente</label>
-      <div class="value" id="os-cliente-2">&nbsp;</div>
+  <div class="sec-title">👤 Dados do Cliente</div>
+  <div class="cards-row col2" style="margin-bottom:10px;">
+    <div class="info-card blue">
+      <div class="lbl">Nome do Cliente</div>
+      <div class="val" id="v2-cliente">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Telefone</label>
-      <div class="value" id="os-tel-2">&nbsp;</div>
+    <div class="info-card blue">
+      <div class="lbl">Telefone / WhatsApp</div>
+      <div class="val" id="v2-tel">&nbsp;</div>
     </div>
-    <div class="field" style="grid-column:1/3">
-      <label>Endereço</label>
-      <div class="value" id="os-end-2">&nbsp;</div>
+  </div>
+  <div class="cards-row col3" style="margin-bottom:16px;">
+    <div class="info-card" style="grid-column:1/3">
+      <div class="lbl">Endereço</div>
+      <div class="val" id="v2-end">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Convênio / Plano</label>
-      <div class="value" id="os-convenio-2">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Convênio / Plano</div>
+      <div class="val" id="v2-convenio">&nbsp;</div>
     </div>
   </div>
 
   <!-- Dados da OS -->
-  <div class="section-title">🔧 Dados da Ordem de Serviço</div>
-  <div class="data-grid cols-3" style="margin-bottom:16px;">
-    <div class="field">
-      <label>Tipo de OS</label>
-      <div class="value" id="os-tipo-2">&nbsp;</div>
+  <div class="sec-title">🔧 Dados da Ordem de Serviço</div>
+  <div class="cards-row col3" style="margin-bottom:10px;">
+    <div class="info-card gold">
+      <div class="lbl">Tipo de OS</div>
+      <div class="val" id="v2-tipo">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Armação (Cód.)</label>
-      <div class="value" id="os-armacao-2">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Armação (Cód.)</div>
+      <div class="val" id="v2-armacao">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Técnico Responsável</label>
-      <div class="value" id="os-tecnico-2">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Técnico Responsável</div>
+      <div class="val" id="v2-tecnico">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Data de Abertura</label>
-      <div class="value" id="os-abertura-2">&nbsp;</div>
+  </div>
+  <div class="cards-row col3" style="margin-bottom:10px;">
+    <div class="info-card">
+      <div class="lbl">Data de Abertura</div>
+      <div class="val" id="v2-abertura">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Previsão de Entrega</label>
-      <div class="value" id="os-previsao-2">&nbsp;</div>
+    <div class="info-card">
+      <div class="lbl">Previsão de Entrega</div>
+      <div class="val" id="v2-previsao">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Tipo de Lente</label>
-      <div class="value" id="os-tipo-lente-2">&nbsp;</div>
+    <div class="info-card gold">
+      <div class="lbl">Valor Total (R$)</div>
+      <div class="val big" id="v2-valor">&nbsp;</div>
     </div>
-    <div class="field" style="grid-column:1/4">
-      <label>Tratamentos</label>
-      <div class="value" id="os-tratamentos-2">&nbsp;</div>
+  </div>
+  <div class="cards-row col2" style="margin-bottom:16px;">
+    <div class="info-card blue">
+      <div class="lbl">🔍 Tipo de Lente</div>
+      <div class="val" id="v2-tipo-lente">&nbsp;</div>
+    </div>
+    <div class="info-card green">
+      <div class="lbl">✨ Tratamentos</div>
+      <div class="val" id="v2-tratamentos">&nbsp;</div>
     </div>
   </div>
 
   <!-- Graus -->
-  <div class="graus-section">
-    <div class="section-title">👁️ Graus da Receita</div>
+  <div class="sec-title">👁️ Graus da Receita</div>
+  <div class="graus-wrap">
     <table class="graus-table">
       <thead>
         <tr>
-          <th>Olho</th>
-          <th>Esférico</th>
-          <th>Cilíndrico</th>
-          <th>Eixo</th>
-          <th>DNP</th>
+          <th style="text-align:left;width:120px;">Distância</th>
+          <th colspan="3">👁️ Olho Direito (OD)</th>
+          <th colspan="3">👁️ Olho Esquerdo (OE)</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
+          <th>Esférico</th><th>Cilíndrico</th><th>Eixo</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>OD (Longe)</td>
-          <td id="od-esf-2">&nbsp;</td>
-          <td id="od-cil-2">&nbsp;</td>
-          <td id="od-eixo-2">&nbsp;</td>
-          <td id="od-dnp-2">&nbsp;</td>
+        <tr class="longe">
+          <td>LONGE</td>
+          <td id="v2-od-esf">&nbsp;</td><td id="v2-od-cil">&nbsp;</td><td id="v2-od-eixo">&nbsp;</td>
+          <td id="v2-oe-esf">&nbsp;</td><td id="v2-oe-cil">&nbsp;</td><td id="v2-oe-eixo">&nbsp;</td>
         </tr>
-        <tr>
-          <td>OE (Longe)</td>
-          <td id="oe-esf-2">&nbsp;</td>
-          <td id="oe-cil-2">&nbsp;</td>
-          <td id="oe-eixo-2">&nbsp;</td>
-          <td id="oe-dnp-2">&nbsp;</td>
-        </tr>
-        <tr>
-          <td>OD (Perto)</td>
-          <td id="od-perto-esf-2">&nbsp;</td>
-          <td id="od-perto-cil-2">&nbsp;</td>
-          <td id="od-perto-eixo-2">&nbsp;</td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr>
-          <td>OE (Perto)</td>
-          <td id="oe-perto-esf-2">&nbsp;</td>
-          <td id="oe-perto-cil-2">&nbsp;</td>
-          <td id="oe-perto-eixo-2">&nbsp;</td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr class="adicao-row">
-          <td>Adição (ADD)</td>
-          <td id="adicao-2" colspan="4">&nbsp;</td>
+        <tr class="perto">
+          <td>PERTO</td>
+          <td id="v2-od-perto-esf">&nbsp;</td><td id="v2-od-perto-cil">&nbsp;</td><td id="v2-od-perto-eixo">&nbsp;</td>
+          <td id="v2-oe-perto-esf">&nbsp;</td><td id="v2-oe-perto-cil">&nbsp;</td><td id="v2-oe-perto-eixo">&nbsp;</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Médico + Valor -->
-  <div class="data-grid" style="margin-bottom:16px;">
-    <div class="field">
-      <label>Médico / CRM</label>
-      <div class="value" id="os-medico-2">&nbsp;</div>
+  <!-- Adição + DNP + Médico -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-bottom:16px;">
+    <div class="add-box gold">
+      <div class="lbl">➕ Adição (ADD)</div>
+      <div class="val" id="v2-adicao">&nbsp;</div>
     </div>
-    <div class="field">
-      <label>Valor Total (R$)</label>
-      <div class="value" id="os-valor-2" style="font-size:16px;font-weight:800;color:#0d2b4e;">&nbsp;</div>
+    <div class="add-box slate">
+      <div class="lbl">📏 DNP (mm)</div>
+      <div class="val" id="v2-dnp">&nbsp;</div>
+    </div>
+    <div class="info-card" style="border-left-color:#1a3a5c;">
+      <div class="lbl">👨‍⚕️ Médico / CRM</div>
+      <div class="val" id="v2-medico">&nbsp;</div>
     </div>
   </div>
 
   <!-- Observações -->
-  <div class="section-title">📝 Observações</div>
-  <div class="obs-box" id="os-obs-2">&nbsp;</div>
+  <div class="obs-lbl">📝 Observações</div>
+  <div class="obs-box" id="v2-obs">&nbsp;</div>
 
   <!-- Aviso ao cliente -->
-  <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#1e40af;">
-    <strong>ℹ️ Informações ao Cliente:</strong> Guarde este comprovante para retirada do serviço. 
-    Prazo de garantia: 90 dias para defeitos de fabricação. 
-    Após 30 dias sem retirada, a Ótica Horizonte não se responsabiliza pelo produto.
+  <div class="aviso">
+    <strong>ℹ️ Informações ao Cliente:</strong> Guarde este comprovante para retirada do serviço.
+    Prazo de garantia: <strong>90 dias</strong> para defeitos de fabricação.
+    Após <strong>30 dias</strong> sem retirada, a Ótica Horizonte não se responsabiliza pelo produto.
+  </div>
+
+  <!-- Validade -->
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#166534;text-align:center;">
+    ✅ Receita válida por <strong>1 ano</strong> a partir da data de emissão.
   </div>
 
   <!-- Assinaturas -->
   <div class="assinaturas">
-    <div class="assinatura-box">
-      <div class="assinatura-line"></div>
-      <div class="assinatura-label">Assinatura do Cliente</div>
+    <div class="assin-box">
+      <div class="assin-line"></div>
+      <div class="assin-lbl">Assinatura do Cliente</div>
     </div>
-    <div class="assinatura-box">
-      <div class="assinatura-line"></div>
-      <div class="assinatura-label">Responsável pela OS — Ótica Horizonte</div>
+    <div class="assin-box">
+      <div class="assin-line"></div>
+      <div class="assin-lbl">Responsável — Ótica Horizonte</div>
     </div>
   </div>
 
   <!-- Rodapé -->
   <div class="footer">
     <span><strong>Ótica Horizonte</strong> — CNPJ 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10 — Manaus/AM</span>
-    <span id="footer-data-2"></span>
+    <span id="v2-rodape"></span>
   </div>
 </div>
 
 <script>
-// ── Preencher data de emissão ──
 const agora = new Date();
 const dataStr = agora.toLocaleDateString('pt-BR');
-const horaStr = agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-document.getElementById('footer-data-1').textContent = 'Emitido em ' + dataStr + ' às ' + horaStr;
-document.getElementById('footer-data-2').textContent = 'Emitido em ' + dataStr + ' às ' + horaStr;
+const horaStr = agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+const emitido = 'Emitido em ' + dataStr + ' às ' + horaStr;
+document.getElementById('v1-rodape').textContent = emitido;
+document.getElementById('v2-rodape').textContent = emitido;
 
-// ── Ler dados da URL (query string) ──
-// Exemplo: os_print.html?num=OS-001&cliente=João&...
-const params = new URLSearchParams(window.location.search);
-
+const p = new URLSearchParams(window.location.search);
 function fill(id, val) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (val && val.trim()) {
-    el.textContent = val;
-    el.classList.remove('empty');
-  } else {
-    el.innerHTML = '&nbsp;';
-  }
+  if (val && String(val).trim()) { el.textContent = val; }
+  else { el.innerHTML = '&nbsp;'; }
 }
+function both(suf, val) { fill('v1-'+suf, val); fill('v2-'+suf, val); }
 
-function fillBoth(suffix, val) {
-  fill(suffix + '-1', val);
-  fill(suffix + '-2', val);
-}
-
-// Preencher campos com dados da URL
-const num = params.get('num') || '';
-const data = params.get('data') || '';
-const status = params.get('status') || 'Aberta';
-const cliente = params.get('cliente') || '';
-const tel = params.get('tel') || '';
-const end = params.get('end') || '';
-const convenio = params.get('convenio') || '';
-const tipo = params.get('tipo') || '';
-const armacao = params.get('armacao') || '';
-const tecnico = params.get('tecnico') || '';
-const abertura = params.get('abertura') || '';
-const previsao = params.get('previsao') || '';
-const vendedor = params.get('vendedor') || '';
-const tipoLente = params.get('tipoLente') || '';
-const tratamentos = params.get('tratamentos') || '';
-const odEsf = params.get('odEsf') || '';
-const odCil = params.get('odCil') || '';
-const odEixo = params.get('odEixo') || '';
-const odDnp = params.get('odDnp') || '';
-const oeEsf = params.get('oeEsf') || '';
-const oeCil = params.get('oeCil') || '';
-const oeEixo = params.get('oeEixo') || '';
-const oeDnp = params.get('oeDnp') || '';
-const odPertoEsf = params.get('odPertoEsf') || '';
-const odPertoCil = params.get('odPertoCil') || '';
-const odPertoEixo = params.get('odPertoEixo') || '';
-const oePertoEsf = params.get('oePertoEsf') || '';
-const oePertoCil = params.get('oePertoCil') || '';
-const oePertoEixo = params.get('oePertoEixo') || '';
-const adicao = params.get('adicao') || '';
-const medico = params.get('medico') || '';
-const valor = params.get('valor') || '';
-const obs = params.get('obs') || '';
-
-// Número e data
+const statusMap = { 'Aberta':'s-aberta','Em andamento':'s-andamento','Pronta':'s-pronta','Entregue':'s-entregue','Cancelada':'s-cancelada' };
+const st = p.get('status') || 'Aberta';
 [1,2].forEach(v => {
-  fill('os-num-' + v, num || 'OS-____');
-  fill('os-data-' + v, data ? 'Data: ' + data : 'Data: ___/___/______');
+  fill('v'+v+'-num', p.get('num') || 'OS-_______');
+  fill('v'+v+'-data', p.get('data') ? 'Data: '+p.get('data') : 'Data: ___/___/______');
+  const el = document.getElementById('v'+v+'-status');
+  if (el) { el.textContent = st; el.className = 'status-pill ' + (statusMap[st]||'s-aberta'); }
 });
 
-// Status
-const statusMap = {
-  'Aberta': 'status-aberta',
-  'Em andamento': 'status-andamento',
-  'Pronta': 'status-pronta',
-  'Entregue': 'status-entregue',
-  'Cancelada': 'status-cancelada'
-};
-[1,2].forEach(v => {
-  const el = document.getElementById('os-status-' + v);
-  if (el) {
-    el.textContent = status;
-    el.className = 'status-badge ' + (statusMap[status] || 'status-aberta');
-  }
-});
-
-// Dados
-fillBoth('os-cliente', cliente);
-fillBoth('os-tel', tel);
-fillBoth('os-end', end);
-fillBoth('os-convenio', convenio);
-fillBoth('os-tipo', tipo);
-fillBoth('os-armacao', armacao);
-fillBoth('os-tecnico', tecnico);
-fillBoth('os-abertura', abertura);
-fillBoth('os-previsao', previsao);
-fill('os-vendedor-1', vendedor);
-fillBoth('os-tipo-lente', tipoLente);
-fillBoth('os-tratamentos', tratamentos);
-fillBoth('od-esf', odEsf);
-fillBoth('od-cil', odCil);
-fillBoth('od-eixo', odEixo ? odEixo + '°' : '');
-fillBoth('od-dnp', odDnp);
-fillBoth('oe-esf', oeEsf);
-fillBoth('oe-cil', oeCil);
-fillBoth('oe-eixo', oeEixo ? oeEixo + '°' : '');
-fillBoth('oe-dnp', oeDnp);
-fillBoth('od-perto-esf', odPertoEsf);
-fillBoth('od-perto-cil', odPertoCil);
-fillBoth('od-perto-eixo', odPertoEixo ? odPertoEixo + '°' : '');
-fillBoth('oe-perto-esf', oePertoEsf);
-fillBoth('oe-perto-cil', oePertoCil);
-fillBoth('oe-perto-eixo', oePertoEixo ? oePertoEixo + '°' : '');
-fillBoth('adicao', adicao ? '+' + adicao : '');
-fillBoth('os-medico', medico);
-fillBoth('os-valor', valor ? 'R$ ' + valor : '');
-fillBoth('os-obs', obs);
+both('cliente', p.get('cliente'));
+both('tel', p.get('tel'));
+both('end', p.get('end'));
+both('convenio', p.get('convenio'));
+both('tipo', p.get('tipo'));
+both('armacao', p.get('armacao'));
+both('tecnico', p.get('tecnico'));
+both('abertura', p.get('abertura'));
+both('previsao', p.get('previsao'));
+fill('v1-vendedor', p.get('vendedor'));
+both('tipo-lente', p.get('tipoLente'));
+both('tratamentos', p.get('tratamentos'));
+both('od-esf', p.get('odEsf'));
+both('od-cil', p.get('odCil'));
+both('od-eixo', p.get('odEixo') ? p.get('odEixo')+'°' : '');
+both('oe-esf', p.get('oeEsf'));
+both('oe-cil', p.get('oeCil'));
+both('oe-eixo', p.get('oeEixo') ? p.get('oeEixo')+'°' : '');
+both('od-perto-esf', p.get('odPertoEsf'));
+both('od-perto-cil', p.get('odPertoCil'));
+both('od-perto-eixo', p.get('odPertoEixo') ? p.get('odPertoEixo')+'°' : '');
+both('oe-perto-esf', p.get('oePertoEsf'));
+both('oe-perto-cil', p.get('oePertoCil'));
+both('oe-perto-eixo', p.get('oePertoEixo') ? p.get('oePertoEixo')+'°' : '');
+both('adicao', p.get('adicao') ? '+'+p.get('adicao') : '');
+both('dnp', p.get('dnp'));
+both('medico', p.get('medico'));
+both('valor', p.get('valor') ? 'R$ '+p.get('valor') : '');
+both('obs', p.get('obs'));
 </script>
 </body>
 </html>
