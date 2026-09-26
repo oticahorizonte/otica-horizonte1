@@ -8046,6 +8046,7 @@ function visualizarProduto(cod) {
     + '<div style="font-size:12px;font-weight:700;margin-top:6px">'+statusTxt+'</div></div>'
     + '</div>'
     + ((p.cor||p.local)?'<div style="margin-top:12px;font-size:12px;color:#64748b;display:flex;gap:16px">'+(p.cor?'<span>🎨 Cor: <strong>'+p.cor+'</strong></span>':'')+(p.local?'<span>📍 Local: <strong>'+p.local+'</strong></span>':'')+'</div>':'')
+    + (p.lente && (p.lente.indice||p.lente.material||p.lente.tipo||p.lente.tratamento) ? '<div style="margin-top:12px;background:#eff6ff;border-radius:10px;padding:12px;border-left:4px solid #3b82f6"><div style="font-size:10px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:8px">🔍 Dados da Lente</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">'+(p.lente.indice?'<div><span style="color:#64748b">Índice:</span> <strong>'+p.lente.indice+'</strong></div>':'')+(p.lente.material?'<div><span style="color:#64748b">Material:</span> <strong>'+p.lente.material+'</strong></div>':'')+(p.lente.tipo?'<div><span style="color:#64748b">Tipo:</span> <strong>'+p.lente.tipo+'</strong></div>':'')+(p.lente.tratamento?'<div style="grid-column:1/-1"><span style="color:#64748b">Tratamento:</span> <strong>'+p.lente.tratamento+'</strong></div>':'')+'</div></div>' : '')
     + '</div>';
   document.getElementById('view-prod-content').innerHTML = html;
   openModal('modal-visualizar-produto');
@@ -8095,10 +8096,10 @@ function editProduto(cod) {
   var elMaterial = document.getElementById('prod-lente-material');
   var elTipo = document.getElementById('prod-lente-tipo');
   var elTratamento = document.getElementById('prod-lente-tratamento');
-  if (elIndice) elIndice.value = p.lenteIndice || '';
-  if (elMaterial) elMaterial.value = p.lenteMaterial || '';
-  if (elTipo) elTipo.value = p.lenteTipo || '';
-  if (elTratamento) elTratamento.value = p.lenteTratamento || '';
+  if (elIndice) elIndice.value = (p.lente && p.lente.indice) || p.lenteIndice || '';
+  if (elMaterial) elMaterial.value = (p.lente && p.lente.material) || p.lenteMaterial || '';
+  if (elTipo) elTipo.value = (p.lente && p.lente.tipo) || p.lenteTipo || '';
+  if (elTratamento) elTratamento.value = (p.lente && p.lente.tratamento) || p.lenteTratamento || '';
   // Aplicar regras de categoria (ocultar qtd para servicos, mostrar campos lente)
   onChangeProdCat();
   openModal('modal-produto');
@@ -8123,6 +8124,16 @@ function saveProduto() {
     venda:parseFloat(document.getElementById('prod-venda').value)||0,
     foto:document.getElementById('prod-foto').value||'',
     catalogo:document.getElementById('prod-catalogo').checked||false,
+    lente: (function(){
+      var cat = document.getElementById('prod-cat').value;
+      if (cat !== 'Lente') return null;
+      return {
+        indice: document.getElementById('prod-lente-indice').value.trim()||'',
+        material: document.getElementById('prod-lente-material').value.trim()||'',
+        tipo: document.getElementById('prod-lente-tipo').value.trim()||'',
+        tratamento: document.getElementById('prod-lente-tratamento').value.trim()||''
+      };
+    })()
   };
   if (idx) { const i=arr.findIndex(x=>x.cod===idx); arr[i]=obj; }
   else {
