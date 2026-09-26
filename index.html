@@ -7966,7 +7966,11 @@ function renderProdutos() {
     p.desc.toLowerCase().includes(q.toLowerCase()) ||
     p.cat.toLowerCase().includes(q.toLowerCase()) ||
     (p.marca||'').toLowerCase().includes(q.toLowerCase()) ||
-    (p.modelo||'').toLowerCase().includes(q.toLowerCase())
+    (p.modelo||'').toLowerCase().includes(q.toLowerCase()) ||
+    (p.lente && (p.lente.indice||'').toLowerCase().includes(q.toLowerCase())) ||
+    (p.lente && (p.lente.material||'').toLowerCase().includes(q.toLowerCase())) ||
+    (p.lente && (p.lente.tipo||'').toLowerCase().includes(q.toLowerCase())) ||
+    (p.lente && (p.lente.tratamento||'').toLowerCase().includes(q.toLowerCase()))
   ).sort(function(a, b) {
     // Serviços sempre primeiro
     var aServ = a.cat === 'Serviço' ? 0 : 1;
