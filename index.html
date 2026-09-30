@@ -10325,6 +10325,10 @@ function salvarAgendamento() {
   }
 
   save('agendamentos', agendamentos);
+  // Sync imediato ao Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('agendamentos', load('agendamentos')).catch(function(e){ console.warn('Sync agendamentos error:', e); });
+  }
   closeModal('modal-agend');
   renderAgendamentos();
   renderCalendario();
@@ -10404,7 +10408,7 @@ function renderAgendamentos() {
       <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.obs||'-'}</td>
       <td><span class="badge ${statusMap[a.status]||'badge-gray'}">${a.status}</span></td>
       <td><div class="flex gap-2">
-        <button class="btn btn-sm btn-outline" onclick="editAgendamento(${a.id})" data-tip="Editar agendamento">✏️</button>
+        <button class="btn btn-sm btn-outline" onclick="editarAgendamento(${a.id})" data-tip="Editar agendamento">✏️</button>
         <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>
         ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
       </div></td>
@@ -10412,52 +10416,9 @@ function renderAgendamentos() {
   }).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum agendamento encontrado</td></tr>';
 }
 
-function saveAgendamento() {
-  const clienteId = parseInt(document.getElementById('agend-cliente').value);
-  const data_ = document.getElementById('agend-data').value;
-  const hora = document.getElementById('agend-hora').value;
-  if (!clienteId || !data_ || !hora) { showToast('Preencha cliente, data e horário!','error'); return; }
-  const arr = load('agendamentos');
-  const idx = document.getElementById('agend-idx').value;
-  const obj = {
-    id: idx ? parseInt(idx) : nextId(arr),
-    clienteId, data: data_, hora,
-    tipo: document.getElementById('agend-tipo').value,
-    prof: document.getElementById('agend-prof').value,
-    status: document.getElementById('agend-status').value,
-    obs: document.getElementById('agend-obs').value,
-  };
-  if (idx) { const i=arr.findIndex(x=>x.id===parseInt(idx)); arr[i]=obj; } else arr.push(obj);
-  save('agendamentos', arr);
-  // Sync imediato ao Firebase
-  if (window._firebaseReady && window._fb) {
-    window._fb.saveCollection('agendamentos', load('agendamentos')).catch(function(e){ console.warn('Sync agendamentos error:', e); });
-  }
-  closeModal('modal-agend');
-  renderAgendamentos();
-  showToast(idx ? 'Agendamento atualizado!' : 'Agendamento criado!');
-}
+// saveAgendamento() removida - usar salvarAgendamento()
 
-function editAgendamento(id) {
-  const a = load('agendamentos').find(x=>x.id===id);
-  if (!a) return;
-  populateClienteSelect('agend-cliente');
-  document.getElementById('agend-idx').value = id;
-  document.getElementById('modal-agend-title').textContent = '✏️ Editar Agendamento';
-  document.getElementById('agend-cliente').value = a.clienteId;
-  document.getElementById('agend-data').value = a.data;
-  document.getElementById('agend-hora').value = a.hora;
-  document.getElementById('agend-tipo').value = a.tipo;
-  document.getElementById('agend-prof').value = a.prof||'';
-  document.getElementById('agend-status').value = a.status;
-  document.getElementById('agend-obs').value = a.obs||'';
-  // Preencher campo de busca de cliente
-  var clientes = load('clientes');
-  var cliAgend = clientes.find(function(c){ return c.id===a.clienteId; });
-  var buscaAgendEl = document.getElementById('agend-cliente-busca');
-  if (buscaAgendEl && cliAgend) buscaAgendEl.value = cliAgend.nome;
-  openModal('modal-agend');
-}
+// editAgendamento() removida - usar editarAgendamento()
 
 function confirmarAgend(id) {
   const arr = load('agendamentos');
