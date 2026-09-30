@@ -2868,6 +2868,27 @@ function instalarApp() {
 <div id="dash-metas-ind-body" style="display:grid;gap:10px"></div>
 </div>
 </div>
+<!-- 6b. META DE VENDAS POR VENDEDOR -->
+<div class="card" id="card-meta-vendas" style="margin-bottom:16px;display:none">
+<div class="card-header">
+<h3>🎯 Meta de Vendas por Vendedor</h3>
+</div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Vendedor</th><th>Realizado</th><th>Meta</th><th>Progresso</th></tr></thead>
+<tbody id="meta-vendas-body"></tbody></table>
+</div>
+</div>
+<!-- 6c. INADIMPLÊNCIA (só Admin) -->
+<div class="card" id="card-inadimplencia" style="margin-bottom:16px;display:none">
+<div class="card-header">
+<h3>⚠️ Inadimplência — Crediário Vencido</h3>
+<span id="inadimplencia-total" style="font-size:13px;color:#dc2626;font-weight:700"></span>
+</div>
+<div class="card-body" style="padding:0">
+<table><thead><tr><th>Cliente</th><th>Parcelas</th><th>Total em Atraso</th></tr></thead>
+<tbody id="inadimplencia-body"></tbody></table>
+</div>
+</div>
 <!-- 7. PAGAMENTOS -->
 <div class="card" style="margin-bottom:16px">
 <div class="card-header"><h3>💳 Pagamentos</h3></div>
