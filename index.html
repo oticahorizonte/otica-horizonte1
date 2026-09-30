@@ -10006,11 +10006,164 @@ function imprimirSecao(secaoId, titulo) {
 function imprimirRelatorioCompleto() {
   var periodoLabel = document.getElementById('rel-print-periodo-label') ? document.getElementById('rel-print-periodo-label').textContent : '';
   var dataEmissao = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  // ── Gerar dados COMPLETOS para impressão (sem limite de registros) ──
+  var periodo = document.getElementById('rel-periodo')?.value || 'mes';
+  var hoje = new Date();
+  var dataInicio = new Date();
+  switch(periodo) {
+    case 'hoje': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()); break;
+    case 'semana': dataInicio = new Date(hoje.getTime()-7*86400000); break;
+    case 'mes': dataInicio = new Date(hoje.getFullYear(),hoje.getMonth(),1); break;
+    case 'trimestre': dataInicio = new Date(hoje.getFullYear(),Math.floor(hoje.getMonth()/3)*3,1); break;
+    case 'ano': dataInicio = new Date(hoje.getFullYear(),0,1); break;
+    default: dataInicio = new Date('2000-01-01'); break;
+  }
+  var dataInicioStr = dataInicio.toISOString().slice(0,10);
+  var admin2 = isAdmin();
+  var user2 = loadUser();
+  var meuNome2 = user2 ? (user2.nome||'').toLowerCase() : '';
+  var todasVendas = load('vendas');
+  var todasOS = load('os');
+  var clientes = load('clientes');
+  var produtos = load('produtos');
+  var clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
+  var prodMap = Object.fromEntries(produtos.map(p=>[p.cod,p.desc]));
+  var todasVendasPeriodo = periodo==='tudo' ? todasVendas : todasVendas.filter(v=>(v.data||'')>=dataInicioStr);
+  var os = periodo==='tudo' ? todasOS : todasOS.filter(o=>(o.abertura||'')>=dataInicioStr);
+  var vendas = admin2 ? todasVendasPeriodo : todasVendasPeriodo.filter(v=>(v.vendedor||'').toLowerCase()===meuNome2);
+
+  // OS completo SEM LIMITE
+  var osHtml = os.sort((a,b)=>(b.abertura||'').localeCompare(a.abertura||'')).map(o=>`
+    <tr>
+      <td style="font-weight:700">${o.num||o.id||'-'}</td>
+      <td>${o.abertura?new Date(o.abertura+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+      <td>${clMap[o.clienteId]||o.clienteNome||o.cliente||'-'}</td>
+      <td>${o.tipoOS==='montagem'?'🔵 Montagem':'🔧 Conserto'}</td>
+      <td>${o.tecnico||o.laboratorio||'-'}</td>
+      <td>${o.status||'-'}</td>
+      <td style="text-align:right;font-weight:700">${o.tipoOS==='montagem'?'incluso na venda':fmtMoney(o.valor||0)}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+  var totalOSVal = os.filter(o=>o.tipoOS!=='montagem').reduce((s,o)=>s+(o.valor||0),0);
+
+  // Clientes completo SEM LIMITE
+  var cliVendas = {};
+  todasVendas.forEach(v=>{
+    var cid=v.clienteId||v.cliente||''; if(!cid) return;
+    cliVendas[cid]=cliVendas[cid]||{compras:0,total:0,ultima:''};
+    cliVendas[cid].compras++; cliVendas[cid].total+=calcTotal(v);
+    if((v.data||'')>cliVendas[cid].ultima) cliVendas[cid].ultima=v.data||'';
+  });
+  var cliComCompras = clientes.filter(c=>cliVendas[c.id]&&cliVendas[c.id].compras>0)
+    .sort((a,b)=>(cliVendas[b.id]?.ultima||'').localeCompare(cliVendas[a.id]?.ultima||''));
+  var cliSemCompras = clientes.filter(c=>!cliVendas[c.id]||cliVendas[c.id].compras===0)
+    .sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+  var cliListCompleta = [...cliComCompras, ...cliSemCompras];
+  var cliHtml = cliListCompleta.map(c=>{
+    var cv=cliVendas[c.id]||{compras:0,total:0,ultima:''};
+    var statusCor=c.status==='Inativo'?'color:#f87171':'color:#34d399';
+    return `<tr>
+      <td style="font-weight:600">${c.nome||'-'}</td>
+      <td>${c.tel||c.fone||'-'}</td>
+      <td style="text-align:center">${cv.compras}</td>
+      <td style="font-weight:700">${fmtMoney(cv.total)}</td>
+      <td>${cv.ultima?new Date(cv.ultima+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+      <td><span style="${statusCor};font-weight:600">${c.status||'Ativo'}</span></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+
+  // Top Produtos SEM LIMITE (todos)
+  var prodCount={};
+  vendas.forEach(function(v) {
+    if(v.status==='Cancelado'||v.status==='Pendente') return;
+    var valor=v.totalReal!==undefined?v.totalReal:(v.preco||0)*(v.qtd||1);
+    if(v.tipo==='oculos-completo'||v.produto==='OCULOS-COMPLETO'){
+      var detalhes=v.detalhes||[];
+      var arm=detalhes.find(function(d){return d.isArmacao;});
+      var nome=v.descricaoCompleta||(arm?(arm.desc||arm.nome||arm.cod):'Óculos Completo');
+      var chave=arm?(arm.cod||'OCULOS'):'OCULOS';
+      prodCount[chave]=prodCount[chave]||{desc:nome,qtd:0,total:0};
+      prodCount[chave].qtd+=(v.qtd||1); prodCount[chave].total+=valor; return;
+    }
+    var cod=v.produto||v.cod; if(!cod||cod==='SERVICO') return;
+    var desc=v.descricaoCompleta||v.desc_prod||cod;
+    if((desc||'').toLowerCase().includes('exame')) return;
+    prodCount[cod]=prodCount[cod]||{desc:desc,qtd:0,total:0};
+    prodCount[cod].qtd+=(v.qtd||1); prodCount[cod].total+=valor;
+  });
+  var topProdHtml = Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).map(([cod,d],i)=>
+    `<tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${d.desc}</td><td>${d.qtd}</td><td style="font-weight:700">${fmtMoney(d.total)}</td></tr>`
+  ).join('') || '<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+
+  // Análise Financeira SEM LIMITE
+  var gruposFinMap={}, gruposFinArr=[];
+  var cfg2=window._comissaoVendedor||JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+  var usuarios2=getUsuarios?getUsuarios():[];
+  var admins2=usuarios2.filter(u=>u.nivel==='Admin').map(u=>(u.nome||'').toLowerCase());
+  if(admins2.indexOf('administrador')===-1) admins2.push('administrador');
+  if(admins2.indexOf('admin')===-1) admins2.push('admin');
+  [...vendas].reverse().forEach(function(v){
+    var gk=v.grupoVenda||v.id;
+    if(!gruposFinMap[gk]){gruposFinMap[gk]={v:v,total:0,custo:0,com:0};gruposFinArr.push(gruposFinMap[gk]);}
+    gruposFinMap[gk].total+=calcTotal(v);
+    var custo=v.itens&&v.itens.length>0?v.itens.reduce((s,it)=>s+(it.custo||0)*(it.qtd||1),0):(v.custo||0);
+    gruposFinMap[gk].custo+=custo;
+  });
+  var totRec=0,totCusto=0,totCom=0,totLucro=0,totTaxa=0;
+  var finHtml = gruposFinArr.map(function(grupo){
+    var v=grupo.v; var rec=grupo.total; var custo=grupo.custo;
+    var vend=(v.vendedor||'').toLowerCase();
+    var isAdminVend=admins2.indexOf(vend)!==-1;
+    var pct=0;
+    if(!isAdminVend){var uv=usuarios2.find(u=>(u.nome||'').toLowerCase()===vend);pct=uv?(uv.comissao||cfg2[uv.login]||0):(cfg2[vend]||0);}
+    var com=rec*(pct/100);
+    var taxa=0;
+    if(v.taxaValor&&v.taxaValor>0) taxa=v.taxaValor;
+    else if(typeof calcTaxaVenda==='function'){var tp=calcTaxaVenda(v.pag||'',v.parcelas||1);if(tp>0){var tv=v.totalReal!==undefined?v.totalReal:rec;taxa=tv*(tp/100);}}
+    var lucro=rec-custo-com-taxa;
+    totRec+=rec; totCusto+=custo; totCom+=com; totTaxa+=taxa; totLucro+=lucro;
+    var corLucro=lucro>=0?'color:#16a34a':'color:#dc2626';
+    return `<tr>
+      <td style="font-weight:700">${v.id||'-'}</td>
+      <td>${v.data?new Date(v.data+'T12:00').toLocaleDateString('pt-BR'):'-'}</td>
+      <td>${clMap[v.clienteId]||v.clienteNome||'-'}</td>
+      <td>${v.pag||'-'}</td>
+      <td style="font-weight:700">${fmtMoney(rec)}</td>
+      <td>${fmtMoney(custo)}</td>
+      <td>${fmtMoney(com)}</td>
+      <td>${fmtMoney(taxa)}</td>
+      <td style="font-weight:700;${corLucro}">${fmtMoney(lucro)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
+  var finFootHtml = `<tr style="background:linear-gradient(135deg,#0d2b4e,#1a3a5c);color:white;font-weight:700">
+    <td colspan="4">TOTAIS</td>
+    <td>${fmtMoney(totRec)}</td><td>${fmtMoney(totCusto)}</td>
+    <td>${fmtMoney(totCom)}</td><td>${fmtMoney(totTaxa)}</td>
+    <td style="color:${totLucro>=0?'#34d399':'#f87171'}">${fmtMoney(totLucro)}</td>
+  </tr>`;
+
+  // Montar HTML completo para impressão
   var blocos = document.querySelectorAll('.rel-bloco');
   var html = '';
   blocos.forEach(function(b){
     if(b.offsetParent!==null){
+      var bId = b.id || '';
       var bHtml = b.outerHTML.replace(/class="card-header"/g,'class="bloco-header"');
+      // Substituir dados limitados pelos completos
+      if(bId==='card-rel-os-completo' || b.querySelector('#rel-os-completo')) {
+        bHtml = bHtml.replace(/<tbody id="rel-os-completo">[\s\S]*?<\/tbody>/, '<tbody id="rel-os-completo">' + osHtml + '</tbody>');
+        bHtml = bHtml.replace(/<tfoot id="rel-os-completo-foot">[\s\S]*?<\/tfoot>/, '<tfoot id="rel-os-completo-foot"><tr style="background:#f8fafc;font-weight:700"><td colspan="6">Total OS Conserto</td><td style="text-align:right">' + fmtMoney(totalOSVal) + '</td></tr></tfoot>');
+      }
+      if(b.querySelector('#rel-clientes-completo')) {
+        bHtml = bHtml.replace(/<tbody id="rel-clientes-completo">[\s\S]*?<\/tbody>/, '<tbody id="rel-clientes-completo">' + cliHtml + '</tbody>');
+      }
+      if(b.querySelector('#rel-top-produtos')) {
+        bHtml = bHtml.replace(/<tbody id="rel-top-produtos">[\s\S]*?<\/tbody>/, '<tbody id="rel-top-produtos">' + topProdHtml + '</tbody>');
+      }
+      if(b.querySelector('#rel-financeiro-tbody')) {
+        bHtml = bHtml.replace(/<tbody id="rel-financeiro-tbody">[\s\S]*?<\/tbody>/, '<tbody id="rel-financeiro-tbody">' + finHtml + '</tbody>');
+        bHtml = bHtml.replace(/<tfoot id="rel-financeiro-tfoot">[\s\S]*?<\/tfoot>/, '<tfoot id="rel-financeiro-tfoot">' + finFootHtml + '</tfoot>');
+      }
       html += '<div class="bloco">' + bHtml + '</div>';
     }
   });
