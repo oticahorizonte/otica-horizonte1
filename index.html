@@ -9123,7 +9123,7 @@ function atualizarStatusOS(id) {
   const novo = prompt('Novo status:\n' + statuses.map((s,i)=>`${i+1}. ${s}`).join('\n') + '\n\nDigite o número:');
   if (!novo || !statuses[parseInt(novo)-1]) return;
   const arr = load('os');
-  const i = arr.findIndex(x=>x.id===id);
+  const i = arr.findIndex(x=>String(x.id)===String(id));
   if (i>=0) {
     var statusAnterior = arr[i].status;
     arr[i].status = statuses[parseInt(novo)-1];
@@ -10317,7 +10317,7 @@ function salvarAgendamento() {
   };
 
   if (idx) {
-    var i = agendamentos.findIndex(function(a){ return a.id === idx; });
+    var i = agendamentos.findIndex(function(a){ return String(a.id) === String(idx); });
     if (i !== -1) agendamentos[i] = agend;
     else agendamentos.push(agend);
   } else {
@@ -10337,7 +10337,7 @@ function salvarAgendamento() {
 
 function editarAgendamento(id) {
   var agendamentos = load('agendamentos');
-  var agend = agendamentos.find(function(a){ return a.id === id; });
+  var agend = agendamentos.find(function(a){ return String(a.id) === String(id); });
   if (!agend) return;
 
   document.getElementById('agend-idx').value = agend.id;
@@ -10405,12 +10405,12 @@ function renderAgendamentos() {
       <td>${clMap[a.clienteId]||'-'}</td>
       <td><span class="badge badge-info">${a.tipo}</span></td>
       <td>${a.prof||'-'}</td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.obs||'-'}</td>
+      <td style="max-width:180px;font-size:12px;white-space:pre-wrap;word-break:break-word">${(a.obs||'-').replace(/\n/g,'<br>')}</td>
       <td><span class="badge ${statusMap[a.status]||'badge-gray'}">${a.status}</span></td>
       <td><div class="flex gap-2">
-        <button class="btn btn-sm btn-outline" onclick="editarAgendamento(${a.id})" data-tip="Editar agendamento">✏️</button>
-        <button class="btn btn-sm btn-success" onclick="confirmarAgend(${a.id})" data-tip="Confirmar/Realizar">✅</button>
-        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="delAgendamento(${a.id})" data-tip="Excluir agendamento">🗑️</button>`:''}
+        <button class="btn btn-sm btn-outline" onclick="editarAgendamento('${a.id}')" data-tip="Editar agendamento">✏️</button>
+        <button class="btn btn-sm btn-success" onclick="confirmarAgend('${a.id}')" data-tip="Confirmar/Realizar">✅</button>
+        <button class="btn btn-sm" onclick="whatsappAgendamento('${a.id}')" data-tip=\"Lembrete WhatsApp\" style=\"background:#16a34a;color:white\">📱</button>
       </div></td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" class="text-center" style="padding:30px;color:var(--text-muted)">Nenhum agendamento encontrado</td></tr>';
@@ -10434,10 +10434,48 @@ function confirmarAgend(id) {
 
 function delAgendamento(id) {
   confirmar('Excluir agendamento?', function() {
-  save('agendamentos', load('agendamentos').filter(a=>a.id!==id));
+  save('agendamentos', load('agendamentos').filter(a=>String(a.id)!==String(id)));
   renderAgendamentos();
   showToast('Agendamento excluído!','warning');
   });
+}
+
+function whatsappAgendamento(id) {
+  var agend = load('agendamentos').find(function(a){ return String(a.id) === String(id); });
+  if (!agend) return;
+  var clientes = load('clientes');
+  var cli = clientes.find(function(c){ return String(c.id) === String(agend.clienteId); });
+  var nome = agend.clienteNome || (cli && cli.nome) || 'Cliente';
+  var primeiroNome = nome.split(' ')[0];
+  var tel = cli && cli.tel ? cli.tel.replace(/\D/g,'') : '';
+  var data = fmtDate(agend.data);
+  var hora = agend.hora || '';
+  var tipo = agend.tipo || 'Consulta';
+  var prof = agend.prof ? '\n👨‍⚕️ Profissional: ' + agend.prof : '';
+  var obs = agend.obs ? '\n📝 Obs: ' + agend.obs : '';
+  var msg = 'Olá ' + primeiroNome + '! 😊'
+    + '\n\nPassando para lembrar do seu agendamento na Ótica Horizonte:'
+    + '\n\n📅 Data: ' + data
+    + '\n🕐 Horário: ' + hora
+    + '\n📋 Tipo: ' + tipo
+    + prof
+    + obs
+    + '\n\nQualquer dúvida estamos à disposição!'
+    + '\n\n_Ótica Horizonte — Seu olhar, nosso compromisso._';
+  // Mostrar preview no modal WhatsApp existente
+  var preview = document.getElementById('whatsapp-msg-preview');
+  var copiado = document.getElementById('whatsapp-copiado');
+  if (preview) {
+    preview.innerHTML = msg.replace(/\n/g,'<br>');
+    preview.dataset.msg = msg;
+  }
+  if (copiado) copiado.style.display = 'none';
+  // Se tiver número, abrir direto; senão abrir modal para copiar
+  if (tel && tel.length >= 10) {
+    window.open('https://wa.me/55' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+  } else {
+    openModal('modal-whatsapp');
+  }
 }
 
 // ── COMISSÕES ────────────────────────────────────────────────────
