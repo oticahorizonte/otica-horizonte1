@@ -3322,30 +3322,35 @@ function instalarApp() {
 <!-- ── COMISSÕES ── -->
 <section class="section" id="sec-comissoes">
 <div class="topbar">
-<h1>💈 Comissão de Vendedores</h1>
+<h1>🤝 Comissões por Indicação</h1>
 <div class="topbar-actions">
-<!-- Select de comissao removido - % definido por vendedor em Usuarios -->
-</div>
-</div>
-<!-- Configuracao de comissao movida para modulo Usuarios -->
-<div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd">
-<div class="card-body" style="padding:14px">
-<p style="font-size:13px;color:#0369a1">ℹ️ A comissão de cada vendedor é definida no módulo <strong>Usuários</strong> — campo "Comissão (%)" no cadastro de cada vendedor.</p>
+<select id="comissao-filtro-status" onchange="renderComissoes()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="todos">Todos</option>
+<option value="pendente">Pendentes</option>
+<option value="pago">Pagos</option>
+</select>
+<select id="comissao-filtro-periodo" onchange="renderComissoes()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px">
+<option value="mes">Este Mês</option>
+<option value="mes_ant">Mês Anterior</option>
+<option value="tudo">Todo o Período</option>
+</select>
+<input id="comissao-filtro-nome" oninput="renderComissoes()" placeholder="🔍 Filtrar por indicador..." style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;min-width:180px"/>
 </div>
 </div>
 <div class="cards-grid" id="comissao-cards"></div>
 <div class="card">
-<div class="card-header"><h3>Relatório de Comissões por Vendedor</h3></div>
-<div class="card-body" style="padding:0;overflow-x:hidden">
-<table><thead><tr><th>Vendedor</th><th>Qtd. Vendas</th><th>Receita Total</th><th>% Comissão</th><th>Valor Comissão</th><th>Participação</th></tr></thead>
-<tbody id="tb-comissoes"></tbody></table>
+<div class="card-header">
+<h3>📋 Histórico de Comissões</h3>
+<small style="color:var(--text-muted);font-size:11px">10% sobre cada venda indicada</small>
 </div>
-</div>
-<div class="card" style="margin-top:20px">
-<div class="card-header"><h3>📋 Vendas Detalhadas por Vendedor</h3></div>
 <div class="card-body" style="padding:0;overflow-x:hidden">
-<table><thead><tr><th>Nº Venda</th><th>Data</th><th>Vendedor</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Comissão</th></tr></thead>
-<tbody id="tb-comissoes-det"></tbody></table>
+<table id="tb-comissoes-table">
+<thead><tr>
+<th>Nº Venda</th><th>Data</th><th>Cliente</th><th>Valor Venda</th>
+<th>Indicador</th><th>Comissão (10%)</th><th>Status</th><th>Pago em</th><th>Ação</th>
+</tr></thead>
+<tbody id="tb-comissoes"></tbody>
+</table>
 </div>
 </div>
 </section>
@@ -4263,11 +4268,17 @@ function instalarApp() {
 <input id="venda-hora" style="width:80px;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;outline:none;cursor:pointer;color-scheme:dark" type="time"/>
 </div>
 </div>
-<!-- Vendedor — linha inteira -->
+<!-- Vendedor + Indicado por — linha inteira -->
 <div style="margin-bottom:8px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
 <div>
 <label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">🏷️ Vendedor</label>
 <input id="venda-vendedor" placeholder="Vendedor" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;font-weight:600;outline:none;box-sizing:border-box"/>
+</div>
+<div>
+<label style="font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px">🤝 Indicado por <span style="color:rgba(255,255,255,.4);font-size:9px">(opcional)</span></label>
+<input id="venda-indicador" placeholder="Nome do indicador" style="width:100%;padding:7px 8px;background:rgba(255,255,255,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:#fff;font-size:12px;font-weight:600;outline:none;box-sizing:border-box"/>
+</div>
 </div>
 <!-- Pagamento -->
 <div>
@@ -8657,6 +8668,7 @@ function saveVenda() {
   const parcelas = document.getElementById('venda-parcelas').value;
   const status = document.getElementById('venda-status').value;
   const vendedor = document.getElementById('venda-vendedor').value;
+  const indicador = (document.getElementById('venda-indicador')||{}).value || '';
 
   var crediarioData = null;
   if (pag === 'Crediário Próprio') {
@@ -11224,155 +11236,120 @@ function confirmarOSCaixa() {
 
 function renderComissoes() {
   if(!document.getElementById('tb-comissoes')) return;
-  var admin = isAdmin();
-  var user = loadUser();
-  var meuNome = user ? (user.nome||'').toLowerCase() : '';
 
-  // Ocultar elementos exclusivos do admin
-  var cardConfig = document.getElementById('card-config-comissao');
-  if (cardConfig) cardConfig.style.display = admin ? '' : 'none';
-  // select de comissao removido - nao precisa mais ocultar
-
-  // Carregar usuários para buscar comissão correta por nome ou login
-  var usuariosComissao = getUsuarios ? getUsuarios() : [];
-  // Criar mapa: nome_lower → comissao e login_lower → comissao
-  var comissaoMap = {};
-  usuariosComissao.forEach(function(u) {
-    var pctU = parseFloat(u.comissao) || 0;
-    if (u.nome) comissaoMap[(u.nome||'').toLowerCase()] = pctU;
-    if (u.login) comissaoMap[(u.login||'').toLowerCase()] = pctU;
-  });
+  var clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
   var todasVendas = load('vendas');
-  // Vendedor vê apenas suas próprias vendas
-  var vendas = admin ? todasVendas : todasVendas.filter(function(v){ return (v.vendedor||'').toLowerCase() === meuNome; });
 
-  const clMap = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
-  const prodMap = Object.fromEntries(load('produtos').map(p=>[p.cod,p.desc]));
-  var cfg = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
+  // Filtros
+  var filtroStatus = (document.getElementById('comissao-filtro-status')||{}).value || 'todos';
+  var filtroPeriodo = (document.getElementById('comissao-filtro-periodo')||{}).value || 'mes';
+  var filtroNome = ((document.getElementById('comissao-filtro-nome')||{}).value || '').toLowerCase().trim();
 
-  // Agrupar por vendedor
-  const vendedores = {};
-  // Mapear usuários admins para excluir das comissões
-  var usuariosArr = getUsuarios ? getUsuarios() : [];
-  var adminsNomes = usuariosArr
-    .filter(function(u){ return u.nivel === 'Admin'; })
-    .map(function(u){ return (u.nome||'').toLowerCase(); });
-  // Sempre incluir 'administrador' e 'admin' como admins
-  if (adminsNomes.indexOf('administrador') === -1) adminsNomes.push('administrador');
-  if (adminsNomes.indexOf('admin') === -1) adminsNomes.push('admin');
+  // Filtro de período
+  var hoje = new Date();
+  var mesAtual = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+  var mesAnt = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+  var mesAntStr = mesAnt.getFullYear()+'-'+String(mesAnt.getMonth()+1).padStart(2,'0');
 
-  vendas.forEach(v => {
-    const vend = v.vendedor || 'Não informado';
-    // Excluir todos os admins das comissoes
-    if (adminsNomes.indexOf(vend.toLowerCase()) !== -1) return;
-    if (!vendedores[vend]) vendedores[vend] = {qtd:0, total:0, vendas:[]};
-    const tot = calcTotal(v);
-    vendedores[vend].qtd++;
-    vendedores[vend].total += tot;
-    vendedores[vend].vendas.push(v);
+  // Apenas vendas com indicador preenchido
+  var vendasIndicadas = todasVendas.filter(function(v) {
+    if (!v.indicador || !v.indicador.trim()) return false;
+    if (v.status === 'Cancelado') return false;
+    if (filtroPeriodo === 'mes' && !(v.data||'').startsWith(mesAtual)) return false;
+    if (filtroPeriodo === 'mes_ant' && !(v.data||'').startsWith(mesAntStr)) return false;
+    if (filtroNome && !(v.indicador||'').toLowerCase().includes(filtroNome)) return false;
+    return true;
   });
 
-  const totalGeral = Object.values(vendedores).reduce((s,v)=>s+v.total,0);
-  const totalComissao = Object.entries(vendedores).reduce(function(s,[vend,d]){
-    var p = comissaoMap[vend.toLowerCase()] || parseFloat(cfg2[vend.toLowerCase()]) || 0;
-    return s + d.total*(p/100);
-  },0);
+  // Carregar histórico de pagamentos de comissão
+  var histComissoes = JSON.parse(localStorage.getItem('otica_comissoes_pagas') || '{}');
 
-  // Cards — vendedor vê apenas suas próprias informações
-  if (admin) {
-    document.getElementById('comissao-cards').innerHTML = `
-      <div class="stat-card green"><div class="label">Receita Total</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} vendas</div></div>
-      <div class="stat-card orange"><div class="label">Total Comissões</div><div class="value">${fmtMoney(totalComissao)}</div><div class="sub">a pagar</div></div>
-      <div class="stat-card"><div class="label">Vendedores</div><div class="value">${Object.keys(vendedores).length}</div><div class="sub">ativos</div></div>
-    `;
-  } else {
-    var minhaComissao = totalGeral * (comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0)/100;
-    // Buscar meta individual do vendedor
-    var metas = JSON.parse(localStorage.getItem('otica_metas_vendas') || '{}');
-    var userLogado = loadUser();
-    var nomeCompleto = userLogado ? (userLogado.nome || '') : '';
-    var metaVendedor = parseFloat(metas[nomeCompleto] || metas[meuNome] || 0);
-    var pctMeta = metaVendedor > 0 ? Math.min(100, totalGeral / metaVendedor * 100) : 0;
-    var corMeta = pctMeta >= 100 ? '#16a34a' : pctMeta >= 70 ? '#f59e0b' : '#e11d48';
-    var faltaMeta = Math.max(0, metaVendedor - totalGeral);
-    var metaHtml = metaVendedor > 0
-      ? `<div style="margin-top:6px">
-          <div style="background:rgba(255,255,255,.2);border-radius:6px;height:8px;overflow:hidden;margin-bottom:4px">
-            <div style="height:100%;border-radius:6px;background:${corMeta};width:${pctMeta.toFixed(1)}%;transition:width .5s"></div>
-          </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.8);display:flex;justify-content:space-between">
-            <span>${pctMeta.toFixed(1)}% da meta</span>
-            <span>${faltaMeta > 0 ? 'Faltam ' + fmtMoney(faltaMeta) : '✅ Meta atingida!'}</span>
-          </div>
-        </div>`
-      : '<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px">Meta não definida pelo admin</div>';
-    document.getElementById('comissao-cards').innerHTML = `
-      <div class="stat-card green"><div class="label">💰 Minhas Vendas</div><div class="value">${fmtMoney(totalGeral)}</div><div class="sub">${vendas.length} venda(s) este mês</div></div>
-      <div class="stat-card orange"><div class="label">💈 Minha Comissão</div><div class="value">${fmtMoney(minhaComissao)}</div><div class="sub">${comissaoMap[meuNome]||parseFloat(cfg[meuNome])||0}% sobre vendas</div></div>
-      <div class="stat-card" style="background:linear-gradient(135deg,#1e3a5c,#0d2b4e);grid-column:span 2">
-        <div class="label">🎯 Minha Meta Mensal</div>
-        <div class="value" style="font-size:18px">${metaVendedor > 0 ? fmtMoney(metaVendedor) : 'Não definida'}</div>
-        ${metaHtml}
-      </div>
-    `;
+  // Montar lista de comissões
+  var comissoes = vendasIndicadas.map(function(v) {
+    var valorVenda = calcTotal(v);
+    var valorComissao = valorVenda * 0.10;
+    var chave = v.id || v.grupoVenda || '';
+    var pago = histComissoes[chave] || null;
+    return {
+      vendaId: v.id || '-',
+      data: v.data || '',
+      cliente: clMap[v.clienteId] || v.clienteNome || '-',
+      valorVenda: valorVenda,
+      indicador: v.indicador || '-',
+      valorComissao: valorComissao,
+      status: pago ? 'pago' : 'pendente',
+      dataPagamento: pago ? pago.data : '',
+      chave: chave
+    };
+  });
+
+  // Filtro de status
+  if (filtroStatus === 'pendente') comissoes = comissoes.filter(function(c){ return c.status === 'pendente'; });
+  if (filtroStatus === 'pago') comissoes = comissoes.filter(function(c){ return c.status === 'pago'; });
+
+  // Ordenar por data desc
+  comissoes.sort(function(a,b){ return (b.data > a.data) ? 1 : -1; });
+
+  // Cards resumo
+  var totalPendente = comissoes.filter(function(c){ return c.status === 'pendente'; }).reduce(function(s,c){ return s+c.valorComissao; },0);
+  var totalPago = comissoes.filter(function(c){ return c.status === 'pago'; }).reduce(function(s,c){ return s+c.valorComissao; },0);
+  var indicadores = [...new Set(comissoes.map(function(c){ return c.indicador; }))].length;
+
+  var cardsEl = document.getElementById('comissao-cards');
+  if (cardsEl) cardsEl.innerHTML = `
+    <div class="stat-card orange"><div class="label">⏳ A Pagar</div><div class="value">${fmtMoney(totalPendente)}</div><div class="sub">${comissoes.filter(c=>c.status==='pendente').length} comissões</div></div>
+    <div class="stat-card green"><div class="label">✅ Pago</div><div class="value">${fmtMoney(totalPago)}</div><div class="sub">${comissoes.filter(c=>c.status==='pago').length} comissões</div></div>
+    <div class="stat-card"><div class="label">🤝 Indicadores</div><div class="value">${indicadores}</div><div class="sub">pessoas</div></div>
+    <div class="stat-card"><div class="label">📊 Total Geral</div><div class="value">${fmtMoney(totalPendente+totalPago)}</div><div class="sub">no período</div></div>
+  `;
+
+  // Tabela
+  var tbody = document.getElementById('tb-comissoes');
+  if (!tbody) return;
+
+  if (comissoes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:30px;text-align:center;color:var(--text-muted)">Nenhuma venda com indicador no período</td></tr>';
+    return;
   }
 
-  document.getElementById('tb-comissoes').innerHTML = Object.entries(vendedores).map(function(entry) {
-    var vend = entry[0]; var d = entry[1];
-    // Buscar comissão: primeiro pelo nome, depois pelo login, depois pelo cfg
-    var cfg2 = window._comissaoVendedor || JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-    var pctVend = comissaoMap[vend.toLowerCase()] || parseFloat(cfg2[vend.toLowerCase()]) || 0;
-    return '<tr>'
-      +'<td><strong>'+vend+'</strong></td>'
-      +'<td>'+d.qtd+'</td>'
-      +'<td class="fw-bold">'+fmtMoney(d.total)+'</td>'
-      +'<td>'+pctVend+'%</td>'
-      +'<td class="fw-bold text-success">'+fmtMoney(d.total*pctVend/100)+'</td>'
-      +'<td><span class="badge badge-info">'+fmtPct(totalGeral?d.total/totalGeral*100:0)+' do total</span></td>'
-      +'</tr>';
-  }).join('') || '<tr><td colspan="6" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda registrada</td></tr>';
-
-  // Filtrar vendas de admins nas vendas detalhadas
-  var vendasSemAdmin = vendas.filter(function(v) {
-    return adminsNomes.indexOf((v.vendedor||'').toLowerCase()) === -1;
-  });
-  // Agrupar vendas por grupoVenda
-  var gruposVistosC = {};
-  var vendasAgrupadasC = [];
-  var pctComissaoV = comissaoMap[meuNome] || parseFloat(cfg[meuNome]) || 0;
-  [...vendasSemAdmin].reverse().forEach(function(v) {
-    var gk = v.grupoVenda || v.id;
-    if (!gruposVistosC[gk]) {
-      gruposVistosC[gk] = {v:v, itens:[], total:0, comissao:0};
-      vendasAgrupadasC.push(gruposVistosC[gk]);
-    }
-    gruposVistosC[gk].itens.push(v);
-    gruposVistosC[gk].total += calcTotal(v);
-    gruposVistosC[gk].comissao += calcTotal(v) * pctComissaoV / 100;
-  });
-  document.getElementById('tb-comissoes-det').innerHTML = vendasAgrupadasC.length ? vendasAgrupadasC.map(function(grupo) {
-    var v = grupo.v;
-    var temMultiplos = grupo.itens.length > 1;
-    var descricao = temMultiplos
-      ? '🛒 Compra com ' + grupo.itens.length + ' itens'
-      : (v.descricaoCompleta || (v.produto==='OCULOS-COMPLETO'?'Óculos Completo':(prodMap[v.produto]||v.produto||'-')));
-    var subDesc = temMultiplos
-      ? grupo.itens.map(function(i){ return prodMap[i.produto]||i.descricaoCompleta||i.produto||'-'; }).join(' | ')
-      : ((v.produto==='OCULOS-COMPLETO'&&v.detalhes) ? v.detalhes.map(function(d){return d.nome||d.cod;}).join(' | ')+(v.exame>0?' | Exame: '+fmtMoney(v.exame):'') : '');
-    var badge = temMultiplos ? '<span style="background:#1a3a5c;color:white;font-size:10px;padding:2px 6px;border-radius:8px;margin-left:4px">'+grupo.itens.length+' itens</span>' : '';
-    return '<tr>' +
-      '<td><strong>' + v.id + badge + '</strong></td>' +
-      '<td>' + fmtDate(v.data) + '</td>' +
-      '<td>' + (v.vendedor||'Não informado') + '</td>' +
-      '<td>' + (clMap[v.clienteId]||'-') + '</td>' +
-      '<td><div style="font-weight:600">' + descricao + '</div>' +
-        (subDesc ? '<div style="font-size:11px;color:#94a3b8;font-style:italic;margin-top:2px">'+subDesc+'</div>' : '') +
-      '</td>' +
-      '<td class="fw-bold">' + fmtMoney(grupo.total) + '</td>' +
-      '<td class="fw-bold text-success">' + fmtMoney(grupo.comissao) + '</td>' +
-    '</tr>';
-  }).join('') : '<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma venda</td></tr>';
+  tbody.innerHTML = comissoes.map(function(c) {
+    var isPago = c.status === 'pago';
+    var statusBadgeHtml = isPago
+      ? '<span class="badge badge-success">✅ Pago</span>'
+      : '<span class="badge badge-warning">⏳ Pendente</span>';
+    var acaoHtml = isPago
+      ? '<span style="color:#94a3b8;font-size:11px">—</span>'
+      : `<button class="btn btn-sm btn-success" onclick="pagarComissao('${c.chave}')" data-tip="Marcar como pago">✅ Pagar</button>`;
+    return `<tr style="${!isPago ? 'background:#fffbeb' : ''}">
+      <td><strong>${c.vendaId}</strong></td>
+      <td>${fmtDate(c.data)}</td>
+      <td>${c.cliente}</td>
+      <td class="fw-bold" style="color:#16a34a">${fmtMoney(c.valorVenda)}</td>
+      <td><strong style="color:#0d2b4e">${c.indicador}</strong></td>
+      <td class="fw-bold" style="color:#d97706;font-size:15px">${fmtMoney(c.valorComissao)}</td>
+      <td>${statusBadgeHtml}</td>
+      <td style="font-size:11px;color:#64748b">${c.dataPagamento ? fmtDate(c.dataPagamento) : '—'}</td>
+      <td>${acaoHtml}</td>
+    </tr>`;
+  }).join('');
 }
+
+function pagarComissao(chave) {
+  confirmar('Marcar esta comissão como paga?', function() {
+    var hist = JSON.parse(localStorage.getItem('otica_comissoes_pagas') || '{}');
+    var hoje = new Date();
+    var dataHoje = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+    hist[chave] = { data: dataHoje, ts: Date.now() };
+    localStorage.setItem('otica_comissoes_pagas', JSON.stringify(hist));
+    // Sync Firebase
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection('comissoes_pagas', hist).catch(function(){});
+    }
+    showToast('✅ Comissão marcada como paga!', 'success');
+    renderComissoes();
+  });
+}
+
 
 // ── HISTÓRICO DO CLIENTE ─────────────────────────────────────────
 function verHistorico(id) {
@@ -11917,6 +11894,7 @@ function saveOrcamentoNovo() {
     parcelas: parcelas,
     crediario: crediarioData,
     vendedor: vendedor,
+    indicador: indicador || '',
     obs: (document.getElementById('orc-obs') ? document.getElementById('orc-obs').value.trim() : ''),
     status: 'pendente'
   };
@@ -14267,6 +14245,7 @@ function initVendaModal() {
   // Vendedor
   var user = loadUser();
   var vendEl = document.getElementById('venda-vendedor');
+  var indEl = document.getElementById('venda-indicador'); if(indEl) indEl.value = '';
   if (vendEl && user) vendEl.value = user.nome || '';
 
   // Status padrao
@@ -14724,6 +14703,7 @@ function salvarOrcamentoVendaUnif() {
     desc: descItens,
     pag: pag,
     vendedor: vendedor,
+    indicador: indicador || '',
     status: 'aberto'
   };
   arr.push(obj);
@@ -14821,6 +14801,7 @@ function registrarVendaUnif() {
       detalhes: itensGrupo.map(function(i){ return {cod:i.cod, nome:i.nome, qtd:i.qtd, preco:i.preco, isArmacao:!!i.isArmacao, isLente:!!i.isLente, isExame:!!i.isExame}; }),
       custo: itensGrupo.reduce(function(s,i){ return s+(i.custo||0)*i.qtd; },0),
       pag: pag, parcelas: parcelas, status: status, vendedor: vendedor,
+    indicador: indicador || '',
       crediario: crediarioData ? {entrada:crediarioData.entrada, entradaPag:crediarioData.entradaPag, entradaParc:crediarioData.entradaParc, parcelas:crediarioData.parcelas} : null
     };
     arr.push(venda);
