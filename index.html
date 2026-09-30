@@ -3238,11 +3238,11 @@ function instalarApp() {
 <!-- 7. COMISSÕES POR VENDEDOR (só Admin) -->
 <div class="card rel-bloco" id="rel-comissoes-admin" style="margin-bottom:20px">
 <div class="card-header" style="background:linear-gradient(135deg,#0f2744,#1a3a5c);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between">
-<h3 style="color:#fff">🏷️ Comissões por Vendedor (Admin)</h3>
-<button onclick="imprimirSecao('rel-bloco-comissoes','Comissões por Vendedor')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
+<h3 style="color:#fff">🤝 Comissões por Indicação (Admin)</h3>
+<button onclick="imprimirSecao('rel-bloco-comissoes','Comissões por Indicação')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">🖨️</button>
 </div>
 <div class="card-body" id="rel-bloco-comissoes" style="padding:0">
-<table><thead><tr><th>Vendedor</th><th>Nº Vendas</th><th>Receita</th><th>% Comissão</th><th style=\"text-align:right\">Taxa</th><th style="text-align:right">Valor a Pagar</th></tr></thead>
+<table><thead><tr><th>Nº Venda</th><th>Data</th><th>Cliente</th><th>Indicador</th><th style="text-align:right">Valor Venda</th><th style="text-align:right">Comissão (10%)</th><th>Status</th></tr></thead>
 <tbody id="rel-comissoes-tbody"></tbody>
 <tfoot id="rel-comissoes-tfoot"></tfoot></table>
 </div>
@@ -9618,18 +9618,37 @@ function renderRelatorios() {
     var comAdminEl=document.getElementById('rel-comissoes-admin');
     if(comAdminEl) comAdminEl.style.display='block';
     if(comEl){
-      var cfg=window._comissaoVendedor||JSON.parse(localStorage.getItem('otica_config_comissao')||'{}');
-      var usuarios=getUsuarios?getUsuarios():[];
-      var vendedores=usuarios.filter(u=>u.nivel!=='Admin');
-      var totalComissao=0;
-      comEl.innerHTML=vendedores.map(u=>{
-        var pct = parseFloat(u.comissao) || parseFloat(cfg[u.login]) || parseFloat(cfg[u.nome]) || 0;
-        var uvs=todasVendasPeriodo.filter(v=>(v.vendedor||'').toLowerCase()===(u.nome||'').toLowerCase()||(v.vendedor||'').toLowerCase()===u.login);
-        var rec=calcReceitaGrupos(uvs);
-        var com=rec*(pct/100);
-        totalComissao+=com;
-        return `<tr><td style="font-weight:600">${u.nome}</td><td>${uvs.length}</td><td>${fmtMoney(rec)}</td><td>${pct}%</td><td style="text-align:right;font-weight:700;color:#c9a84c">${fmtMoney(com)}</td></tr>`;}).join('')||'<tr><td colspan="5" style="padding:16px;text-align:center;color:#94a3b8">Sem vendedores</td></tr>';
-      if(comFoot) comFoot.innerHTML=`<tr style="background:#f8fafc;font-weight:700"><td colspan="4">Total a Pagar</td><td style="text-align:right;color:#c9a84c">${fmtMoney(totalComissao)}</td></tr>`;
+      // Nova lógica: comissões por indicador (10% por venda indicada)
+      var clMapCom = Object.fromEntries(load('clientes').map(c=>[c.id,c.nome]));
+      var histComissoes = JSON.parse(localStorage.getItem('otica_comissoes_pagas') || '{}');
+      var vendasIndicadas = todasVendasPeriodo.filter(function(v){
+        return v.indicador && v.indicador.trim() && v.status !== 'Cancelado';
+      });
+      var totalPendente = 0, totalPago = 0;
+      comEl.innerHTML = vendasIndicadas.length ? vendasIndicadas.map(function(v){
+        var valorVenda = calcTotal(v);
+        var valorCom = valorVenda * 0.10;
+        var chave = v.id || v.grupoVenda || '';
+        var pago = histComissoes[chave] || null;
+        var statusHtml = pago
+          ? '<span style="color:#16a34a;font-weight:700">✅ Pago</span>'
+          : '<span style="color:#d97706;font-weight:700">⏳ Pendente</span>';
+        if(pago) totalPago += valorCom; else totalPendente += valorCom;
+        return '<tr>' +
+          '<td style="font-weight:700">' + (v.id||'-') + '</td>' +
+          '<td>' + (v.data ? new Date(v.data+'T12:00').toLocaleDateString('pt-BR') : '-') + '</td>' +
+          '<td>' + (clMapCom[v.clienteId]||v.clienteNome||'-') + '</td>' +
+          '<td style="font-weight:700;color:#0d2b4e">' + (v.indicador||'-') + '</td>' +
+          '<td style="text-align:right;font-weight:700">' + fmtMoney(valorVenda) + '</td>' +
+          '<td style="text-align:right;font-weight:700;color:#d97706">' + fmtMoney(valorCom) + '</td>' +
+          '<td>' + statusHtml + '</td>' +
+          '</tr>';
+      }).join('') : '<tr><td colspan="7" style="padding:16px;text-align:center;color:#94a3b8">Nenhuma venda com indicador no período</td></tr>';
+      if(comFoot) comFoot.innerHTML = '<tr style="background:#f8fafc;font-weight:700">' +
+        '<td colspan="5">Totais</td>' +
+        '<td style="text-align:right;color:#d97706">' + fmtMoney(totalPendente+totalPago) + '</td>' +
+        '<td style="color:#d97706">⏳ ' + fmtMoney(totalPendente) + ' | ✅ ' + fmtMoney(totalPago) + '</td>' +
+        '</tr>';
     }
 
     // ── CREDIÁRIO ──
