@@ -12048,9 +12048,11 @@ function saveOrcamentoNovo() {
     };
   }
 
-  // Capturar vendedor
+  // Capturar vendedor e indicador
   var vendEl = document.getElementById('orc-vendedor');
   var vendedor = vendEl ? vendEl.value : (loadUser() ? loadUser().nome : '');
+  var indEl = document.getElementById('orc-indicador');
+  var indicador = indEl ? (indEl.value || '') : '';
 
   var orc = {
     id: novoId,
