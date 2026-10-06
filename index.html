@@ -2825,7 +2825,7 @@ function instalarApp() {
 </div>
 </div>
 </div>
-<div id="dash-fin-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+<div id="dash-fin-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
 <div id="dash-dre"></div>
 <div id="dash-prolabore-hist" style="margin-top:12px"></div>
 <div style="margin-top:10px;text-align:right">
@@ -7251,29 +7251,45 @@ function renderPainelFinanceiroAdmin() {
     var lucroColor = lucroLiqNovo >= 0 ? '#34d399' : '#f87171';
     var lucroGrad = lucroLiqNovo >= 0 ? '#166534,#16a34a' : '#991b1b,#dc2626';
 
+    // Calcular Lucro Operacional (sem despesas)
+    var lucroOperacional = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
+    var margemOp = receita > 0 ? lucroOperacional/receita*100 : 0;
+    var lucroOpGrad = lucroOperacional >= 0 ? '#0f4c2a,#16a34a' : '#991b1b,#dc2626';
+
     fin.innerHTML =
       mkCard('&#x1F4B0;', 'Receita Bruta', receitaBruta, '#a3e635', 'preço cheio') +
-      mkCard('&#x1F4B5;', 'Receita Líquida', receita, '#34d399', vendas.length + ' vendas') +
-      mkCard('&#x1F4E6;', 'Custo Produtos', custo, '#fbbf24', 'mercadoria') +
-      mkCard('&#x1F488;', 'Comissões', comissaoTotal, '#fb923c', 'vendedores') +
-      mkCard('&#x1F4B8;', 'Despesas', totalDespesas, '#f87171', despesasPeriodo.length + ' lançamentos') +
-      mkCard('&#x1F4B3;', 'Taxas Cartão', totalTaxas, '#eab308', 'operadoras') +
-      mkCard('&#x1F3F7;', 'Descontos', totalDescontosAdmin, '#f472b6', 'concedidos') +
-      '<div style="background:linear-gradient(135deg,' + lucroGrad + ');border-radius:12px;padding:14px;text-align:center">' +
-        '<div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">&#x1F4CA; Lucro Líquido Real</div>' +
-        '<div style="font-size:26px;font-weight:800;color:white">' + fmtMoney(lucroLiqNovo) + '</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,.7)">Margem: ' + margemNova.toFixed(1) + '%</div>' +
-      '</div>' +
-      '<div style="grid-column:span 2;display:flex;gap:10px">' +
-        '<div style="flex:1;background:linear-gradient(135deg,#1a3a5c,#c9a84c);border-radius:12px;padding:14px;text-align:center">' +
-          '<div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">&#x1F4B0; Capital de Giro (40%)</div>' +
-          '<div style="font-size:22px;font-weight:800;color:#c9a84c">' + fmtMoney(lucroLiqNovo>0?lucroLiqNovo*0.4:0) + '</div>' +
-          '<div style="font-size:10px;color:rgba(255,255,255,.6)">Reserva para a ótica</div>' +
+      mkCard('&#x1F3F7;', '(-) Descontos', totalDescontosAdmin, '#f472b6', 'concedidos') +
+      mkCard('&#x1F4B5;', '= Receita Líquida', receita, '#34d399', vendas.length + ' vendas') +
+      mkCard('&#x1F4E6;', '(-) Custo Produtos', custo, '#fbbf24', 'mercadoria') +
+      mkCard('&#x1F488;', '(-) Comissões', comissaoTotal, '#fb923c', 'indicadores') +
+      mkCard('&#x1F4B3;', '(-) Taxas Cartão', totalTaxas, '#eab308', 'operadoras') +
+      '<div style=\"grid-column:span 3;background:linear-gradient(135deg,\' + lucroOpGrad + \');border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:16px\">' +
+        '<div>' +
+          '<div style=\"font-size:10px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px\">&#x1F4C8; Lucro Operacional</div>' +
+          '<div style=\"font-size:11px;color:rgba(255,255,255,.6)\">Receita Líq. − Custo − Comissões − Taxas</div>' +
+          '<div style=\"font-size:11px;color:rgba(255,255,255,.5);margin-top:2px\">Independente das despesas fixas</div>' +
         '</div>' +
-        '<div style="flex:1;background:linear-gradient(135deg,#1a4a2a,#16a34a);border-radius:12px;padding:14px;text-align:center">' +
-          '<div style="font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">&#x1F4B0; Pró-Labore (60%)</div>' +
-          '<div style="font-size:22px;font-weight:800;color:#34d399">' + fmtMoney(lucroLiqNovo>0?lucroLiqNovo*0.6:0) + '</div>' +
-          '<div style="font-size:10px;color:rgba(255,255,255,.6)">Seu pagamento como dono</div>' +
+        '<div style=\"text-align:right\">' +
+          '<div style=\"font-size:28px;font-weight:800;color:white\">' + fmtMoney(lucroOperacional) + '</div>' +
+          '<div style=\"font-size:12px;color:rgba(255,255,255,.7)\">Margem: ' + margemOp.toFixed(1) + '%</div>' +
+        '</div>' +
+      '</div>' +
+      mkCard('&#x1F4B8;', '(-) Despesas Operacionais', totalDespesas, '#f87171', despesasPeriodo.length + ' lançamentos') +
+      '<div style=\"grid-column:span 2;background:linear-gradient(135deg,\' + lucroGrad + \');border-radius:12px;padding:14px;text-align:center\">' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4CA; = Lucro Líquido Real</div>' +
+        '<div style=\"font-size:26px;font-weight:800;color:white\">' + fmtMoney(lucroLiqNovo) + '</div>' +
+        '<div style=\"font-size:11px;color:rgba(255,255,255,.7)\">Margem: ' + margemNova.toFixed(1) + '%</div>' +
+      '</div>' +
+      '<div style=\"grid-column:span 3;display:flex;gap:10px\">' +
+        '<div style=\"flex:1;background:linear-gradient(135deg,#1a3a5c,#c9a84c);border-radius:12px;padding:14px;text-align:center\">' +
+          '<div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Capital de Giro (40%)</div>' +
+          '<div style=\"font-size:22px;font-weight:800;color:#c9a84c\">' + fmtMoney(lucroLiqNovo>0?lucroLiqNovo*0.4:0) + '</div>' +
+          '<div style=\"font-size:10px;color:rgba(255,255,255,.6)\">Reserva para a ótica</div>' +
+        '</div>' +
+        '<div style=\"flex:1;background:linear-gradient(135deg,#1a4a2a,#16a34a);border-radius:12px;padding:14px;text-align:center\">' +
+          '<div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Pró-Labore (60%)</div>' +
+          '<div style=\"font-size:22px;font-weight:800;color:#34d399\">' + fmtMoney(lucroLiqNovo>0?lucroLiqNovo*0.6:0) + '</div>' +
+          '<div style=\"font-size:10px;color:rgba(255,255,255,.6)\">Seu pagamento como dono</div>' +
         '</div>' +
       '</div>';
   }
@@ -7285,6 +7301,7 @@ function renderPainelFinanceiroAdmin() {
     var descAdmin2 = typeof totalDescontosAdmin !== 'undefined' ? totalDescontosAdmin : 0;
     var taxas2 = typeof totalTaxas !== 'undefined' ? totalTaxas : 0;
     var lucroFinal = typeof lucroLiqNovo !== 'undefined' ? lucroLiqNovo : lucroLiquido;
+    var lucroOperacional = typeof lucroOpNovo !== 'undefined' ? lucroOpNovo : (receita - custo - comissaoTotal - taxas2);
     var margemFinal = receita > 0 ? lucroFinal/receita*100 : 0;
 
     function dreRow(label, value, color, bold, borderTop) {
@@ -7302,6 +7319,8 @@ function renderPainelFinanceiroAdmin() {
           dreRow('(-) Taxas Cartão', '- ' + fmtMoney(taxas2), '#eab308', false, false) +
           dreRow('(-) Custo Produtos', '- ' + fmtMoney(custo), '#fbbf24', false, false) +
           dreRow('(-) Comissões', '- ' + fmtMoney(comissaoTotal), '#fb923c', false, false) +
+          dreRow('= Lucro Operacional', fmtMoney(lucroOperacional), lucroOperacional >= 0 ? '#34d399' : '#f87171', true, true) +
+          '<div style=\"font-size:10px;color:rgba(255,255,255,.4);font-style:italic;margin-top:-2px;margin-bottom:4px\">Resultado das vendas, independente das despesas fixas</div>' +
           dreRow('(-) Despesas Operacionais', '- ' + fmtMoney(totalDespesas), '#f87171', false, false) +
           dreRow('= Lucro Líquido Real', fmtMoney(lucroFinal), lucroFinal >= 0 ? '#34d399' : '#f87171', true, true) +
           '<div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.5);font-size:11px"><span>Margem Líquida</span><span>' + margemFinal.toFixed(1) + '%</span></div>' +
