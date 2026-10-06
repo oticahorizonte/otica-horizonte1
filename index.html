@@ -6982,8 +6982,12 @@ function renderDashboard() {
   var orcPendCount = orcPendentes.length;
   var orcPendValor = orcPendentes.reduce(function(s,c){ return s+(c.totalCli||c.total||0); }, 0);
   document.getElementById('dash-cards').innerHTML = `
-    <div class="stat-card"><div class="label">👥 Clientes Ativos</div><div class="value">${clientes.length}</div><div class="sub">cadastrados</div></div>
-    <div class=\"stat-card ${agendHojeCount>0?'green':''}\"><div class=\"label\">📅 Agendamentos Hoje</div><div class=\"value\">${agendHojeCount}</div><div class=\"sub\">${agendHojeCount>0?agendHojeHoras:'Nenhum hoje'}</div></div>\n    <div class=\"stat-card ${orcPendCount>0?'orange':''}\"><div class=\"label\">📝 Orçamentos Pendentes</div><div class=\"value\">${orcPendCount}</div><div class=\"sub\">${fmtMoney(orcPendValor)} em aberto</div></div>\n    <div class="stat-card ${baixoEstoque>0?'red':''}"><div class="label">📦 Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
+    <div class=\"stat-card\"><div class=\"label\">👥 Clientes Ativos</div><div class=\"value\">${clientes.length}</div><div class=\"sub\">cadastrados</div></div>
+    <div class=\"stat-card ${agendHojeCount>0?'green':''}\"><div class=\"label\">📅 Agendamentos Hoje</div><div class=\"value\">${agendHojeCount}</div><div class=\"sub\">${agendHojeCount>0?agendHojeHoras:'Nenhum hoje'}</div></div>
+    <div class=\"stat-card ${orcPendCount>0?'orange':''}\"><div class=\"label\">📝 OrÃ§amentos Pendentes</div><div class=\"value\">${orcPendCount}</div><div class=\"sub\">${fmtMoney(orcPendValor)} em aberto</div></div>
+    <div class=\"stat-card ${corSaldo}\"><div class=\"label\">💵 Saldo Hoje</div><div class=\"value\">${fmtMoney(saldoHoje)}</div><div class=\"sub\">${vendasHoje2.length} vendas hoje</div></div>
+    <div class=\"stat-card orange\"><div class=\"label\">🔧 OS em Aberto</div><div class=\"value\">${osAberto}</div><div class=\"sub\">aguardando</div></div>
+    <div class=\"stat-card ${baixoEstoque>0?'red':''}\"><div class=\"label\">📦 Estoque Baixo</div><div class=\"value\">${baixoEstoque}</div><div class=\"sub\">produtos</div></div>
   `;
   // Últimas vendas
   const clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
