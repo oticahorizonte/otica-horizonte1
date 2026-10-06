@@ -2793,15 +2793,7 @@ function instalarApp() {
 <!-- 1. CARDS -->
 <div class="cards-grid" id="dash-cards"></div>
 <!-- 2. META DA ÓTICA -->
-<div id="dash-meta-otica" style="display:none;margin-bottom:16px">
-<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:14px;padding:16px">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-<div style="font-size:14px;font-weight:700;color:#e8c96a">🎯 Meta de Faturamento — Este Mês</div>
-<button onclick="editarMetaOtica()" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8c96a;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer">✏️ Editar Meta</button>
-</div>
-<div id="dash-meta-otica-body"></div>
-</div>
-</div>
+<!-- Meta de Faturamento movida para o Painel Financeiro -->
 <!-- 3. PAINEL FINANCEIRO -->
 <div id="dash-painel-financeiro" style="display:none;margin-bottom:20px">
 <div style="background:#0f2744;border-radius:14px;padding:16px">
@@ -6728,7 +6720,7 @@ function editarMetaOtica() {
     localStorage.setItem('otica_meta_faturamento', val);
     // Sincronizar com Firebase — salvar apenas o número
     if (window._fb) window._fb.saveCollection('meta_faturamento', {valor: val}).catch(function(){});
-    renderMetaOtica();
+    // renderMetaOtica() movida para o Painel Financeiro
     showToast('✅ Meta atualizada: ' + fmtMoney(parseFloat(novo)), 'success');
   }
 }
@@ -7107,6 +7099,19 @@ function renderPainelFinanceiroAdmin() {
 
   var vendas = getFiltroVendasAdmin();
   var receita = calcReceitaGrupos(vendas);
+
+  // ── Calcular dados do mês atual para comparativo ──
+  var hojeComp = new Date();
+  var mesAtualStr = hojeComp.getFullYear()+'-'+String(hojeComp.getMonth()+1).padStart(2,'0');
+  var mesAntComp = new Date(hojeComp.getFullYear(), hojeComp.getMonth()-1, 1);
+  var mesAntStr2 = mesAntComp.getFullYear()+'-'+String(mesAntComp.getMonth()+1).padStart(2,'0');
+  var todasVendasComp = load('vendas').filter(function(v){ return v.status !== 'Pendente' && v.status !== 'Cancelado'; });
+  var vendasMesAntComp = todasVendasComp.filter(function(v){ return (v.data||'').startsWith(mesAntStr2); });
+  var receitaMesAntComp = calcReceitaGrupos(vendasMesAntComp);
+  // Comparativo: receita do período atual vs mês anterior
+  var receitaComp = receitaMesAntComp > 0 ? ((receita - receitaMesAntComp) / receitaMesAntComp * 100) : 0;
+  var compSeta = receitaComp >= 0 ? '↑' : '↓';
+  var compCor = receitaComp >= 0 ? '#34d399' : '#f87171';
   // Incluir entradas manuais (aportes, etc.)
   var filtro2 = document.getElementById('dash-fin-filtro')?.value || 'mes';
   var hoje3 = new Date();
@@ -7251,15 +7256,115 @@ function renderPainelFinanceiroAdmin() {
     var lucroColor = lucroLiqNovo >= 0 ? '#34d399' : '#f87171';
     var lucroGrad = lucroLiqNovo >= 0 ? '#166534,#16a34a' : '#991b1b,#dc2626';
 
+    // ── Meta de Faturamento + Projeção + Ticket Médio ──
+    var metaFat = parseFloat(localStorage.getItem('otica_meta_faturamento') || '5000');
+    var pctMeta = metaFat > 0 ? Math.min(100, receita / metaFat * 100) : 0;
+    var corMeta = pctMeta >= 100 ? '#34d399' : pctMeta >= 70 ? '#fbbf24' : '#f87171';
+    var faltaMeta = Math.max(0, metaFat - receita);
+    // Projeção do mês (só para filtro "mes")
+    var filtroAtualProj = document.getElementById('dash-fin-filtro')?.value || 'mes';
+    var projecaoHtml = '';
+    if (filtroAtualProj === 'mes') {
+      var diaAtual = new Date().getDate();
+      var diasMes = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+      var projecao = diaAtual > 0 ? (receita / diaAtual) * diasMes : 0;
+      var corProj = projecao >= metaFat ? '#34d399' : '#fbbf24';
+      projecaoHtml = '<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.7);margin-top:6px">' +
+        '<span>📆 Projeção do mês (dia ' + diaAtual + '/' + diasMes + '):</span>' +
+        '<span style="color:' + corProj + ';font-weight:700">' + fmtMoney(projecao) + '</span>' +
+        '</div>';
+    }
+    // Ticket médio e nº vendas do período
+    var gruposUnicos = new Set(vendas.map(function(v){ return v.grupoVenda || v.id; }));
+    var nVendas = gruposUnicos.size;
+    var ticketMedio = nVendas > 0 ? receita / nVendas : 0;
+    // Comparativo com mês anterior
+    var compHtml = receitaMesAntComp > 0 ?
+      '<span style="color:' + compCor + ';font-size:11px;font-weight:700"> ' + compSeta + ' ' + Math.abs(receitaComp).toFixed(1) + '% vs mês ant.</span>' : '';
+
+    // Bloco Meta + Projeção
+    var metaBlock = '<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:12px;padding:14px;margin-bottom:12px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<div style="font-size:13px;font-weight:700;color:#e8c96a">🎯 Meta de Faturamento — ' + (filtroAtualProj === 'mes' ? 'Este Mês' : 'Período') + '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          '<span style="font-size:12px;color:rgba(255,255,255,.7)">' + fmtMoney(receita) + ' / ' + fmtMoney(metaFat) + '</span>' +
+          '<button onclick="editarMetaOtica()" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8c96a;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer">✏️</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="background:rgba(255,255,255,.1);border-radius:6px;height:12px;overflow:hidden;margin-bottom:6px">' +
+        '<div style="height:100%;border-radius:6px;background:' + corMeta + ';width:' + pctMeta.toFixed(1) + '%;transition:width .5s"></div>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.7)">' +
+        '<span style="color:' + corMeta + ';font-weight:700">' + pctMeta.toFixed(1) + '% atingido</span>' +
+        '<span>' + (faltaMeta > 0 ? 'Faltam ' + fmtMoney(faltaMeta) : '✅ Meta atingida!') + '</span>' +
+      '</div>' +
+      projecaoHtml +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px">' +
+        '<div style="text-align:center">' +
+          '<div style="font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px">🛒 Nº de Vendas</div>' +
+          '<div style="font-size:20px;font-weight:800;color:#e8c96a">' + nVendas + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,.5)">no período' + (compHtml ? compHtml : '') + '</div>' +
+        '</div>' +
+        '<div style="text-align:center">' +
+          '<div style="font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px">🎯 Ticket Médio</div>' +
+          '<div style="font-size:20px;font-weight:800;color:#a3e635">' + fmtMoney(ticketMedio) + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,.5)">por venda</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    var finEl2 = document.getElementById('dash-fin-cards');
+    if (finEl2) finEl2.insertAdjacentHTML('beforebegin', metaBlock);
+
     // Calcular Lucro Operacional (sem despesas)
     var lucroOperacional = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
     var margemOp = receita > 0 ? lucroOperacional/receita*100 : 0;
     var lucroOpGrad = lucroOperacional >= 0 ? '#0f4c2a,#16a34a' : '#991b1b,#dc2626';
 
+    // ── Alerta de Margem Baixa ──
+    var margemAlerta = margemOp;
+    var alertaMargem = '';
+    if (receita > 0) {
+      if (margemAlerta < 20) {
+        alertaMargem = '<div style="background:linear-gradient(135deg,#7f1d1d,#dc2626);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">' +
+          '<span style="font-size:20px">🚨</span>' +
+          '<div><div style="font-size:12px;font-weight:700;color:white">Margem Operacional Crítica!</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,.8)">Margem de ' + margemAlerta.toFixed(1) + '% está abaixo de 20%. Revise custos e preços.</div></div>' +
+        '</div>';
+      } else if (margemAlerta < 30) {
+        alertaMargem = '<div style="background:linear-gradient(135deg,#78350f,#d97706);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">' +
+          '<span style="font-size:20px">⚠️</span>' +
+          '<div><div style="font-size:12px;font-weight:700;color:white">Margem Operacional Baixa</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,.8)">Margem de ' + margemAlerta.toFixed(1) + '% está abaixo de 30%. Atenção aos custos.</div></div>' +
+        '</div>';
+      }
+      if (alertaMargem) {
+        var finEl3 = document.getElementById('dash-fin-cards');
+        if (finEl3) finEl3.insertAdjacentHTML('beforebegin', alertaMargem);
+      }
+    }
+
+    // ── Função mkCard com comparativo ──
+    function mkCardComp(emoji, label, value, color, sub, compPct, compRef) {
+      var compStr = '';
+      if (compRef !== undefined && compRef > 0) {
+        var diff = compPct !== undefined ? compPct : ((value - compRef) / compRef * 100);
+        var seta = diff >= 0 ? '↑' : '↓';
+        var cor = diff >= 0 ? '#34d399' : '#f87171';
+        compStr = '<div style="font-size:10px;color:' + cor + ';font-weight:700;margin-top:2px">' + seta + ' ' + Math.abs(diff).toFixed(1) + '% vs mês ant.</div>';
+      }
+      return '<div style="background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center">' +
+        '<div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">' + emoji + ' ' + label + '</div>' +
+        '<div style="font-size:20px;font-weight:800;color:' + color + '">' + fmtMoney(value) + '</div>' +
+        '<div style="font-size:10px;color:rgba(255,255,255,.5)">' + sub + '</div>' +
+        compStr +
+      '</div>';
+    }
+
     fin.innerHTML =
-      mkCard('&#x1F4B0;', 'Receita Bruta', receitaBruta, '#a3e635', 'preço cheio') +
+      mkCardComp('&#x1F4B0;', 'Receita Bruta', receitaBruta, '#a3e635', 'preço cheio', undefined, receitaMesAntComp) +
       mkCard('&#x1F3F7;', '(-) Descontos', totalDescontosAdmin, '#f472b6', 'concedidos') +
-      mkCard('&#x1F4B5;', '= Receita Líquida', receita, '#34d399', vendas.length + ' vendas') +
+      mkCardComp('&#x1F4B5;', '= Receita Líquida', receita, '#34d399', vendas.length + ' vendas', receitaComp, receitaMesAntComp) +
       mkCard('&#x1F4E6;', '(-) Custo Produtos', custo, '#fbbf24', 'mercadoria') +
       mkCard('&#x1F488;', '(-) Comissões', comissaoTotal, '#fb923c', 'indicadores') +
       mkCard('&#x1F4B3;', '(-) Taxas Cartão', totalTaxas, '#eab308', 'operadoras') +
