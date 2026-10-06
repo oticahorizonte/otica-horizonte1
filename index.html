@@ -7073,6 +7073,10 @@ function getFiltroVendasAdmin(filtro) {
   } else if (filtro === 'mes') {
     var m = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
     return vendas.filter(v=>(v.data||'').startsWith(m));
+  } else if (filtro === 'mes_ant') {
+    var mesAnt = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    var mesAntStr = mesAnt.getFullYear()+'-'+String(mesAnt.getMonth()+1).padStart(2,'0');
+    return vendas.filter(v=>(v.data||'').startsWith(mesAntStr));
   } else if (filtro === 'trimestre') {
     var trimIni = new Date(hoje.getFullYear(), Math.floor(hoje.getMonth()/3)*3, 1);
     var trimIniStr = trimIni.getFullYear()+'-'+String(trimIni.getMonth()+1).padStart(2,'0')+'-01';
@@ -7096,6 +7100,11 @@ function renderPainelFinanceiroAdmin() {
   if (!isAdmin) { el.style.display='none'; return; }
   el.style.display='block';
 
+  // Toggle campos de data personalizada
+  var filtroAtual = document.getElementById('dash-fin-filtro')?.value || 'mes';
+  var customBox = document.getElementById('dash-fin-custom');
+  if (customBox) customBox.style.display = filtroAtual === 'custom' ? 'flex' : 'none';
+
   var vendas = getFiltroVendasAdmin();
   var receita = calcReceitaGrupos(vendas);
   // Incluir entradas manuais (aportes, etc.)
@@ -7105,11 +7114,21 @@ function renderPainelFinanceiroAdmin() {
   if (filtro2==='hoje') dataInicioEnt = new Date(hoje3.getFullYear(),hoje3.getMonth(),hoje3.getDate());
   else if (filtro2==='semana') dataInicioEnt = new Date(hoje3.getTime()-7*86400000);
   else if (filtro2==='mes') dataInicioEnt = new Date(hoje3.getFullYear(),hoje3.getMonth(),1);
+  else if (filtro2==='mes_ant') { var ma2=new Date(hoje3.getFullYear(),hoje3.getMonth()-1,1); dataInicioEnt=ma2; }
   else if (filtro2==='trimestre') dataInicioEnt = new Date(hoje3.getFullYear(),Math.floor(hoje3.getMonth()/3)*3,1);
   else if (filtro2==='ano') dataInicioEnt = new Date(hoje3.getFullYear(),0,1);
+  else if (filtro2==='custom') { var de3=(document.getElementById('dash-fin-de')||{}).value||''; dataInicioEnt=de3?new Date(de3):new Date(hoje3.getFullYear(),hoje3.getMonth(),1); }
   else dataInicioEnt = new Date('2020-01-01');
   var dataInicioEntStr = dataInicioEnt.getFullYear()+'-'+String(dataInicioEnt.getMonth()+1).padStart(2,'0')+'-'+String(dataInicioEnt.getDate()).padStart(2,'0');
-  var entradasPeriodo = load('entradas').filter(function(e){ return (e.data||'')>=dataInicioEntStr; });
+  var entradasPeriodo = load('entradas').filter(function(e){
+    if (filtro2==='mes_ant') {
+      var mAntEnt = new Date(hoje3.getFullYear(),hoje3.getMonth()-1,1);
+      var mAntEntStr = mAntEnt.getFullYear()+'-'+String(mAntEnt.getMonth()+1).padStart(2,'0');
+      return (e.data||'').startsWith(mAntEntStr);
+    }
+    if (filtro2==='tudo') return true;
+    return (e.data||'')>=dataInicioEntStr;
+  });
   var receitaEntradas = entradasPeriodo.reduce(function(s,e){ return s+(e.valor||0); },0);
 
   // Custo: soma dos custos dos itens de cada venda
@@ -7175,13 +7194,26 @@ function renderPainelFinanceiroAdmin() {
   if (filtro==='hoje') dataInicioDespesas = new Date(hoje2.getFullYear(),hoje2.getMonth(),hoje2.getDate());
   else if (filtro==='semana') dataInicioDespesas = new Date(hoje2.getTime()-7*86400000);
   else if (filtro==='mes') dataInicioDespesas = new Date(hoje2.getFullYear(),hoje2.getMonth(),1);
+  else if (filtro==='mes_ant') dataInicioDespesas = new Date(hoje2.getFullYear(),hoje2.getMonth()-1,1);
+  else if (filtro==='trimestre') dataInicioDespesas = new Date(hoje2.getFullYear(),Math.floor(hoje2.getMonth()/3)*3,1);
+  else if (filtro==='ano') dataInicioDespesas = new Date(hoje2.getFullYear(),0,1);
   else if (filtro==='custom') {
     var de2 = (document.getElementById('dash-fin-de')||{}).value||'';
     dataInicioDespesas = de2 ? new Date(de2) : new Date(hoje2.getFullYear(),hoje2.getMonth(),1);
   }
   var dataInicioDesp = dataInicioDespesas.toISOString().slice(0,10);
+  // Para mes_ant: filtrar apenas despesas do mês anterior (não apenas >=)
   var todasDespesas = load('despesas');
-  var despesasPeriodo = filtro==='tudo' ? todasDespesas : todasDespesas.filter(function(d){ return (d.data||'')>=dataInicioDesp; });
+  var despesasPeriodo;
+  if (filtro==='tudo') {
+    despesasPeriodo = todasDespesas;
+  } else if (filtro==='mes_ant') {
+    var mAntDesp = new Date(hoje2.getFullYear(),hoje2.getMonth()-1,1);
+    var mAntDespStr = mAntDesp.getFullYear()+'-'+String(mAntDesp.getMonth()+1).padStart(2,'0');
+    despesasPeriodo = todasDespesas.filter(function(d){ return (d.data||'').startsWith(mAntDespStr); });
+  } else {
+    despesasPeriodo = todasDespesas.filter(function(d){ return (d.data||'')>=dataInicioDesp; });
+  }
   var totalDespesas = despesasPeriodo.reduce(function(s,d){ return s+(d.valor||0); },0);
 
   var lucroOperacional = receita + receitaEntradas - custo - comissaoTotal;
