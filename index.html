@@ -2895,7 +2895,7 @@ function instalarApp() {
 </div>
 <!-- 9. OS EM ABERTO -->
 <div class="card" id="card-dash-os" style="margin-bottom:16px">
-<div class="card-header"><h3>🔧 OS em Aberto</h3></div>
+    <div class=\"stat-card ${corSaldo}\"><div class=\"label\">💵 Saldo Hoje</div><div class=\"value\">${fmtMoney(saldoHoje)}</div><div class=\"sub\">${vendasHoje2.length} vendas hoje</div></div>\n<div class="card-header"><h3>🔧 OS em Aberto</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
 </div>
 <!-- 10. ANIVERSARIANTES -->
@@ -6973,13 +6973,17 @@ function renderDashboard() {
   var entradaHoje = entradasHoje2.reduce(function(s,e){ return s+(e.valor||0); },0);
   var saldoHoje = receitaHoje + entradaHoje - saidaHoje;
   var corSaldo = saldoHoje >= 0 ? 'green' : 'red';
+  // Agendamentos hoje
+  var agendHoje = load('agendamentos').filter(function(a){ return a.data === hojeStr2 && a.status !== 'Cancelado'; });
+  var agendHojeCount = agendHoje.length;
+  var agendHojeHoras = agendHoje.slice(0,3).map(function(a){ return a.hora||''; }).filter(Boolean).join(', ');
+  // Orçamentos pendentes
+  var orcPendentes = load('composicoes').filter(function(c){ return c.status === 'pendente' || !c.status; });
+  var orcPendCount = orcPendentes.length;
+  var orcPendValor = orcPendentes.reduce(function(s,c){ return s+(c.totalCli||c.total||0); }, 0);
   document.getElementById('dash-cards').innerHTML = `
     <div class="stat-card"><div class="label">👥 Clientes Ativos</div><div class="value">${clientes.length}</div><div class="sub">cadastrados</div></div>
-    <div class="stat-card green"><div class="label">💰 Receita do Mês</div><div class="value">${fmtMoney(receitaMes)}</div><div class="sub">${vendasMes.length} vendas</div></div>
-    <div class="stat-card"><div class="label">🎯 Ticket Médio</div><div class="value">${fmtMoney(ticketMedio)}</div><div class="sub">por venda</div></div>
-    <div class="stat-card ${corSaldo}"><div class="label">💵 Saldo Hoje</div><div class="value">${fmtMoney(saldoHoje)}</div><div class="sub">${vendasHoje2.length} vendas hoje</div></div>
-    <div class="stat-card orange"><div class="label">🔧 OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
-    <div class="stat-card ${baixoEstoque>0?'red':''}"><div class="label">📦 Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
+    <div class=\"stat-card ${agendHojeCount>0?'green':''}\"><div class=\"label\">📅 Agendamentos Hoje</div><div class=\"value\">${agendHojeCount}</div><div class=\"sub\">${agendHojeCount>0?agendHojeHoras:'Nenhum hoje'}</div></div>\n    <div class=\"stat-card ${orcPendCount>0?'orange':''}\"><div class=\"label\">📝 Orçamentos Pendentes</div><div class=\"value\">${orcPendCount}</div><div class=\"sub\">${fmtMoney(orcPendValor)} em aberto</div></div>\n    <div class="stat-card ${baixoEstoque>0?'red':''}"><div class="label">📦 Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
   `;
   // Últimas vendas
   const clMap = Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
@@ -17680,4 +17684,4 @@ var _keysOriginalPL = null;
 </div>
 </aside>
 </body>
-</html>
+    <div class=\"stat-card ${corSaldo}\"><div class=\"label\">💵 Saldo Hoje</div><div class=\"value\">${fmtMoney(saldoHoje)}</div><div class=\"sub\">${vendasHoje2.length} vendas hoje</div></div>\n</html>
