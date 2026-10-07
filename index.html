@@ -15028,6 +15028,7 @@ function salvarOrcamentoVendaUnif() {
   if (descItens.length > 60) descItens = descItens.substring(0,57)+'...';
   var pag = (document.getElementById('venda-pag')||{}).value || 'PIX';
   var vendedor = (document.getElementById('venda-vendedor')||{}).value || '';
+  var indicador = (document.getElementById('venda-indicador')||{}).value || '';
   var obj = {
     id: nextId(arr),
     data: (document.getElementById('venda-data')||{}).value || '',
@@ -15069,6 +15070,7 @@ function registrarVendaUnif() {
   var parcelas = (document.getElementById('venda-parcelas')||{}).value || '1';
   var status = (document.getElementById('venda-status')||{}).value || 'Pago';
   var vendedor = (document.getElementById('venda-vendedor')||{}).value || '';
+  var indicador = (document.getElementById('venda-indicador')||{}).value || '';
   var descReais = parseFloat((document.getElementById('venda-unif-desc-reais')||{}).value)||0;
   var subtotal = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
 
