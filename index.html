@@ -7249,8 +7249,16 @@ function renderPainelFinanceiroAdmin() {
         '</div>';
     }
     // Linha 1: Receita Bruta | Receita Liquida | Custo Produtos | Comissoes
-    var receitaBruta = vendas.reduce(function(s,v){ if(v.status==='Cancelado') return s; return s+(v.preco||0)*(v.qtd||1); },0);
-    var totalDescontosAdmin = Math.max(0, receitaBruta - receita);
+    // Desconto real = apenas descontos explicitamente concedidos (não saldo de crediário)
+    var totalDescontosAdmin = vendas.reduce(function(s,v){
+      if(v.status==='Cancelado') return s;
+      var bruto = (v.preco||0)*(v.qtd||1);
+      var descItem = bruto * ((v.desc||0)/100);
+      var descGlobal = v.descGlobal || 0;
+      return s + descItem + descGlobal;
+    },0);
+    // Receita Bruta = Receita Líquida + Descontos reais (consistente, sem distorção do crediário)
+    var receitaBruta = receita + totalDescontosAdmin;
     var totalTaxas = vendas.reduce(function(s,v){
       if(v.taxaValor && v.taxaValor>0) return s+v.taxaValor;
       if(typeof calcTaxaVenda==='function'){ var tp=calcTaxaVenda(v.pag||'',v.parcelas||1); if(tp>0){ var tv=v.totalReal!==undefined?v.totalReal:calcTotal(v); return s+tv*(tp/100); } }
@@ -15965,11 +15973,65 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
   var vendas = load('vendas');
   var vi = vendas.findIndex(v=>v.id===vendaId);
   if (vi<0 || !vendas[vi].crediario) return;
-  vendas[vi].crediario.parcelas[parcIdx].status = 'Pago';
-  vendas[vi].crediario.parcelas[parcIdx].dataPagamento = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+
+  var venda = vendas[vi];
+  var parcela = venda.crediario.parcelas[parcIdx];
+  var hoje = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+
+  // Marcar parcela como paga
+  venda.crediario.parcelas[parcIdx].status = 'Pago';
+  venda.crediario.parcelas[parcIdx].dataPagamento = hoje;
+
+  // ── Registrar entrada automática no financeiro ──
+  var clientes = load('clientes');
+  var cli = clientes.find(function(c){ return String(c.id) === String(venda.clienteId); });
+  var nomeCliente = cli ? cli.nome : (venda.clienteNome || 'Cliente');
+  var numParcela = parcIdx + 1;
+  var totalParcelas = venda.crediario.parcelas.length;
+
+  var entradas = load('entradas');
+  var novaEntrada = {
+    id: 'ENT-CRED-' + Date.now(),
+    data: hoje,
+    valor: parcela.valor || 0,
+    descricao: 'Crediário — Parcela ' + numParcela + '/' + totalParcelas + ' — ' + nomeCliente,
+    categoria: 'Crediário',
+    vendaRef: vendaId,
+    parcIdx: parcIdx,
+    auto: true
+  };
+  entradas.push(novaEntrada);
+  save('entradas', entradas);
+
+  // ── Verificar se todas as parcelas foram pagas → marcar venda como Pago ──
+  var todasPagas = venda.crediario.parcelas.every(function(p){ return p.status === 'Pago'; });
+  if (todasPagas) {
+    // Marcar todas as vendas do grupo como Pago
+    var grupoKey = venda.grupoVenda || venda.id;
+    vendas.forEach(function(v, i) {
+      if ((v.grupoVenda || v.id) === grupoKey) {
+        vendas[i].status = 'Pago';
+      }
+    });
+  }
+
   save('vendas', vendas);
+
+  // Sync Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('vendas', load('vendas')).catch(function(){});
+    window._fb.saveCollection('entradas', load('entradas')).catch(function(){});
+  }
+
   renderContasCrediario();
-  showToast('✅ Parcela marcada como paga!', 'success');
+  if (typeof renderDashboard === 'function') renderDashboard();
+  if (typeof renderFinanceiro === 'function') renderFinanceiro();
+
+  if (todasPagas) {
+    showToast('🎉 Todas as parcelas pagas! Venda concluída!', 'success');
+  } else {
+    showToast('✅ Parcela ' + numParcela + '/' + totalParcelas + ' paga! Entrada registrada.', 'success');
+  }
 }
 
 function excluirVendaCrediario(grupoVenda) {
