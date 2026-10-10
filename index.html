@@ -7252,14 +7252,25 @@ function renderPainelFinanceiroAdmin() {
         '</div>';
     }
     // Linha 1: Receita Bruta | Receita Liquida | Custo Produtos | Comissoes
-    // Desconto real = apenas descontos explicitamente concedidos (não saldo de crediário)
+    // Desconto real = diferença entre preço bruto e totalReal (evita duplicação em grupos)
+    var gruposDescContados = {};
     var totalDescontosAdmin = vendas.reduce(function(s,v){
       if(v.status==='Cancelado') return s;
+      // Para crediário: sem desconto (usa entrada)
+      if(v.pag==='Crediário Próprio' && v.crediario && v.crediario.parcelas && v.crediario.parcelas.length > 1) return s;
       var bruto = (v.preco||0)*(v.qtd||1);
-      var descItem = bruto * ((v.desc||0)/100);
-      var descGlobal = v.descGlobal || 0;
-      return s + descItem + descGlobal;
-    },0);
+      var totalReal = v.totalReal !== undefined ? v.totalReal : calcTotal(v);
+      var desconto = Math.max(0, bruto - totalReal);
+      // Para grupos (óculos completo): contar desconto apenas uma vez por grupo
+      if(v.grupoVenda) {
+        if(!gruposDescContados[v.grupoVenda]) {
+          gruposDescContados[v.grupoVenda] = 0;
+        }
+        gruposDescContados[v.grupoVenda] += desconto;
+        return s; // será somado depois
+      }
+      return s + desconto;
+    },0) + Object.values(gruposDescContados).reduce(function(s,d){ return s+d; },0);
     // Receita Bruta = Receita Líquida + Descontos reais (consistente, sem distorção do crediário)
     var receitaBruta = receita + totalDescontosAdmin;
     var totalTaxas = vendas.reduce(function(s,v){
