@@ -2895,7 +2895,8 @@ function instalarApp() {
 </div>
 <!-- 9. OS EM ABERTO -->
 <div class="card" id="card-dash-os" style="margin-bottom:16px">
-    <div class=\"stat-card ${corSaldo}\"><div class=\"label\">💵 Saldo Hoje</div><div class=\"value\">${fmtMoney(saldoHoje)}</div><div class=\"sub\">${vendasHoje2.length} vendas hoje</div></div>\n<div class="card-header"><h3>🔧 OS em Aberto</h3></div>
+    <div class=\"stat-card ${corSaldo}\"><div class=\"label\">💵 Saldo Hoje</div><div class=\"value\">${fmtMoney(saldoHoje)}</div><div class=\"sub\">${vendasHoje2.length} vendas hoje</div></div>
+<div class=\"value\">${fmtMoney(saldoHoje)}</div><div class=\"sub\">${vendasHoje2.length} vendas hoje</div></div>\n<div class="card-header"><h3>🔧 OS em Aberto</h3></div>
 <div class="card-body" style="padding:0"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Tipo</th><th>Status</th></tr></thead><tbody id="dash-os"></tbody></table></div>
 </div>
 <!-- 10. ANIVERSARIANTES -->
@@ -16024,8 +16025,12 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
   }
 
   renderContasCrediario();
+  // Forçar re-render do painel financeiro para mostrar nova entrada
+  if (typeof renderPainelFinanceiroAdmin === 'function') renderPainelFinanceiroAdmin();
   if (typeof renderDashboard === 'function') renderDashboard();
   if (typeof renderFinanceiro === 'function') renderFinanceiro();
+  if (typeof renderFluxoCaixa === 'function') renderFluxoCaixa();
+  if (typeof renderSaldoDia === 'function') renderSaldoDia();
 
   if (todasPagas) {
     showToast('🎉 Todas as parcelas pagas! Venda concluída!', 'success');
