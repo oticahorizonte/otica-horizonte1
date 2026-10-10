@@ -7142,7 +7142,10 @@ function renderPainelFinanceiroAdmin() {
     if (filtro2==='tudo') return true;
     return (e.data||'')>=dataInicioEntStr;
   });
-  var receitaEntradas = entradasPeriodo.reduce(function(s,e){ return s+(e.valor||0); },0);
+  // Separar entradas normais das entradas automáticas do crediário
+  var receitaEntradasNormal = entradasPeriodo.filter(function(e){ return !(e.auto === true && e.categoria === 'Crediário'); }).reduce(function(s,e){ return s+(e.valor||0); },0);
+  var receitaCrediarioParcelas = entradasPeriodo.filter(function(e){ return e.auto === true && e.categoria === 'Crediário'; }).reduce(function(s,e){ return s+(e.valor||0); },0);
+  var receitaEntradas = receitaEntradasNormal; // Entradas normais (não duplica crediário)
 
   // Custo: soma dos custos dos itens de cada venda
   var custo = vendas.reduce(function(s,v){
@@ -7265,7 +7268,7 @@ function renderPainelFinanceiroAdmin() {
       return s;
     },0);
     var receitaLiquidaOp = receita - totalTaxas;
-    var lucroOpNovo = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
+    var lucroOpNovo = receitaLiquidaOp + receitaEntradas + receitaCrediarioParcelas - custo - comissaoTotal;
     var lucroLiqNovo = lucroOpNovo - totalDespesas;
     var margemNova = receita > 0 ? lucroLiqNovo/receita*100 : 0;
 
@@ -7381,6 +7384,11 @@ function renderPainelFinanceiroAdmin() {
       mkCardComp('&#x1F4B0;', 'Receita Bruta', receitaBruta, '#a3e635', 'preço cheio', undefined, receitaMesAntComp) +
       mkCard('&#x1F3F7;', '(-) Descontos', totalDescontosAdmin, '#f472b6', 'concedidos') +
       mkCardComp('&#x1F4B5;', '= Receita Líquida', receita, '#34d399', vendas.length + ' vendas', receitaComp, receitaMesAntComp) +
+      (receitaCrediarioParcelas > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Recebimentos Crediário</div>' +
+        '<div style=\"font-size:20px;font-weight:800;color:#34d399\">' + fmtMoney(receitaCrediarioParcelas) + '</div>' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">parcelas pagas no período</div>' +
+      '</div>' : '') +
       mkCard('&#x1F4E6;', '(-) Custo Produtos', custo, '#fbbf24', 'mercadoria') +
       mkCard('&#x1F488;', '(-) Comissões', comissaoTotal, '#fb923c', 'indicadores') +
       mkCard('&#x1F4B3;', '(-) Taxas Cartão', totalTaxas, '#eab308', 'operadoras') +
@@ -7423,6 +7431,7 @@ function renderPainelFinanceiroAdmin() {
     var taxas2 = typeof totalTaxas !== 'undefined' ? totalTaxas : 0;
     var lucroFinal = typeof lucroLiqNovo !== 'undefined' ? lucroLiqNovo : lucroLiquido;
     var lucroOperacional = typeof lucroOpNovo !== 'undefined' ? lucroOpNovo : (receita - custo - comissaoTotal - taxas2);
+    var receitaCrediarioParcelas = typeof receitaCrediarioParcelas !== 'undefined' ? receitaCrediarioParcelas : 0;
     var margemFinal = receita > 0 ? lucroFinal/receita*100 : 0;
 
     function dreRow(label, value, color, bold, borderTop) {
@@ -7437,6 +7446,7 @@ function renderPainelFinanceiroAdmin() {
           dreRow('Receita Bruta', fmtMoney(recBruta2), 'rgba(255,255,255,.9)', false, false) +
           dreRow('(-) Descontos', '- ' + fmtMoney(descAdmin2), '#f472b6', false, false) +
           dreRow('= Receita Líquida', fmtMoney(receita), '#34d399', true, true) +
+          (receitaCrediarioParcelas > 0 ? dreRow('(+) Recebimentos Crediário', '+ ' + fmtMoney(receitaCrediarioParcelas), '#34d399', false, false) : '') +
           dreRow('(-) Taxas Cartão', '- ' + fmtMoney(taxas2), '#eab308', false, false) +
           dreRow('(-) Custo Produtos', '- ' + fmtMoney(custo), '#fbbf24', false, false) +
           dreRow('(-) Comissões', '- ' + fmtMoney(comissaoTotal), '#fb923c', false, false) +
@@ -15929,7 +15939,7 @@ function renderContasCrediario() {
       <td>
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-success" onclick="pagarParcelaCrediario('${p.vendaId}',${p.parcIdx})" data-tip="Marcar como pago">✅ Pagar</button>`:''}
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-outline" onclick="editarDataParcela('${p.vendaId}',${p.parcIdx},'${p.data}')" data-tip="Editar data">📅</button>`:''}
-        <button class="btn btn-sm btn-primary" onclick="whatsappCobranca('${p.clienteNome}','${p.vendaId}',${p.parcIdx+1},${p.total},'${p.data}',${p.valor})" style="background:#16a34a" data-tip="Cobrar via WhatsApp">📱</button>
+        ${p.status==='Pago'?`<button class="btn btn-sm btn-outline" onclick="editarParcelaPaga('${p.vendaId}',${p.parcIdx})" data-tip="Editar data">✏️ Editar</button>`:''}
         ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="excluirVendaCrediario('${p.grupoVenda||p.vendaId}')" data-tip="Excluir venda e todas as parcelas" style="font-size:11px" title="Excluir venda">🗑️</button>`:''}
       </td>
     </tr>`;
@@ -16036,6 +16046,47 @@ function pagarParcelaCrediario(vendaId, parcIdx) {
   } else {
     showToast('✅ Parcela ' + numParcela + '/' + totalParcelas + ' paga! Entrada registrada.', 'success');
   }
+}
+
+function editarParcelaPaga(vendaId, parcIdx) {
+  var vendas = load('vendas');
+  var vi = vendas.findIndex(function(v){ return String(v.id) === String(vendaId); });
+  if (vi < 0 || !vendas[vi].crediario) return;
+  var parcela = vendas[vi].crediario.parcelas[parcIdx];
+
+  var novoValor = prompt('Valor da parcela (atual: R$ ' + (parcela.valor||0).toFixed(2).replace('.',',') + '):', (parcela.valor||0).toFixed(2));
+  if (novoValor === null) return;
+  var valorNum = parseFloat(novoValor.replace(',','.'));
+  if (isNaN(valorNum) || valorNum <= 0) { showToast('Valor inválido!', 'error'); return; }
+
+  var novaData = prompt('Data do pagamento (atual: ' + (parcela.dataPagamento||'') + '):', parcela.dataPagamento||'');
+  if (novaData === null) return;
+
+  var valorAntigo = parcela.valor || 0;
+
+  // Atualizar parcela
+  vendas[vi].crediario.parcelas[parcIdx].valor = valorNum;
+  vendas[vi].crediario.parcelas[parcIdx].dataPagamento = novaData;
+  save('vendas', vendas);
+
+  // Atualizar entrada automática correspondente
+  var entradas = load('entradas');
+  var ei = entradas.findIndex(function(e){ return e.auto === true && e.vendaRef === vendaId && e.parcIdx === parcIdx; });
+  if (ei >= 0) {
+    entradas[ei].valor = valorNum;
+    entradas[ei].data = novaData;
+    save('entradas', entradas);
+  }
+
+  // Sync Firebase
+  if (window._firebaseReady && window._fb) {
+    window._fb.saveCollection('vendas', load('vendas')).catch(function(){});
+    window._fb.saveCollection('entradas', load('entradas')).catch(function(){});
+  }
+
+  renderContasCrediario();
+  if (typeof renderPainelFinanceiroAdmin === 'function') renderPainelFinanceiroAdmin();
+  showToast('✅ Parcela atualizada!', 'success');
 }
 
 function excluirVendaCrediario(grupoVenda) {
