@@ -7031,7 +7031,7 @@ function renderDashboard() {
   var cardDashOS2 = document.getElementById('card-dash-os');
   if (cardDashOS2) cardDashOS2.style.display = adminDash ? '' : 'none';
   if (adminDash) {
-    document.getElementById('dash-os').innerHTML = os.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelada').slice(0,4).map(o => `
+    document.getElementById('dash-os').innerHTML = os.filter(o=>o.status!=='Entregue'&&o.status!=='Cancelada'&&clMap[o.clienteId]).slice(0,4).map(o => `
       <tr><td><strong>${o.id}</strong></td><td>${clMap[o.clienteId]||'-'}</td><td>${o.tipo}</td><td>${statusBadge(o.status)}</td></tr>
     `).join('') || '<tr><td colspan="4" class="text-center" style="padding:20px;color:var(--text-muted)">Nenhuma OS em aberto</td></tr>';
   }
@@ -7344,7 +7344,13 @@ function renderPainelFinanceiroAdmin() {
     '</div>';
 
     var finEl2 = document.getElementById('dash-fin-cards');
-    if (finEl2) finEl2.insertAdjacentHTML('beforebegin', metaBlock);
+      // Usar ID para evitar duplicação
+      var existingMeta = document.getElementById('dash-meta-faturamento-block');
+      if (existingMeta) {
+        existingMeta.outerHTML = metaBlock;
+      } else {
+        finEl2.insertAdjacentHTML('beforebegin', metaBlock);
+      }
 
     // Calcular Lucro Operacional (sem despesas)
     var lucroOperacional = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
@@ -7370,7 +7376,15 @@ function renderPainelFinanceiroAdmin() {
       }
       if (alertaMargem) {
         var finEl3 = document.getElementById('dash-fin-cards');
-        if (finEl3) finEl3.insertAdjacentHTML('beforebegin', alertaMargem);
+        if (finEl3) {
+          // Remover alertas anteriores para evitar duplicação
+          // Usar ID para evitar duplicação
+          var existingAlerta = document.getElementById('dash-alerta-margem');
+          if (existingAlerta) {
+            existingAlerta.outerHTML = alertaMargem;
+          } else {
+            finEl3.insertAdjacentHTML('beforebegin', alertaMargem);
+          }
       }
     }
 
