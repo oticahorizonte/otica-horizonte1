@@ -8690,7 +8690,9 @@ function renderVendas() {
     var dataV = (v.data||'').slice(0,10);
     if (dataV < dataInicioVendas || dataV > dataFimVendas) return false;
     // Apenas vendas PAGAS na lista de vendas (pendentes ficam em Vendas Pendentes)
-    if (v.status === 'Pendente' || v.status === 'Cancelado') return false;
+    if (v.status === 'Cancelado') return false;
+    // Crediário Pendente aparece na lista (tem parcelas a receber)
+    if (v.status === 'Pendente' && v.pag !== 'Crediário Próprio') return false;
     // Vendedor vê apenas suas próprias vendas
     if (!adminVendasReg && (v.vendedor||'').toLowerCase() !== meuNomeVendas) return false;
     return !q || (v.id||'').toLowerCase().includes(q.toLowerCase()) ||
@@ -15270,6 +15272,29 @@ function registrarVendaUnif() {
     clis[ci].ultimaCompra = data;
     clis[ci].totalGasto = (clis[ci].totalGasto||0) + totalGeral;
     save('clientes', clis);
+  }
+
+  // ── Registrar entrada automática da entrada do crediário ──
+  if (pag === 'Crediário Próprio' && crediarioData && crediarioData.entrada > 0) {
+    var clientes2 = load('clientes');
+    var cli2 = clientes2.find(function(c){ return String(c.id) === String(clienteId); });
+    var nomeCliente2 = cli2 ? cli2.nome : 'Cliente';
+    var entradas2 = load('entradas');
+    var dataHoje2 = data || (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+    entradas2.push({
+      id: 'ENT-CRED-ENTRADA-' + Date.now(),
+      data: dataHoje2,
+      valor: crediarioData.entrada,
+      descricao: 'Crediário — Entrada — ' + nomeCliente2,
+      categoria: 'Crediário',
+      vendaRef: vendasCriadas[0] || '',
+      auto: true,
+      tipoEntrada: 'entrada_inicial'
+    });
+    save('entradas', entradas2);
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection('entradas', load('entradas')).catch(function(){});
+    }
   }
 
   window._saveVendaEmAndamento = false;
