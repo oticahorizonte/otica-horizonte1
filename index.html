@@ -15115,6 +15115,8 @@ function registrarVendaUnif() {
   var status = (document.getElementById('venda-status')||{}).value || 'Pago';
   var vendedor = (document.getElementById('venda-vendedor')||{}).value || '';
   var indicador = (document.getElementById('venda-indicador')||{}).value || '';
+  // Crediário com parcelas → sempre Pendente até todas as parcelas serem pagas
+  if (pag === 'Crediário Próprio') { status = 'Pendente'; }
   var descReais = parseFloat((document.getElementById('venda-unif-desc-reais')||{}).value)||0;
   var subtotal = _vendaItens.reduce(function(s,i){ return s+i.preco*i.qtd; },0);
 
