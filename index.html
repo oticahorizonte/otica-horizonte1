@@ -7256,8 +7256,8 @@ function renderPainelFinanceiroAdmin() {
     var gruposDescContados = {};
     var totalDescontosAdmin = vendas.reduce(function(s,v){
       if(v.status==='Cancelado') return s;
-      // Para crediário: sem desconto (usa entrada)
-      if(v.pag==='Crediário Próprio' && v.crediario && v.crediario.parcelas && v.crediario.parcelas.length > 1) return s;
+      // Para crediário: sem desconto (receita entra pelas entradas automáticas)
+      if(v.pag==='Crediário Próprio' && v.crediario) return s;
       var bruto = (v.preco||0)*(v.qtd||1);
       var totalReal = v.totalReal !== undefined ? v.totalReal : calcTotal(v);
       var desconto = Math.max(0, bruto - totalReal);
@@ -8535,15 +8535,14 @@ function calcReceitaGrupos(vendas) {
   // Filtrar apenas vendas pagas (não pendentes, não canceladas)
   var vendasPagas = vendas.filter(function(v) { return v.status !== 'Pendente' && v.status !== 'Cancelado'; });
   vendasPagas.forEach(function(v) {
-    if (v.pag === 'Crediário Próprio' && v.crediario && v.crediario.parcelas && v.crediario.parcelas.length > 1) {
-      var gk = v.grupoVenda || v.id;
-      if (!gruposContados[gk]) {
-        gruposContados[gk] = true;
-        total += v.crediario.entrada || 0;
-      }
-    } else {
-      total += calcTotal(v);
+    // Crediário Próprio: receita entra pelas entradas automáticas das parcelas
+    // Não somar aqui para evitar duplicação
+    if (v.pag === 'Crediário Próprio' && v.crediario) {
+      // Ignorar — a receita já foi contada via entradas automáticas (pagarParcelaCrediario)
+      // e a entrada inicial via receitaEntradas no painel financeiro
+      return;
     }
+    total += calcTotal(v);
   });
   return total;
 }
