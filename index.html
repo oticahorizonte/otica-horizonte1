@@ -10166,7 +10166,7 @@ function doPrintOS() {
       'body{font-family:Segoe UI,sans-serif;color:#1e293b;padding:20px}',
       'table{width:100%;border-collapse:collapse}',
       'th,td{padding:8px;border:1px solid #e2e8f0}',
-      '@media print{body{padding:0;margin:0}.nop,.no-print{display:none!important}@page{size:A5;margin:8mm}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;background-color:inherit!important;color:inherit!important}}</style></head><body>',
+      '@media print{body{padding:0;margin:0}.nop,.no-print{display:none!important}@page{size:A4;margin:10mm}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;background-color:inherit!important;color:inherit!important}}</style></head><body>',
       printArea.innerHTML,
       '<div class="nop" style="text-align:center;margin-top:20px;padding:16px">',
       '<button onclick="window.print()" style="padding:12px 32px;background:#1a3a5c;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:700;margin-right:10px">Imprimir / Salvar PDF</button>',
@@ -14269,9 +14269,9 @@ function imprimirOrcamentoById(id) {
   var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
     '<title>Orçamento #'+c.id+' - Ótica Horizonte</title>' +
     '<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}' +
-    'body{font-family:"Segoe UI",sans-serif;color:#1e293b;padding:20px;max-width:600px;margin:0 auto;background:white}' +
+    'body{font-family:"Segoe UI",sans-serif;color:#1e293b;padding:12px;max-width:100%;margin:0 auto;background:white}' +
     'table{width:100%;border-collapse:collapse}' +
-    '@media print{.no-print{display:none!important}@page{size:A5;margin:8mm}}</style></head><body>' +
+    '@media print{.no-print{display:none!important}@page{size:A4;margin:10mm}}</style></head><body>' +
     // Cabeçalho com gradiente
     '<div style="background:linear-gradient(135deg,#0d2b4e,#1a4a7a);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px">' +
     (logoSrc ? '<img src="'+logoSrc+'" style="width:52px;height:52px;border-radius:50%;background:white;padding:3px;object-fit:contain"/>' : '') +
