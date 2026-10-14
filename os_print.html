@@ -30,7 +30,7 @@
 
   /* ── PÁGINA A4 ── */
   .page {
-    width: 210mm; min-height: 297mm;
+    width: 210mm; min-height: auto;
     margin: 24px auto; background: white;
     box-shadow: 0 4px 24px rgba(0,0,0,.15);
     border-radius: 4px; overflow: hidden;
@@ -170,8 +170,15 @@
     body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .preview-bar { display: none !important; }
     .page { margin: 0; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; }
-    .page-inner { padding: 8mm 11mm 10mm; }
-    @page { size: A4; margin: 0; }
+    .header { padding: 10px 8mm; }
+    .sec-title { font-size: 10px; padding: 5px 10px; margin-bottom: 8px; }
+    .info-card { padding: 6px 10px; }
+    .graus-table tbody td { padding: 7px; }
+    .obs-box { min-height: 45px; }
+    .assin-line { margin-top: 28px; }
+    .cards-row { gap: 6px; margin-bottom: 8px !important; }
+    .page-inner { padding: 4mm 8mm 6mm; }
+    @page { size: A4; margin: 8mm; }
   }
 </style>
 </head>
