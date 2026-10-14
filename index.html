@@ -17120,15 +17120,28 @@ function confirmarAlteracaoPagamento(chave) {
 }
 
 function marcarContaPaga(chave) {
-  confirmar('Marcar como PAGA?\nEsta ação registrará o pagamento.', function() {
+  confirmar('Marcar como PAGA?\nEsta ação registrará o pagamento com a data de hoje.', function() {
     var vendas = load('vendas');
+    // Data do pagamento = hoje (data real do recebimento)
+    var hoje = new Date();
+    var dataPagamento = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
     vendas.forEach(function(v) {
       var vChave = v.grupoVenda || ('OLD-'+v.clienteId+'-'+v.data);
-      if (vChave === chave) v.status = 'Pago';
+      if (vChave === chave) {
+        v.status = 'Pago';
+        v.data = dataPagamento; // Atualiza data para o dia do recebimento
+        v.dataOriginal = v.dataOriginal || v.data; // Preserva data original da venda
+      }
     });
     save('vendas', vendas);
+    // Sync Firebase
+    if (window._firebaseReady && window._fb) {
+      window._fb.saveCollection('vendas', load('vendas')).catch(function(){});
+    }
     renderVendas();
-    showToast('✅ Conta marcada como paga!');
+    renderContasReceber();
+    if (typeof renderDashboard === 'function') renderDashboard();
+    showToast('✅ Conta marcada como paga! Receita registrada em ' + dataPagamento.split('-').reverse().join('/'));
   });
 }
 
