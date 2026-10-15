@@ -7536,7 +7536,7 @@ function renderPainelFinanceiroAdmin() {
           dreRow('= Receita Líquida', fmtMoney(receitaTotal), '#34d399', true, true) +
           (receitaCredEntradas > 0 ? dreRow('(+) Entradas Crediário', '+ ' + fmtMoney(receitaCredEntradas), '#34d399', false, false) : '') +
           (receitaCredParcelas > 0 ? dreRow('(+) Parcelas Recebidas', '+ ' + fmtMoney(receitaCredParcelas), '#a3e635', false, false) : '') +
-          (credAReceber > 0 ? dreRow('📋 Crediário a Receber', fmtMoney(credAReceber), 'rgba(251,191,36,.8)', false, false) : '') +
+          // Crediário a Receber não entra no DRE (é expectativa futura, não resultado realizado)
           dreRow('(-) Taxas Cartão', '- ' + fmtMoney(taxas2), '#eab308', false, false) +
           dreRow('(-) Custo Produtos', '- ' + fmtMoney(custo), '#fbbf24', false, false) +
           dreRow('(-) Comissões', '- ' + fmtMoney(comissaoTotal), '#fb923c', false, false) +
