@@ -7117,7 +7117,7 @@ function renderPainelFinanceiroAdmin() {
   var vendasMesAntComp = todasVendasComp.filter(function(v){ return (v.data||'').startsWith(mesAntStr2); });
   var receitaMesAntComp = calcReceitaGrupos(vendasMesAntComp);
   // Comparativo: receita do período atual vs mês anterior
-  var receitaComp = receitaMesAntComp > 0 ? ((receita - receitaMesAntComp) / receitaMesAntComp * 100) : 0;
+  var receitaComp = receitaMesAntComp > 0 ? ((receitaTotal - receitaMesAntComp) / receitaMesAntComp * 100) : 0;
   var compSeta = receitaComp >= 0 ? '↑' : '↓';
   var compCor = receitaComp >= 0 ? '#34d399' : '#f87171';
   // Incluir entradas manuais (aportes, etc.)
@@ -7146,6 +7146,8 @@ function renderPainelFinanceiroAdmin() {
   var receitaEntradasNormal = entradasPeriodo.filter(function(e){ return !(e.auto === true && e.categoria === 'Crediário'); }).reduce(function(s,e){ return s+(e.valor||0); },0);
   var receitaCrediarioParcelas = entradasPeriodo.filter(function(e){ return e.auto === true && e.categoria === 'Crediário'; }).reduce(function(s,e){ return s+(e.valor||0); },0);
   var receitaEntradas = receitaEntradasNormal + receitaCrediarioParcelas; // Regime de caixa: tudo que entrou
+  // Receita total = vendas à vista + todas as entradas (incluindo crediário)
+  var receitaTotal = receita + receitaEntradas;
 
   // ── Crediário a Receber (parcelas pendentes do período) ──
   var todasVendasCred = load('vendas').filter(function(v){
@@ -7315,32 +7317,32 @@ function renderPainelFinanceiroAdmin() {
       return s + desconto;
     },0) + Object.values(gruposDescContados).reduce(function(s,d){ return s+d; },0);
     // Receita Bruta = Receita Líquida + Descontos reais (consistente, sem distorção do crediário)
-    var receitaBruta = receita + totalDescontosAdmin;
+    var receitaBruta = receitaTotal + totalDescontosAdmin;
     var totalTaxas = vendas.reduce(function(s,v){
       if(v.taxaValor && v.taxaValor>0) return s+v.taxaValor;
       if(typeof calcTaxaVenda==='function'){ var tp=calcTaxaVenda(v.pag||'',v.parcelas||1); if(tp>0){ var tv=v.totalReal!==undefined?v.totalReal:calcTotal(v); return s+tv*(tp/100); } }
       return s;
     },0);
-    var receitaLiquidaOp = receita - totalTaxas;
-    var lucroOpNovo = receitaLiquidaOp + receitaEntradas + receitaCrediarioParcelas - custo - comissaoTotal;
+    var receitaLiquidaOp = receitaTotal - totalTaxas;
+    var lucroOpNovo = receitaLiquidaOp - custo - comissaoTotal;
     var lucroLiqNovo = lucroOpNovo - totalDespesas;
-    var margemNova = receita > 0 ? lucroLiqNovo/receita*100 : 0;
+    var margemNova = receitaTotal > 0 ? lucroLiqNovo/receitaTotal*100 : 0;
 
     var lucroColor = lucroLiqNovo >= 0 ? '#34d399' : '#f87171';
     var lucroGrad = lucroLiqNovo >= 0 ? '#166534,#16a34a' : '#991b1b,#dc2626';
 
     // ── Meta de Faturamento + Projeção + Ticket Médio ──
     var metaFat = parseFloat(localStorage.getItem('otica_meta_faturamento') || '5000');
-    var pctMeta = metaFat > 0 ? Math.min(100, receita / metaFat * 100) : 0;
+    var pctMeta = metaFat > 0 ? Math.min(100, receitaTotal / metaFat * 100) : 0;
     var corMeta = pctMeta >= 100 ? '#34d399' : pctMeta >= 70 ? '#fbbf24' : '#f87171';
-    var faltaMeta = Math.max(0, metaFat - receita);
+    var faltaMeta = Math.max(0, metaFat - receitaTotal);
     // Projeção do mês (só para filtro "mes")
     var filtroAtualProj = document.getElementById('dash-fin-filtro')?.value || 'mes';
     var projecaoHtml = '';
     if (filtroAtualProj === 'mes') {
       var diaAtual = new Date().getDate();
       var diasMes = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
-      var projecao = diaAtual > 0 ? (receita / diaAtual) * diasMes : 0;
+      var projecao = diaAtual > 0 ? (receitaTotal / diaAtual) * diasMes : 0;
       var corProj = projecao >= metaFat ? '#34d399' : '#fbbf24';
       projecaoHtml = '<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.7);margin-top:6px">' +
         '<span>📆 Projeção do mês (dia ' + diaAtual + '/' + diasMes + '):</span>' +
@@ -7350,7 +7352,7 @@ function renderPainelFinanceiroAdmin() {
     // Ticket médio e nº vendas do período
     var gruposUnicos = new Set(vendas.map(function(v){ return v.grupoVenda || v.id; }));
     var nVendas = gruposUnicos.size;
-    var ticketMedio = nVendas > 0 ? receita / nVendas : 0;
+    var ticketMedio = nVendas > 0 ? receitaTotal / nVendas : 0;
     // Comparativo com mês anterior
     var compHtml = receitaMesAntComp > 0 ?
       '<span style="color:' + compCor + ';font-size:11px;font-weight:700"> ' + compSeta + ' ' + Math.abs(receitaComp).toFixed(1) + '% vs mês ant.</span>' : '';
@@ -7360,7 +7362,7 @@ function renderPainelFinanceiroAdmin() {
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
         '<div style="font-size:13px;font-weight:700;color:#e8c96a">🎯 Meta de Faturamento — ' + (filtroAtualProj === 'mes' ? 'Este Mês' : 'Período') + '</div>' +
         '<div style="display:flex;gap:8px;align-items:center">' +
-          '<span style="font-size:12px;color:rgba(255,255,255,.7)">' + fmtMoney(receita) + ' / ' + fmtMoney(metaFat) + '</span>' +
+          '<span style="font-size:12px;color:rgba(255,255,255,.7)">' + fmtMoney(receitaTotal) + ' / ' + fmtMoney(metaFat) + '</span>' +
           '<button onclick="editarMetaOtica()" style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);color:#e8c96a;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer">✏️</button>' +
         '</div>' +
       '</div>' +
@@ -7451,7 +7453,7 @@ function renderPainelFinanceiroAdmin() {
     fin.innerHTML =
       mkCardComp('&#x1F4B0;', 'Receita Bruta', receitaBruta, '#a3e635', 'preço cheio', undefined, receitaMesAntComp) +
       mkCard('&#x1F3F7;', '(-) Descontos', totalDescontosAdmin, '#f472b6', 'concedidos') +
-      mkCardComp('&#x1F4B5;', '= Receita Líquida', receita, '#34d399', vendas.length + ' vendas', receitaComp, receitaMesAntComp) +
+      mkCardComp('&#x1F4B5;', '= Receita Líquida', receitaTotal, '#34d399', vendas.length + ' vendas', receitaComp, receitaMesAntComp) +
       (receitaCrediarioParcelas > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
         '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Recebimentos Crediário</div>' +
         '<div style=\"font-size:20px;font-weight:800;color:#34d399\">' + fmtMoney(receitaCrediarioParcelas) + '</div>' +
