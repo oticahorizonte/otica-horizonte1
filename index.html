@@ -7117,7 +7117,7 @@ function renderPainelFinanceiroAdmin() {
   var vendasMesAntComp = todasVendasComp.filter(function(v){ return (v.data||'').startsWith(mesAntStr2); });
   var receitaMesAntComp = calcReceitaGrupos(vendasMesAntComp);
   // Comparativo: receita do período atual vs mês anterior
-  var receitaComp = receitaMesAntComp > 0 ? ((receitaTotal - receitaMesAntComp) / receitaMesAntComp * 100) : 0;
+  var receitaComp = (receitaMesAntComp > 0 && !isNaN(receitaTotal) && !isNaN(receitaMesAntComp)) ? ((receitaTotal - receitaMesAntComp) / receitaMesAntComp * 100) : 0;
   var compSeta = receitaComp >= 0 ? '↑' : '↓';
   var compCor = receitaComp >= 0 ? '#34d399' : '#f87171';
   // Incluir entradas manuais (aportes, etc.)
@@ -7354,7 +7354,7 @@ function renderPainelFinanceiroAdmin() {
         '</div>';
     }
     // Ticket médio e nº vendas do período
-    var gruposUnicos = new Set(vendas.map(function(v){ return v.grupoVenda || v.id; }));
+    var todasVendasNV = vendas.concat(vendasCredPendente || []); var gruposUnicos = new Set(todasVendasNV.map(function(v){ return v.grupoVenda || v.id; }));
     var nVendas = gruposUnicos.size;
     var ticketMedio = nVendas > 0 ? receitaTotal / nVendas : 0;
     // Comparativo com mês anterior
@@ -7520,7 +7520,7 @@ function renderPainelFinanceiroAdmin() {
     var receitaCredParcelas = typeof receitaCredParcelas !== 'undefined' ? receitaCredParcelas : 0;
     var credAReceber = typeof credAReceber !== 'undefined' ? credAReceber : 0;
     var credAReceberCount = typeof credAReceberCount !== 'undefined' ? credAReceberCount : 0;
-    var margemFinal = receita > 0 ? lucroFinal/receita*100 : 0;
+    var margemFinal = receitaTotal > 0 ? lucroFinal/receitaTotal*100 : 0;
 
     function dreRow(label, value, color, bold, borderTop) {
       var style = 'display:flex;justify-content:space-between;' + (borderTop ? 'border-top:2px solid rgba(255,255,255,.3);padding-top:8px;margin-top:4px;' : '') + 'color:' + (color||'rgba(255,255,255,.7)') + ';' + (bold ? 'font-weight:700;font-size:14px;' : 'font-size:12px;');
@@ -7533,7 +7533,7 @@ function renderPainelFinanceiroAdmin() {
         '<div style="display:grid;gap:6px">' +
           dreRow('Receita Bruta', fmtMoney(recBruta2), 'rgba(255,255,255,.9)', false, false) +
           dreRow('(-) Descontos', '- ' + fmtMoney(descAdmin2), '#f472b6', false, false) +
-          dreRow('= Receita Líquida', fmtMoney(receita), '#34d399', true, true) +
+          dreRow('= Receita Líquida', fmtMoney(receitaTotal), '#34d399', true, true) +
           (receitaCredEntradas > 0 ? dreRow('(+) Entradas Crediário', '+ ' + fmtMoney(receitaCredEntradas), '#34d399', false, false) : '') +
           (receitaCredParcelas > 0 ? dreRow('(+) Parcelas Recebidas', '+ ' + fmtMoney(receitaCredParcelas), '#a3e635', false, false) : '') +
           (credAReceber > 0 ? dreRow('📋 Crediário a Receber', fmtMoney(credAReceber), 'rgba(251,191,36,.8)', false, false) : '') +
