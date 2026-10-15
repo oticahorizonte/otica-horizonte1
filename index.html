@@ -6909,7 +6909,9 @@ function renderDashboard() {
     // Cada registro de venda é um item individual (não array de itens)
     vendas2.forEach(function(v) {
       if (v.status === 'Cancelado' || v.status === 'Pendente') return;
-      var valor = v.totalReal !== undefined ? v.totalReal : (v.preco||0)*(v.qtd||1);
+      // Para crediário: usar entrada paga proporcional (regime de caixa)
+      var valorBruto = v.totalReal !== undefined ? v.totalReal : (v.preco||0)*(v.qtd||1);
+      var valor = (v.pag === 'Crediário Próprio' && v.crediario && v.status === 'Pendente') ? (v.crediario.entrada || 0) : valorBruto;
       // Óculos completo
       if (v.tipo === 'oculos-completo' || v.produto === 'OCULOS-COMPLETO') {
         var detalhes = v.detalhes || [];
@@ -9816,8 +9818,9 @@ function renderRelatorios() {
 
   // ── TOP PRODUTOS ──
   var prodCount={};
-  vendas.forEach(function(v) {
-    if (v.status === 'Cancelado' || v.status === 'Pendente') return;
+  // Incluir todas as vendas do período (incluindo crediário Pendente)
+  todasVendasRel.forEach(function(v) {
+    if (v.status === 'Cancelado') return;
     var valor = v.totalReal !== undefined ? v.totalReal : (v.preco||0)*(v.qtd||1);
     // Óculos completo
     if (v.tipo === 'oculos-completo' || v.produto === 'OCULOS-COMPLETO') {
@@ -9838,23 +9841,31 @@ function renderRelatorios() {
     prodCount[cod].qtd += (v.qtd||1);
     prodCount[cod].total += valor;
   });
+  var topProdSorted = Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total);
+  window._relTopProdCompleto = topProdSorted;
   var topProdEl=document.getElementById('rel-top-produtos');
-  if(topProdEl) topProdEl.innerHTML=Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).slice(0,5).map(([cod,d],i)=>`
+  if(topProdEl) topProdEl.innerHTML=topProdSorted.slice(0,5).map(([cod,d],i)=>`
     <tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${d.desc}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── TOP CLIENTES ──
   var cliMap={};
   var cliNomeMap=Object.fromEntries(clientes.map(c=>[c.id,c.nome]));
-  vendas.forEach(v=>{
+  // Incluir todas as vendas (incluindo crediário Pendente)
+  todasVendasRel.forEach(v=>{
     // Usar clienteId (número) como chave principal
     var cid=v.clienteId||v.cliente||'';if(!cid)return;
     var nome=v.clienteNome||cliNomeMap[cid]||cliNomeMap[parseInt(cid)]||cid;
     cliMap[cid]=cliMap[cid]||{nome:nome,compras:0,total:0,ultima:''};
-    cliMap[cid].compras++;cliMap[cid].total+=calcTotal(v);
+    cliMap[cid].compras++;
+    // Para crediário Pendente: usar entrada paga (regime de caixa)
+    var valorCli = (v.pag === 'Crediário Próprio' && v.crediario && v.status === 'Pendente') ? (v.crediario.entrada || 0) : calcTotal(v);
+    cliMap[cid].total+=valorCli;
     if((v.data||'')>cliMap[cid].ultima)cliMap[cid].ultima=v.data||'';
   });
+  var topCliSorted = Object.values(cliMap).sort((a,b)=>b.total-a.total);
+  window._relTopCliCompleto = topCliSorted;
   var topCliEl=document.getElementById('rel-top-clientes');
-  if(topCliEl) topCliEl.innerHTML=Object.values(cliMap).sort((a,b)=>b.total-a.total).slice(0,5).map((c,i)=>`
+  if(topCliEl) topCliEl.innerHTML=topCliSorted.slice(0,5).map((c,i)=>`
     <tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${c.nome}</td><td>${c.compras}</td><td class="fw-bold">${fmtMoney(c.total)}</td><td>${c.ultima?new Date(c.ultima+'T12:00').toLocaleDateString('pt-BR'):'-'}</td></tr>`).join('')||'<tr><td colspan="4" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── OS COMPLETO ──
@@ -10414,8 +10425,10 @@ function imprimirRelatorioCompleto() {
     prodCount[cod]=prodCount[cod]||{desc:desc,qtd:0,total:0};
     prodCount[cod].qtd+=(v.qtd||1); prodCount[cod].total+=valor;
   });
-  var topProdHtml = Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total).map(([cod,d],i)=>
+  // Top Produtos COMPLETO para impressão (sem limite)
+  var topProdHtml = (window._relTopProdCompleto || Object.entries(prodCount).sort((a,b)=>b[1].total-a[1].total)).map(([cod,d],i)=>
     `<tr><td><span style="font-weight:700;color:#0d2b4e">${i+1}.</span> ${d.desc}</td><td>${d.qtd}</td><td style="font-weight:700">${fmtMoney(d.total)}</td></tr>`
+  var topCliHtmlCompleto = (window._relTopCliCompleto || []).map((c,i)=>`<tr><td><span style=\"font-weight:700;color:#0d2b4e\">${i+1}.</span> ${c.nome}</td><td>${c.compras}</td><td class=\"fw-bold\">${fmtMoney(c.total)}</td><td>${c.ultima?new Date(c.ultima+'T12:00').toLocaleDateString('pt-BR'):'-'}</td></tr>`).join('') || '<tr><td colspan=\"4\" style=\"padding:16px;text-align:center;color:#94a3b8\">Sem dados</td></tr>';
   ).join('') || '<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // Análise Financeira SEM LIMITE
@@ -10482,6 +10495,9 @@ function imprimirRelatorioCompleto() {
       }
       if(b.querySelector('#rel-top-produtos')) {
         bHtml = bHtml.replace(/<tbody id="rel-top-produtos">[\s\S]*?<\/tbody>/, '<tbody id="rel-top-produtos">' + topProdHtml + '</tbody>');
+      }
+      if(b.querySelector('#rel-top-clientes')) {
+        bHtml = bHtml.replace(/<tbody id=\"rel-top-clientes\">[\\s\\S]*?<\/tbody>/, '<tbody id=\"rel-top-clientes\">' + topCliHtmlCompleto + '</tbody>');
       }
       if(b.querySelector('#rel-financeiro-tbody')) {
         bHtml = bHtml.replace(/<tbody id="rel-financeiro-tbody">[\s\S]*?<\/tbody>/, '<tbody id="rel-financeiro-tbody">' + finHtml + '</tbody>');
@@ -12954,7 +12970,6 @@ function renderGraficos() {
       prodCount[v.produto]=(prodCount[v.produto]||0)+(v.qtd||1);
     }
   });
-  const topProds = Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const topEl = document.getElementById('chart-top-produtos');
   if (topEl) {
     topEl.innerHTML = topProds.length ? topProds.map(([cod,qtd])=>`
