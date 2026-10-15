@@ -9786,14 +9786,30 @@ function renderRelatorios() {
 
   // ── PAGAMENTOS ──
   var pags={};
-  vendas.forEach(v=>{pags[v.pag]=pags[v.pag]||{qtd:0,total:0};pags[v.pag].qtd++;pags[v.pag].total+=calcTotal(v);});
+  // Vendas à vista (não crediário)
+  vendas.filter(function(v){ return v.pag !== 'Crediário Próprio'; }).forEach(function(v){
+    pags[v.pag]=pags[v.pag]||{qtd:0,total:0};
+    pags[v.pag].qtd++;
+    pags[v.pag].total+=calcTotal(v);
+  });
+  // Crediário: usar entradas pagas no período (regime de caixa)
+  if(entradasCredRel > 0) {
+    pags['Crediário Próprio'] = pags['Crediário Próprio'] || {qtd:0, total:0};
+    // Contar vendas em crediário do período (incluindo Pendente)
+    var nCredPeriodo = new Set(todasVendasRel.filter(function(v){ return v.pag === 'Crediário Próprio'; }).map(function(v){ return v.grupoVenda || v.id; })).size;
+    pags['Crediário Próprio'].qtd = nCredPeriodo;
+    pags['Crediário Próprio'].total = entradasCredRel;
+  }
   var pagEl=document.getElementById('rel-pagamentos');
   if(pagEl) pagEl.innerHTML=Object.entries(pags).sort((a,b)=>b[1].total-a[1].total).slice(0,5).map(([p,d])=>`
     <tr><td>${p}</td><td>${d.qtd}</td><td class="fw-bold">${fmtMoney(d.total)}</td><td>${totalVendas>0?(d.total/totalVendas*100).toFixed(1)+'%':'0%'}</td></tr>`).join('')||'<tr><td colspan="4" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
 
   // ── OS POR STATUS ──
   var osStatus={};
-  os.forEach(o=>{osStatus[o.status]=(osStatus[o.status]||0)+1;});
+  // Contar apenas OS de conserto (não montagem - que é vinculada à venda)
+  os.filter(function(o){ return o.tipoOS !== 'montagem'; }).forEach(function(o){
+    osStatus[o.status]=(osStatus[o.status]||0)+1;
+  });
   var osStatusEl=document.getElementById('rel-os-status');
   if(osStatusEl) osStatusEl.innerHTML=Object.entries(osStatus).slice(0,5).map(([s,n])=>`
     <tr><td>${statusBadge(s)}</td><td>${n}</td><td>${os.length>0?(n/os.length*100).toFixed(1)+'%':'0%'}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:16px;text-align:center;color:#94a3b8">Sem dados</td></tr>';
