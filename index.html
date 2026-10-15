@@ -7142,10 +7142,10 @@ function renderPainelFinanceiroAdmin() {
     if (filtro2==='tudo') return true;
     return (e.data||'')>=dataInicioEntStr;
   });
-  // Separar entradas normais das entradas automáticas do crediário
+  // Todas as entradas do período entram na receita (regime de caixa)
   var receitaEntradasNormal = entradasPeriodo.filter(function(e){ return !(e.auto === true && e.categoria === 'Crediário'); }).reduce(function(s,e){ return s+(e.valor||0); },0);
   var receitaCrediarioParcelas = entradasPeriodo.filter(function(e){ return e.auto === true && e.categoria === 'Crediário'; }).reduce(function(s,e){ return s+(e.valor||0); },0);
-  var receitaEntradas = receitaEntradasNormal; // Entradas normais (não duplica crediário)
+  var receitaEntradas = receitaEntradasNormal + receitaCrediarioParcelas; // Regime de caixa: tudo que entrou
 
   // ── Crediário a Receber (parcelas pendentes do período) ──
   var todasVendasCred = load('vendas').filter(function(v){
