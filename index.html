@@ -7144,7 +7144,11 @@ function renderPainelFinanceiroAdmin() {
   });
   // Todas as entradas do período entram na receita (regime de caixa)
   var receitaEntradasNormal = entradasPeriodo.filter(function(e){ return !(e.auto === true && e.categoria === 'Crediário'); }).reduce(function(s,e){ return s+(e.valor||0); },0);
-  var receitaCrediarioParcelas = entradasPeriodo.filter(function(e){ return e.auto === true && e.categoria === 'Crediário'; }).reduce(function(s,e){ return s+(e.valor||0); },0);
+  // Separar entradas de crediário: entrada inicial vs parcelas pagas
+  var entradasCredTodas = entradasPeriodo.filter(function(e){ return e.auto === true && e.categoria === 'Crediário'; });
+  var receitaCredEntradas = entradasCredTodas.filter(function(e){ return e.tipoEntrada === 'entrada_inicial'; }).reduce(function(s,e){ return s+(e.valor||0); },0);
+  var receitaCredParcelas = entradasCredTodas.filter(function(e){ return e.tipoEntrada !== 'entrada_inicial'; }).reduce(function(s,e){ return s+(e.valor||0); },0);
+  var receitaCrediarioParcelas = receitaCredEntradas + receitaCredParcelas; // total crediário
   var receitaEntradas = receitaEntradasNormal + receitaCrediarioParcelas; // Regime de caixa: tudo que entrou
   // Receita total = vendas à vista + todas as entradas (incluindo crediário)
   var receitaTotal = receita + receitaEntradas;
@@ -7454,10 +7458,15 @@ function renderPainelFinanceiroAdmin() {
       mkCardComp('&#x1F4B0;', 'Receita Bruta', receitaBruta, '#a3e635', 'preço cheio', undefined, receitaMesAntComp) +
       mkCard('&#x1F3F7;', '(-) Descontos', totalDescontosAdmin, '#f472b6', 'concedidos') +
       mkCardComp('&#x1F4B5;', '= Receita Líquida', receitaTotal, '#34d399', vendas.length + ' vendas', receitaComp, receitaMesAntComp) +
-      (receitaCrediarioParcelas > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
-        '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Recebimentos Crediário</div>' +
-        '<div style=\"font-size:20px;font-weight:800;color:#34d399\">' + fmtMoney(receitaCrediarioParcelas) + '</div>' +
-        '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">entradas e parcelas pagas</div>' +
+      (receitaCredEntradas > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B0; Entradas Crediário</div>' +
+        '<div style=\"font-size:20px;font-weight:800;color:#34d399\">' + fmtMoney(receitaCredEntradas) + '</div>' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">pagas no ato da venda</div>' +
+      '</div>' : '') +
+      (receitaCredParcelas > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4B3; Parcelas Recebidas</div>' +
+        '<div style=\"font-size:20px;font-weight:800;color:#a3e635\">' + fmtMoney(receitaCredParcelas) + '</div>' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">parcelas pagas no período</div>' +
       '</div>' : '') +
       (credAReceber > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
         '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4CB; Crediário a Receber</div>' +
@@ -7507,6 +7516,8 @@ function renderPainelFinanceiroAdmin() {
     var lucroFinal = typeof lucroLiqNovo !== 'undefined' ? lucroLiqNovo : lucroLiquido;
     var lucroOperacional = typeof lucroOpNovo !== 'undefined' ? lucroOpNovo : (receita - custo - comissaoTotal - taxas2);
     var receitaCrediarioParcelas = typeof receitaCrediarioParcelas !== 'undefined' ? receitaCrediarioParcelas : 0;
+    var receitaCredEntradas = typeof receitaCredEntradas !== 'undefined' ? receitaCredEntradas : 0;
+    var receitaCredParcelas = typeof receitaCredParcelas !== 'undefined' ? receitaCredParcelas : 0;
     var credAReceber = typeof credAReceber !== 'undefined' ? credAReceber : 0;
     var credAReceberCount = typeof credAReceberCount !== 'undefined' ? credAReceberCount : 0;
     var margemFinal = receita > 0 ? lucroFinal/receita*100 : 0;
@@ -7523,7 +7534,8 @@ function renderPainelFinanceiroAdmin() {
           dreRow('Receita Bruta', fmtMoney(recBruta2), 'rgba(255,255,255,.9)', false, false) +
           dreRow('(-) Descontos', '- ' + fmtMoney(descAdmin2), '#f472b6', false, false) +
           dreRow('= Receita Líquida', fmtMoney(receita), '#34d399', true, true) +
-          (receitaCrediarioParcelas > 0 ? dreRow('(+) Recebimentos Crediário', '+ ' + fmtMoney(receitaCrediarioParcelas), '#34d399', false, false) : '') +
+          (receitaCredEntradas > 0 ? dreRow('(+) Entradas Crediário', '+ ' + fmtMoney(receitaCredEntradas), '#34d399', false, false) : '') +
+          (receitaCredParcelas > 0 ? dreRow('(+) Parcelas Recebidas', '+ ' + fmtMoney(receitaCredParcelas), '#a3e635', false, false) : '') +
           (credAReceber > 0 ? dreRow('📋 Crediário a Receber', fmtMoney(credAReceber), 'rgba(251,191,36,.8)', false, false) : '') +
           dreRow('(-) Taxas Cartão', '- ' + fmtMoney(taxas2), '#eab308', false, false) +
           dreRow('(-) Custo Produtos', '- ' + fmtMoney(custo), '#fbbf24', false, false) +
