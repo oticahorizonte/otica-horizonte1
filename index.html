@@ -7162,8 +7162,36 @@ function renderPainelFinanceiroAdmin() {
     });
   });
 
-  // Custo: soma dos custos dos itens de cada venda
-  var custo = vendas.reduce(function(s,v){
+  // Custo: soma dos custos de TODAS as vendas do período (incluindo crediário Pendente)
+  // O produto já saiu do estoque, então o custo deve ser contabilizado
+  var todasVendasPeriodo2 = getFiltroVendasAdmin(filtroAtual);
+  // Adicionar vendas em crediário Pendente que não entram em getFiltroVendasAdmin
+  var vendasCredPendente = load('vendas').filter(function(v){
+    return v.pag === 'Crediário Próprio' && v.status === 'Pendente' && v.status !== 'Cancelado';
+  });
+  // Filtrar pelo período
+  var filtro3 = document.getElementById('dash-fin-filtro')?.value || 'mes';
+  var hoje4 = new Date();
+  var dataInicioCred = new Date();
+  if(filtro3==='hoje') dataInicioCred = new Date(hoje4.getFullYear(),hoje4.getMonth(),hoje4.getDate());
+  else if(filtro3==='semana') dataInicioCred = new Date(hoje4.getTime()-7*86400000);
+  else if(filtro3==='mes') dataInicioCred = new Date(hoje4.getFullYear(),hoje4.getMonth(),1);
+  else if(filtro3==='mes_ant') dataInicioCred = new Date(hoje4.getFullYear(),hoje4.getMonth()-1,1);
+  else if(filtro3==='trimestre') dataInicioCred = new Date(hoje4.getFullYear(),Math.floor(hoje4.getMonth()/3)*3,1);
+  else if(filtro3==='ano') dataInicioCred = new Date(hoje4.getFullYear(),0,1);
+  else dataInicioCred = new Date('2020-01-01');
+  var dataInicioCredStr = dataInicioCred.getFullYear()+'-'+String(dataInicioCred.getMonth()+1).padStart(2,'0')+'-'+String(dataInicioCred.getDate()).padStart(2,'0');
+  if(filtro3==='mes_ant') {
+    var mAntCred = new Date(hoje4.getFullYear(),hoje4.getMonth()-1,1);
+    var mAntCredStr = mAntCred.getFullYear()+'-'+String(mAntCred.getMonth()+1).padStart(2,'0');
+    vendasCredPendente = vendasCredPendente.filter(function(v){ return (v.data||'').startsWith(mAntCredStr); });
+  } else if(filtro3 !== 'tudo') {
+    vendasCredPendente = vendasCredPendente.filter(function(v){ return (v.data||'') >= dataInicioCredStr; });
+  }
+  var todasVendasCusto = vendas.concat(vendasCredPendente);
+
+  // Custo: soma dos custos de todas as vendas do período
+  var custo = todasVendasCusto.reduce(function(s,v){
     // Tentar calcular custo de várias formas
     // 1. Se tem campo itens (vendas compostas)
     var itens = v.itens || [];
