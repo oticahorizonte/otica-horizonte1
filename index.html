@@ -6986,7 +6986,7 @@ function renderDashboard() {
   document.getElementById('dash-cards').innerHTML = `
     <div class="stat-card"><div class="label">👥 Clientes Ativos</div><div class="value">${clientes.length}</div><div class="sub">cadastrados</div></div>
     <div class="stat-card ${agendHojeCount>0?'green':''}"><div class="label">📅 Agendamentos Hoje</div><div class="value">${agendHojeCount}</div><div class="sub">${agendHojeCount>0?agendHojeHoras:'Nenhum hoje'}</div></div>
-    <div class="stat-card ${orcPendCount>0?'orange':''}"><div class="label">📝 OrÃ§amentos Pendentes</div><div class="value">${orcPendCount}</div><div class="sub">${fmtMoney(orcPendValor)} em aberto</div></div>
+    <div class="stat-card ${orcPendCount>0?'orange':''}"><div class="label">📝 Orçamentos Pendentes</div><div class="value">${orcPendCount}</div><div class="sub">${fmtMoney(orcPendValor)} em aberto</div></div>
     <div class="stat-card ${corSaldo}"><div class="label">💵 Saldo Hoje</div><div class="value">${fmtMoney(saldoHoje)}</div><div class="sub">${vendasHoje2.length} vendas hoje</div></div>
     <div class="stat-card orange"><div class="label">🔧 OS em Aberto</div><div class="value">${osAberto}</div><div class="sub">aguardando</div></div>
     <div class="stat-card ${baixoEstoque>0?'red':''}"><div class="label">📦 Estoque Baixo</div><div class="value">${baixoEstoque}</div><div class="sub">produtos</div></div>
@@ -16932,7 +16932,7 @@ function renderContasReceber() {
   if (!body) return;
 
   var clMap = Object.fromEntries(load('clientes').map(function(c){ return [c.id, c.nome]; }));
-  var vendas = load('vendas').filter(function(v){ return v.status === 'Pendente'; });
+  var vendas = load('vendas').filter(function(v){ return v.status === 'Pendente' && v.pag !== 'Crediário Próprio'; });
   
   var grupos = {};
   vendas.forEach(function(v) {
