@@ -1,5 +1,5 @@
-// v489 - força atualização do cache
-const CACHE_VERSION = 'v489';
+// v494 - força atualização do cache
+const CACHE_VERSION = 'v494';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
