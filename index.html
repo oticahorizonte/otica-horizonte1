@@ -7395,13 +7395,11 @@ function renderPainelFinanceiroAdmin() {
     '</div>';
 
     var finEl2 = document.getElementById('dash-fin-cards');
-      // Usar ID para evitar duplicação
-      var existingMeta = document.getElementById('dash-meta-faturamento-block');
-      if (existingMeta) {
-        existingMeta.outerHTML = metaBlock;
-      } else {
-        finEl2.insertAdjacentHTML('beforebegin', metaBlock);
-      }
+      // Remover TODOS os blocos de meta anteriores antes de inserir
+      var allMetas = document.querySelectorAll('#dash-meta-faturamento-block');
+      allMetas.forEach(function(el){ el.remove(); });
+      // Inserir novo bloco
+      finEl2.insertAdjacentHTML('beforebegin', metaBlock);
 
     // Calcular Lucro Operacional (sem despesas)
     var lucroOperacional = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
@@ -7430,12 +7428,9 @@ function renderPainelFinanceiroAdmin() {
         if (finEl3) {
           // Remover alertas anteriores para evitar duplicação
           // Usar ID para evitar duplicação
-          var existingAlerta = document.getElementById('dash-alerta-margem');
-          if (existingAlerta) {
-            existingAlerta.outerHTML = alertaMargem;
-          } else {
-            finEl3.insertAdjacentHTML('beforebegin', alertaMargem);
-          }
+          // Remover alertas anteriores e inserir novo
+          document.querySelectorAll('#dash-alerta-margem').forEach(function(el){ el.remove(); });
+          finEl3.insertAdjacentHTML('beforebegin', alertaMargem);
       }
     }
 
