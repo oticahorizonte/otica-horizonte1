@@ -2941,7 +2941,6 @@ function instalarApp() {
 </div>
 </div>
 </section></main></div>
-
 <!-- ── RECEITAS ── -->
 <section class="section" id="sec-receitas">
 <div class="topbar">
@@ -3119,7 +3118,7 @@ function instalarApp() {
 <!-- CABEÇALHO DE IMPRESSÃO (só aparece ao imprimir) -->
 <div id="rel-print-header" style="display:none">
 <div style="display:flex;align-items:center;gap:16px;border-bottom:3px solid #0d2b4e;padding-bottom:12px;margin-bottom:20px">
-<img onerror="this.style.display='none'" src="icon-192.png?expires=1789224015&amp;signature=7044519a8c9c3f3cd54c9a1f763b6f01420afa507a908ee68f4ce0e353d62056&amp;kid=prod-250922" style="width:60px;height:60px;border-radius:50%;object-fit:contain"/>
+<img onerror="this.style.display='none'" src="icon-192.png?expires=1795269993&amp;signature=f4d438bc121bd3fb558cccdf77f08e8e6f1c04c1116934fc71ae8904a79d94c3&amp;kid=prod-250922" style="width:60px;height:60px;border-radius:50%;object-fit:contain"/>
 <div>
 <div style="font-size:20px;font-weight:800;color:#0d2b4e">Ótica Horizonte</div>
 <div style="font-size:11px;color:#64748b">CNPJ: 64.448.745/0001-09 | Rua Henrique Martins, 481, Galeria Fábrica dos Óculos, 2º piso, loja 10</div>
@@ -3401,7 +3400,6 @@ function instalarApp() {
 </div>
 </div>
 </section>
-
 <!-- Modal Nova Entrada Financeira -->
 <div class="modal-overlay" id="modal-entrada" style="display:none">
 <div class="modal" style="max-width:480px">
@@ -4373,8 +4371,6 @@ function instalarApp() {
 </div>
 </div>
 </div>
-
-
 <!-- Modal Recibo de Venda -->
 <!-- Modal Novo Orçamento -->
 <div class="modal-overlay" id="modal-novo-orcamento" style="display:none">
@@ -4570,8 +4566,6 @@ function instalarApp() {
 </div>
 </div>
 </div>
-
-
 <!-- Modal Recibo de Venda -->
 <div class="modal-overlay" id="modal-recibo" style="display:none">
 <div class="modal" style="max-width:560px">
@@ -4892,18 +4886,18 @@ function instalarApp() {
 </div>
 <!-- Taxas por Forma de Pagamento -->
 <div class="card" style="margin-bottom:16px">
-<div class="card-header"><h3>&#x1F4B3; Taxas por Forma de Pagamento</h3></div>
+<div class="card-header"><h3>💳 Taxas por Forma de Pagamento</h3></div>
 <div class="card-body">
 <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Configure as taxas cobradas pelas operadoras. Descontadas automaticamente do lucro nas vendas.</p>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">PIX (%)</label><input id="taxa-pix" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="0.0"/></div>
-  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Dinheiro (%)</label><input id="taxa-dinheiro" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="0.0"/></div>
-  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Cartão Débito (%)</label><input id="taxa-debito" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="1.5"/></div>
-  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito à Vista (%)</label><input id="taxa-credito-1x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="2.5"/></div>
-  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 2x-6x (%)</label><input id="taxa-credito-6x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="3.2"/></div>
-  <div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 7x-10x (%)</label><input id="taxa-credito-10x" type="number" step="0.1" min="0" max="10" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" placeholder="3.8"/></div>
+<div><label style="font-size:11px;font-weight:700;color:#0d2b4e">PIX (%)</label><input id="taxa-pix" max="10" min="0" placeholder="0.0" step="0.1" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" type="number"/></div>
+<div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Dinheiro (%)</label><input id="taxa-dinheiro" max="10" min="0" placeholder="0.0" step="0.1" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" type="number"/></div>
+<div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Cartão Débito (%)</label><input id="taxa-debito" max="10" min="0" placeholder="1.5" step="0.1" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" type="number"/></div>
+<div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito à Vista (%)</label><input id="taxa-credito-1x" max="10" min="0" placeholder="2.5" step="0.1" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" type="number"/></div>
+<div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 2x-6x (%)</label><input id="taxa-credito-6x" max="10" min="0" placeholder="3.2" step="0.1" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" type="number"/></div>
+<div><label style="font-size:11px;font-weight:700;color:#0d2b4e">Crédito 7x-10x (%)</label><input id="taxa-credito-10x" max="10" min="0" placeholder="3.8" step="0.1" style="width:100%;padding:6px 10px;border:2px solid #dde3ee;border-radius:8px;font-size:13px" type="number"/></div>
 </div>
-<button class="btn btn-primary" onclick="salvarTaxasCartao()" style="width:100%">&#x1F4BE; Salvar Taxas</button>
+<button class="btn btn-primary" onclick="salvarTaxasCartao()" style="width:100%">💾 Salvar Taxas</button>
 </div>
 </div>
 <!-- Backup Local -->
@@ -16093,10 +16087,12 @@ function renderContasCrediario() {
       <td class="fw-bold" style="color:${p.vencido?'#dc2626':'#0d2b4e'}">${fmtMoney(p.valor)}</td>
       <td><span class="badge ${corStatus}">${labelStatus}</span></td>
       <td>
+
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-success" onclick="pagarParcelaCrediario('${p.vendaId}',${p.parcIdx})" data-tip="Marcar como pago">✅ Pagar</button>`:''}
         ${p.status!=='Pago'?`<button class="btn btn-sm btn-outline" onclick="editarDataParcela('${p.vendaId}',${p.parcIdx},'${p.data}')" data-tip="Editar data">📅</button>`:''}
-        ${p.status==='Pago'?`<button class="btn btn-sm btn-outline" onclick="editarParcelaPaga('${p.vendaId}',${p.parcIdx})" data-tip="Editar data">✏️ Editar</button>`:''}
-        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="excluirVendaCrediario('${p.grupoVenda||p.vendaId}')" data-tip="Excluir venda e todas as parcelas" style="font-size:11px" title="Excluir venda">🗑️</button>`:''}
+
+        ${p.status!=='Pago'?`<button class="btn btn-sm" onclick="whatsappCobranca('${p.clienteNome}','${p.vendaId}',${p.parcIdx+1},${p.total},'${p.data}',${p.valor})" data-tip="Lembrete WhatsApp" style="background:#25d366;color:white">📱</button>`:''}
+        ${isAdmin()?`<button class="btn btn-sm btn-danger" onclick="excluirVendaCrediario('${p.grupoVenda||p.vendaId}')" data-tip="Excluir venda" style="font-size:11px">🗑️</button>`:''}
       </td>
     </tr>`;
   }).join('') : '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-muted)">Nenhuma parcela de crediário</td></tr>';
@@ -17905,7 +17901,7 @@ var _keysOriginalPL = null;
 <!-- Logo grande em destaque -->
 <div style="display:flex;justify-content:center;margin-bottom:10px">
 <div style="border-radius:16px;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5);border:2px solid rgba(201,168,76,.8);width:140px;height:140px;display:flex;align-items:center;justify-content:center">
-<img alt="Ótica Horizonte" class="sidebar-logo-img" src="icon-192.png?expires=1789224015&amp;signature=7044519a8c9c3f3cd54c9a1f763b6f01420afa507a908ee68f4ce0e353d62056&amp;kid=prod-250922" style="width:140px;height:140px;object-fit:contain;display:block;transform:scale(1.6);transform-origin:center center"/>
+<img alt="Ótica Horizonte" class="sidebar-logo-img" src="icon-192.png?expires=1795269993&amp;signature=f4d438bc121bd3fb558cccdf77f08e8e6f1c04c1116934fc71ae8904a79d94c3&amp;kid=prod-250922" style="width:140px;height:140px;object-fit:contain;display:block;transform:scale(1.6);transform-origin:center center"/>
 </div>
 </div>
 <!-- Nome e tagline -->
