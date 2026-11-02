@@ -7149,15 +7149,17 @@ function renderPainelFinanceiroAdmin() {
   // Receita total = vendas à vista + todas as entradas (incluindo crediário)
   var receitaTotal = receita + receitaEntradas;
 
-  // ── Crediário a Receber (parcelas pendentes do período) ──
+  // ── Crediário a Receber (parcelas pendentes com vencimento no mês atual) ──
   var todasVendasCred = load('vendas').filter(function(v){
     return v.pag === 'Crediário Próprio' && v.crediario && v.crediario.parcelas && v.status !== 'Cancelado';
   });
   var credAReceber = 0;
   var credAReceberCount = 0;
+  var hojeCred = new Date();
+  var mesAtualCred = hojeCred.getFullYear()+'-'+String(hojeCred.getMonth()+1).padStart(2,'0');
   todasVendasCred.forEach(function(v){
     v.crediario.parcelas.forEach(function(p){
-      if(p.status !== 'Pago') {
+      if(p.status !== 'Pago' && (p.data||'').slice(0,7) === mesAtualCred) {
         credAReceber += p.valor || 0;
         credAReceberCount++;
       }
@@ -7462,7 +7464,7 @@ function renderPainelFinanceiroAdmin() {
       (credAReceber > 0 ? '<div style=\"background:linear-gradient(135deg,#1e3a5f,#2d6cdf);border-radius:12px;padding:14px;text-align:center\">' +
         '<div style=\"font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4CB; Crediário a Receber</div>' +
         '<div style=\"font-size:20px;font-weight:800;color:#fbbf24\">' + fmtMoney(credAReceber) + '</div>' +
-        '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">' + credAReceberCount + ' parcela(s) pendente(s)</div>' +
+        '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">' + credAReceberCount + ' parcela(s) pendente(s) com vencimento neste mês</div>' +
       '</div>' : '') +
       mkCard('&#x1F4E6;', '(-) Custo Produtos', custo, '#fbbf24', 'mercadoria') +
       mkCard('&#x1F488;', '(-) Comissões', comissaoTotal, '#fb923c', 'indicadores') +
