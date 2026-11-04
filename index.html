@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
 <title>Ótica Horizonte — Sistema de Gestão v494</title>
+<script src="./js/finance-core.js"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
 <style>
@@ -2018,6 +2019,10 @@ async function zerarVendasOS() {
 
     window._fb = {
       async saveCollection(colName, data) {
+        var syncState = window._cloudSyncState || (window._cloudSyncState = {pending:0, modules:{}, lastSuccessAt:0});
+        syncState.pending++;
+        syncState.modules[colName] = {status:'saving', updatedAt:Date.now(), error:''};
+        if (typeof window.atualizarSyncIndicator === 'function') window.atualizarSyncIndicator();
         try {
           // Para produtos: NUNCA remover fotos Cloudinary (URLs https://)
           if (colName === 'produtos' && Array.isArray(data)) {
@@ -2030,8 +2035,16 @@ async function zerarVendasOS() {
           }
           var jsonStr = JSON.stringify(data);
           await setDoc(doc(db, '_collections', colName), { data: jsonStr, ts: Date.now() });
+          syncState.pending = Math.max(0, syncState.pending-1);
+          syncState.modules[colName] = {status:'saved', updatedAt:Date.now(), error:''};
+          syncState.lastSuccessAt = Date.now();
+          localStorage.setItem('otica_ultimo_sync', String(syncState.lastSuccessAt));
+          if (typeof window.atualizarSyncIndicator === 'function') window.atualizarSyncIndicator();
           return true;
         } catch(e) {
+          syncState.pending = Math.max(0, syncState.pending-1);
+          syncState.modules[colName] = {status:'error', updatedAt:Date.now(), error:e && e.message ? e.message : 'Falha desconhecida'};
+          if (typeof window.atualizarSyncIndicator === 'function') window.atualizarSyncIndicator();
           console.error('Firebase save error:', colName, e.message);
           // Mostrar erro visivel ao usuario
           if (typeof showToast === 'function') {
@@ -4904,9 +4917,10 @@ function instalarApp() {
 <div class="card" style="margin-bottom:16px">
 <div class="card-header"><h3>💾 Backup Local</h3></div>
 <div class="card-body">
-<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Exporte todos os dados em formato JSON como segurança extra além da nuvem.</p>
-<div style="display:flex;gap:10px">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">O sistema guarda uma cópia automática diária neste dispositivo por até 14 dias. Baixe uma cópia JSON para guardar em outro local. Senhas, sessão e token do GitHub não entram no arquivo.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
 <button class="btn btn-success" onclick="exportarBackup();closeModal('modal-config')">💾 Exportar Backup</button>
+<button class="btn btn-outline" onclick="baixarUltimoBackupAutomatico();closeModal('modal-config')">⬇️ Baixar última cópia automática</button>
 <button class="btn btn-outline" onclick="importarBackup();closeModal('modal-config')">📂 Restaurar Backup</button>
 </div>
 <input accept=".json" id="backup-file-input" onchange="processarBackup(this)" style="display:none" type="file"/>
@@ -5573,6 +5587,7 @@ async function syncLocalToCloud() {
   showToast('☁️ Enviando TODOS os dados para a nuvem...', 'success');
   try {
     var ok = 0;
+    var falhas = [];
     // Enviar todos os módulos críticos
     var modulosCriticos = ['clientes','receitas','produtos','vendas','os',
       'agendamentos','composicoes','historico_estoque','despesas','entradas',
@@ -5582,19 +5597,28 @@ async function syncLocalToCloud() {
         var data = JSON.parse(localStorage.getItem(KEYS[k] || ('otica_'+k)) || '[]');
         var saved = await window._fb.saveCollection(k, data);
         if (saved) ok++;
-      } catch(e) { console.warn('Erro ao enviar', k, e.message); }
+        else falhas.push(k);
+      } catch(e) { falhas.push(k); console.warn('Erro ao enviar', k, e.message); }
     }
     // Fotos Cloudinary
     var prods = JSON.parse(localStorage.getItem('otica_produtos') || '[]');
     var fotosMap = {};
     prods.forEach(function(p){ if(p.foto && p.foto.startsWith('https://')) fotosMap[p.cod]={foto:p.foto,catalogo:p.catalogo||false}; });
-    if (Object.keys(fotosMap).length > 0) { await window._fb.saveCollection('fotos_produtos', fotosMap); ok++; }
+    if (Object.keys(fotosMap).length > 0) {
+      if (await window._fb.saveCollection('fotos_produtos', fotosMap)) ok++;
+      else falhas.push('fotos_produtos');
+    }
     // Meta de faturamento
     var metaFat = localStorage.getItem('otica_meta_faturamento');
-    if (metaFat) { await window._fb.saveCollection('meta_faturamento', {valor: metaFat}); ok++; }
-    localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+    if (metaFat) {
+      if (await window._fb.saveCollection('meta_faturamento', {valor: metaFat})) ok++;
+      else falhas.push('meta_faturamento');
+    }
+    if (!falhas.length) localStorage.setItem('otica_ultimo_sync', Date.now().toString());
     if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
-    showToast('✅ ' + ok + ' módulos enviados para a nuvem!', 'success');
+    if (falhas.length) showToast('⚠️ ' + ok + ' módulos enviados; falha em: ' + falhas.join(', '), 'warning');
+    else showToast('✅ ' + ok + ' módulos enviados para a nuvem!', 'success');
+    return {ok:ok, falhas:falhas};
   } catch(e) {
     console.error('Erro no sync para nuvem:', e);
     showToast('⚠️ Erro ao enviar dados. Tente novamente.', 'error');
@@ -6079,6 +6103,7 @@ function finalizarLogin(userObj, usuarios) {
               }
             }).catch(function(){});
             if (loadingEl) loadingEl.style.display = 'none';
+            if (typeof iniciarBackupAutomaticoLocal === 'function') iniciarBackupAutomaticoLocal();
             // Renderizar dashboard com dados ja carregados
             var _u3=loadUser(); showSection(_u3&&_u3.nivel!=='Admin'?'comissoes':'dashboard');
             aplicarControleAcesso();
@@ -6092,6 +6117,7 @@ function finalizarLogin(userObj, usuarios) {
     } else {
       var loadingEl = document.getElementById('app-loading-overlay');
       if (loadingEl) loadingEl.style.display = 'none';
+      if (typeof iniciarBackupAutomaticoLocal === 'function') iniciarBackupAutomaticoLocal();
       var _u3=loadUser(); showSection(_u3&&_u3.nivel!=='Admin'?'comissoes':'dashboard');
       aplicarControleAcesso();
     }
@@ -7150,21 +7176,9 @@ function renderPainelFinanceiroAdmin() {
   var receitaTotal = receita + receitaEntradas;
 
   // ── Crediário a Receber (parcelas pendentes com vencimento no mês atual) ──
-  var todasVendasCred = load('vendas').filter(function(v){
-    return v.pag === 'Crediário Próprio' && v.crediario && v.crediario.parcelas && v.status !== 'Cancelado';
-  });
-  var credAReceber = 0;
-  var credAReceberCount = 0;
-  var hojeCred = new Date();
-  var mesAtualCred = hojeCred.getFullYear()+'-'+String(hojeCred.getMonth()+1).padStart(2,'0');
-  todasVendasCred.forEach(function(v){
-    v.crediario.parcelas.forEach(function(p){
-      if(p.status !== 'Pago' && (p.data||'').slice(0,7) === mesAtualCred) {
-        credAReceber += p.valor || 0;
-        credAReceberCount++;
-      }
-    });
-  });
+  var resumoCrediarioMes = window.OticaFinanceCore.calcularCrediarioPendenteMes(load('vendas'), new Date());
+  var credAReceber = resumoCrediarioMes.total;
+  var credAReceberCount = resumoCrediarioMes.quantidade;
 
   // Custo: soma dos custos de TODAS as vendas do período (incluindo crediário Pendente)
   // O produto já saiu do estoque, então o custo deve ser contabilizado
@@ -7640,15 +7654,47 @@ function atualizarSyncIndicator() {
   var icon = document.getElementById('sync-icon');
   var text = document.getElementById('sync-text');
   if (!icon || !text) return;
+  var state = window._cloudSyncState || {pending:0, modules:{}, lastSuccessAt:0};
+  var falhas = Object.keys(state.modules || {}).filter(function(k){ return state.modules[k] && state.modules[k].status === 'error'; });
+  if (!navigator.onLine) {
+    icon.textContent = '☁️⚠️'; text.textContent = 'Sem conexão';
+    text.title = 'Alterações locais aguardam conexão com a nuvem.';
+    return;
+  }
+  if (!window._firebaseReady || !window._fb) {
+    icon.textContent = '☁️⏳'; text.textContent = 'Conectando à nuvem…';
+    text.title = 'Aguardando conexão com o Firebase.';
+    return;
+  }
+  if (state.pending > 0) {
+    icon.textContent = '☁️↻'; text.textContent = 'Salvando na nuvem…';
+    text.title = state.pending + ' gravação(ões) em andamento.';
+    return;
+  }
+  if (falhas.length) {
+    icon.textContent = '☁️⚠️'; text.textContent = 'Falha ao sincronizar';
+    text.title = 'Verifique: ' + falhas.join(', ') + '. Uma gravação posterior bem-sucedida limpa o aviso daquela área.';
+    return;
+  }
   var ultimo = localStorage.getItem('otica_ultimo_sync');
   if (ultimo) {
-    var diff = Math.floor((Date.now() - parseInt(ultimo)) / 60000);
-    if (diff < 1) { icon.textContent = '☁️✅'; text.textContent = 'Salvo na nuvem!'; text.style.color='rgba(52,211,153,.9)'; }
-    else if (diff < 5) { icon.textContent = '☁️✅'; text.textContent = 'Sync: '+diff+'min'; text.style.color=''; }
-    else if (diff < 60) { icon.textContent = '☁️'; text.textContent = 'Sync: '+diff+'min atrás'; text.style.color=''; }
-    else { icon.textContent = '☁️⚠️'; text.textContent = 'Sync: '+Math.floor(diff/60)+'h atrás'; text.style.color='rgba(251,146,60,.9)'; }
-  } else { icon.textContent = '☁️⏳'; text.textContent = 'Conectando...'; }
+    var timestamp = parseInt(ultimo,10);
+    if (!isFinite(timestamp)) timestamp = new Date(ultimo).getTime();
+    if (isFinite(timestamp) && timestamp > 0) {
+      var diff = Math.max(0, Math.floor((Date.now() - timestamp) / 60000));
+      var hora = new Date(timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      icon.textContent = '☁️✅';
+      text.textContent = diff < 1 ? 'Salvo na nuvem' : 'Último envio: ' + hora;
+      text.title = 'Última gravação confirmada às ' + hora + '.';
+      text.style.color = 'rgba(52,211,153,.9)';
+      return;
+    }
+  }
+  icon.textContent = '☁️'; text.textContent = 'Nuvem conectada';
+  text.title = 'Ainda não há gravações confirmadas nesta sessão.';
 }
+window.addEventListener('online', atualizarSyncIndicator);
+window.addEventListener('offline', atualizarSyncIndicator);
 setInterval(atualizarSyncIndicator, 60000);
   // Atualizar hora em nova venda em tempo real (a cada segundo)
   setInterval(function() {
@@ -15971,19 +16017,7 @@ function calcCrediario() {
 }
 
 function gerarParcelasCrediario(total, num, intervalo, primeiraData) {
-  var parcelas = [];
-  var valorParc = total / num;
-  var data = new Date(primeiraData + 'T12:00:00');
-  for (var i = 0; i < num; i++) {
-    var d = new Date(data);
-    d.setDate(d.getDate() + intervalo * i);
-    parcelas.push({
-      data: d.toISOString().slice(0,10),
-      valor: i === num-1 ? total - valorParc*(num-1) : valorParc, // última parcela ajustada
-      status: 'Pendente'
-    });
-  }
-  return parcelas;
+  return window.OticaFinanceCore.gerarParcelasCrediario(total, num, intervalo, primeiraData);
 }
 
 function getCrediarioData() {
@@ -16849,31 +16883,138 @@ function excluirOrcamentoPendente(id) {
 // BACKUP / RESTAURAR
 // ══════════════════════════════════════════════════════════════════════════════
 
-function exportarBackup() {
-  var dados = {
-    versao: '1.0',
-    data: new Date().toISOString(),
-    sistema: 'Ótica Horizonte',
-    clientes:     load('clientes'),
-    receitas:     load('receitas'),
-    produtos:     load('produtos'),
-    vendas:       load('vendas'),
-    os:           load('os'),
-    agendamentos: load('agendamentos'),
-    composicoes:  load('composicoes'),
-    despesas:     load('despesas'),
+function getBackupStorageKeys() {
+  var excluded = ['user', 'rascunho_venda', 'usuarios'];
+  var keys = {};
+  Object.keys(KEYS).forEach(function(name) {
+    if (excluded.indexOf(name) === -1) keys[name] = KEYS[name];
+  });
+  // Taxas não está no mapa KEYS em todas as versões do sistema.
+  keys.taxas_cartao = 'otica_taxas_cartao';
+  return keys;
+}
+
+function coletarDadosBackup() {
+  var modulos = {};
+  var keys = getBackupStorageKeys();
+  Object.keys(keys).forEach(function(name) {
+    var raw = localStorage.getItem(keys[name]);
+    if (raw === null) return;
+    try { modulos[name] = JSON.parse(raw); }
+    catch(e) { modulos[name] = raw; }
+  });
+  return modulos;
+}
+
+var _backupDbPromise = null;
+function abrirBackupLocalDb() {
+  if (!window.indexedDB) return Promise.reject(new Error('Armazenamento local de backup indisponível neste navegador.'));
+  if (_backupDbPromise) return _backupDbPromise;
+  _backupDbPromise = new Promise(function(resolve, reject) {
+    var req = indexedDB.open('otica-horizonte-backups', 1);
+    req.onupgradeneeded = function() {
+      var db = req.result;
+      if (!db.objectStoreNames.contains('snapshots')) db.createObjectStore('snapshots', {keyPath:'id'});
+    };
+    req.onsuccess = function(){ resolve(req.result); };
+    req.onerror = function(){ reject(req.error || new Error('Não foi possível abrir o armazenamento de backup.')); };
+  });
+  return _backupDbPromise;
+}
+
+function dataLocalBackupId(date) {
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+}
+
+var _backupAutomaticoInterval = null;
+function iniciarBackupAutomaticoLocal() {
+  if (!loadUser()) return;
+  salvarBackupAutomaticoLocal();
+  if (_backupAutomaticoInterval) clearInterval(_backupAutomaticoInterval);
+  // Detecta a virada do dia mesmo se o app permanecer aberto.
+  _backupAutomaticoInterval = setInterval(salvarBackupAutomaticoLocal, 60*60*1000);
+}
+
+function salvarBackupAutomaticoLocal() {
+  if (!loadUser()) return Promise.resolve(false);
+  var agora = new Date();
+  var backup = {
+    formato: 'otica-horizonte-backup', versao: 2,
+    data: agora.toISOString(), sistema: 'Ótica Horizonte',
+    origem: 'automatico-local', modulos: coletarDadosBackup()
   };
+  return abrirBackupLocalDb().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction('snapshots', 'readwrite');
+      var store = tx.objectStore('snapshots');
+      var id = dataLocalBackupId(agora);
+      var getReq = store.get(id);
+      getReq.onsuccess = function() {
+        if (!getReq.result) store.put(Object.assign({id:id}, backup));
+      };
+      tx.oncomplete = function(){ resolve(true); };
+      tx.onerror = function(){ reject(tx.error || new Error('Falha ao gravar o backup local.')); };
+      tx.onabort = function(){ reject(tx.error || new Error('Gravação do backup local cancelada.')); };
+    });
+  }).then(function(saved) {
+    return abrirBackupLocalDb().then(function(db) {
+      return new Promise(function(resolve) {
+        var tx = db.transaction('snapshots', 'readwrite');
+        var store = tx.objectStore('snapshots');
+        var req = store.getAll();
+        req.onsuccess = function() {
+          (req.result || []).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); }).slice(14).forEach(function(item){ store.delete(item.id); });
+        };
+        tx.oncomplete = function(){ resolve(saved); };
+        tx.onerror = function(){ resolve(saved); };
+      });
+    });
+  }).catch(function(err) {
+    console.warn('Backup automático local não foi concluído:', err);
+    return false;
+  });
+}
+
+function baixarArquivoBackup(dados, sufixo) {
   var json = JSON.stringify(dados, null, 2);
   var blob = new Blob([json], {type: 'application/json'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  var dataStr = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
-  a.href     = url;
-  a.download = 'backup_otica_' + dataStr + '.json';
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var dataStr = new Date(dados.data || Date.now()).toLocaleDateString('pt-BR').replace(/\//g,'-');
+  a.href = url;
+  a.download = 'backup_otica_' + dataStr + (sufixo || '') + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+function baixarUltimoBackupAutomatico() {
+  abrirBackupLocalDb().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var req = db.transaction('snapshots', 'readonly').objectStore('snapshots').getAll();
+      req.onsuccess = function(){ resolve(req.result || []); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }).then(function(backups) {
+    backups.sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+    if (!backups.length) { showToast('Ainda não há cópia automática neste dispositivo.', 'warning'); return; }
+    baixarArquivoBackup(backups[0], '_automatico');
+    showToast('✅ Cópia automática mais recente baixada.');
+  }).catch(function(err) {
+    showToast('Não foi possível abrir o backup local: ' + err.message, 'error');
+  });
+}
+
+function exportarBackup() {
+  var dados = {
+    formato: 'otica-horizonte-backup',
+    versao: 2,
+    data: new Date().toISOString(),
+    sistema: 'Ótica Horizonte',
+    modulos: coletarDadosBackup()
+  };
+  baixarArquivoBackup(dados, '');
   // Salvar data do último backup
   localStorage.setItem('otica_ultimo_backup', new Date().toISOString());
   showToast('✅ Backup exportado com sucesso! Guarde o arquivo em local seguro.');
@@ -16891,24 +17032,53 @@ function processarBackup(input) {
   reader.onload = function(e) {
     try {
       var dados = JSON.parse(e.target.result);
-      // Validar estrutura básica
-      if (!dados.sistema || !dados.clientes) {
+      // Aceitar o formato completo atual e os backups legados v1.
+      var modulosBackup = dados && dados.formato === 'otica-horizonte-backup' && dados.modulos && typeof dados.modulos === 'object'
+        ? dados.modulos
+        : dados;
+      var keysBackup = getBackupStorageKeys();
+      var nomesValidos = Object.keys(keysBackup);
+      var possuiModuloValido = modulosBackup && nomesValidos.some(function(nome){
+        return Object.prototype.hasOwnProperty.call(modulosBackup, nome);
+      });
+      if (!dados || dados.sistema !== 'Ótica Horizonte' || !possuiModuloValido) {
         showToast('❌ Arquivo inválido! Selecione um backup válido da Ótica Horizonte.', 'error');
         return;
       }
-      var msgConf = 'ATENCAO: Isso vai SUBSTITUIR todos os dados atuais pelos dados do backup.' + '\n\nBackup de: ' + new Date(dados.data).toLocaleString('pt-BR') + '\n\nDeseja continuar?';
+      var dataBackup = dados.data && !isNaN(new Date(dados.data).getTime()) ? new Date(dados.data).toLocaleString('pt-BR') : 'data não informada';
+      var msgConf = 'ATENÇÃO: os módulos presentes no backup substituirão os dados locais correspondentes.' + '\n\nBackup de: ' + dataBackup + '\n\nDeseja continuar?';
       confirmar(msgConf, function() {
-        // Restaurar dados
-        if (dados.clientes)     save('clientes',     dados.clientes);
-        if (dados.receitas)     save('receitas',     dados.receitas);
-        if (dados.produtos)     save('produtos',     dados.produtos);
-        if (dados.vendas)       save('vendas',       dados.vendas);
-        if (dados.os)           save('os',           dados.os);
-        if (dados.agendamentos) save('agendamentos', dados.agendamentos);
-        if (dados.composicoes)  save('composicoes',  dados.composicoes);
-        if (dados.despesas)     save('despesas',     dados.despesas);
-        showToast('✅ Backup restaurado com sucesso! Recarregando...');
-        setTimeout(function() { location.reload(); }, 1500);
+        // Não incluir contas, sessão, rascunhos ou tokens no arquivo de backup.
+        var nomesRestaurados = Object.keys(keysBackup).filter(function(nome) {
+          return Object.prototype.hasOwnProperty.call(modulosBackup, nome);
+        });
+        nomesRestaurados.forEach(function(nome) {
+          var valor = modulosBackup[nome];
+          localStorage.setItem(keysBackup[nome], JSON.stringify(valor));
+        });
+        if (!window._firebaseReady || !window._fb) {
+          showToast('Dados restaurados neste dispositivo, mas ainda não sincronizados. Conecte o Firebase e envie os dados antes de recarregar.', 'warning');
+          return;
+        }
+        var gravacoes = nomesRestaurados.map(function(nome) {
+          var valor = modulosBackup[nome];
+          if (nome === 'taxas_cartao' && !Array.isArray(valor)) valor = [valor];
+          if (nome === 'meta_faturamento' && (!valor || typeof valor !== 'object' || Array.isArray(valor) || !Object.prototype.hasOwnProperty.call(valor, 'valor'))) valor = {valor:valor};
+          return window._fb.saveCollection(nome, valor).then(function(ok){ return {nome:nome, ok:ok}; });
+        });
+        Promise.all(gravacoes).then(function(resultados) {
+          var falhas = resultados.filter(function(r){ return !r.ok; });
+          if (falhas.length) {
+            showToast('⚠️ Backup aplicado localmente, mas houve falha ao sincronizar: ' + falhas.map(function(r){return r.nome;}).join(', '), 'warning');
+            return;
+          }
+          localStorage.setItem('otica_ultimo_sync', Date.now().toString());
+          if (typeof atualizarSyncIndicator === 'function') atualizarSyncIndicator();
+          showToast('✅ Backup restaurado e sincronizado com a nuvem.');
+          setTimeout(function(){ location.reload(); }, 1200);
+        }).catch(function(err) {
+          showToast('⚠️ Dados locais restaurados, mas a sincronização falhou: ' + err.message, 'error');
+        });
       });
     } catch(err) {
       showToast('❌ Erro ao ler o arquivo: ' + err.message, 'error');
