@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v495</title>
-<script src="./js/finance-core.js?v=495"></script>
+<title>Ótica Horizonte — Sistema de Gestão v496</title>
+<script src="./js/finance-core.js?v=496"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
 <style>
@@ -11259,6 +11259,33 @@ function salvarConfigComissoes() {
 // MÓDULO FINANCEIRO
 // ══════════════════════════════════════════════════════════════
 
+// Compatibilidade para navegadores que ainda tenham uma versão antiga do finance-core.js em cache.
+function listarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial) {
+  var core = window.OticaFinanceCore;
+  if (core && typeof core.listarSaidasFinanceiras === 'function') {
+    return core.listarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial);
+  }
+  var inicio = String(dataInicial || '');
+  var saidas = (Array.isArray(despesas) ? despesas : []).map(function(d){
+    return Object.assign({}, d, {_origemSaida:'despesa'});
+  });
+  (Array.isArray(retiradasProLabore) ? retiradasProLabore : []).forEach(function(p){
+    if (!p) return;
+    saidas.push({id:p.id,data:p.data||'',cat:'Pró-labore',desc:'Retirada de pró-labore'+(p.referencia?' — '+p.referencia:''),valor:Number(p.valor)||0,recorrente:'nao',referencia:p.referencia||'',obs:p.obs||'',_origemSaida:'prolabore'});
+  });
+  return saidas.filter(function(s){ return !inicio || String(s.data||'') >= inicio; })
+    .sort(function(a,b){ return String(b.data||'').localeCompare(String(a.data||'')); });
+}
+
+function totalizarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial) {
+  var core = window.OticaFinanceCore;
+  if (core && typeof core.totalizarSaidasFinanceiras === 'function') {
+    return core.totalizarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial);
+  }
+  return listarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial)
+    .reduce(function(total,s){ return total+(Number(s.valor)||0); },0);
+}
+
 function switchFinTab(tab) {
   ['fluxo','saidas','entradas'].forEach(function(t) {
     var panel = document.getElementById('fin-panel-'+t);
@@ -11298,7 +11325,7 @@ function renderSaldoDia() {
   var totalEntradas = receitaOperacional + receitaEntradas;
   
   // Saidas do dia
-  var saidasHoje = window.OticaFinanceCore.listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], hoje)
+  var saidasHoje = listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], hoje)
     .filter(function(s){ return (s.data||'').startsWith(hoje); });
   var totalSaidas = saidasHoje.reduce(function(s,d){ return s+(Number(d.valor)||0); },0);
   
@@ -11376,7 +11403,7 @@ function renderFluxoCaixa() {
   });
   
   // Despesas e retiradas de pró-labore no caixa. Pró-labore não compõe despesas operacionais.
-  window.OticaFinanceCore.listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], dataInicioStr).forEach(function(d) {
+  listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], dataInicioStr).forEach(function(d) {
     var dt = (d.data||'').slice(0,10);
     if (!dt || dt < dataInicioStr) return;
     if (!diasMap[dt]) diasMap[dt] = {entradas:0, saidas:0};
@@ -11486,7 +11513,7 @@ function verDetalhesDia(data) {
   var vendasDia = load('vendas').filter(function(v){ return (v.data||'').startsWith(data); });
   var osDia = load('os').filter(function(o){ return (o.abertura||'').startsWith(data) && o.tipoOS!=='montagem'; });
   var entradasDia = load('entradas').filter(function(e){ return (e.data||'').startsWith(data); });
-  var saidasDia = window.OticaFinanceCore.listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], data)
+  var saidasDia = listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], data)
     .filter(function(s){ return (s.data||'').startsWith(data); });
   var despesasDia = saidasDia.filter(function(s){ return s._origemSaida==='despesa'; });
   var retiradasDia = saidasDia.filter(function(s){ return s._origemSaida==='prolabore'; });
@@ -11610,9 +11637,9 @@ function renderDespesas() {
   var todas = load('despesas');
   var despesas = periodo==='tudo' ? todas : todas.filter(d=>(d.data||'')>=dataInicioStr);
   var retiradasTodas = load('prolabore') || [];
-  var linhasSaidas = window.OticaFinanceCore.listarSaidasFinanceiras(todas, retiradasTodas, periodo==='tudo' ? '' : dataInicioStr);
+  var linhasSaidas = listarSaidasFinanceiras(todas, retiradasTodas, periodo==='tudo' ? '' : dataInicioStr);
   var qtdSaidas = linhasSaidas.length;
-  var saidasTotal = window.OticaFinanceCore.totalizarSaidasFinanceiras(todas, retiradasTodas, periodo==='tudo' ? '' : dataInicioStr);
+  var saidasTotal = totalizarSaidasFinanceiras(todas, retiradasTodas, periodo==='tudo' ? '' : dataInicioStr);
   var cats = {};
   linhasSaidas.forEach(function(d){ cats[d.cat]=(cats[d.cat]||0)+(Number(d.valor)||0); });
   var topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
@@ -18152,7 +18179,7 @@ var _keysOriginalPL = null;
 <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
 <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v495</div>
+<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v496</div>
 </div>
 </aside>
 </body>

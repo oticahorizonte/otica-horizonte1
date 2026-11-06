@@ -2,7 +2,9 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   gerarParcelasCrediario,
-  calcularCrediarioPendenteMes
+  calcularCrediarioPendenteMes,
+  listarSaidasFinanceiras,
+  totalizarSaidasFinanceiras
 } = require('../js/finance-core.js');
 
 test('parcelas fecham o total em centavos e ajustam a última parcela', () => {
@@ -54,4 +56,29 @@ test('crediário do mês considera também o ano na virada do calendário', () =
   ]}}];
 
   assert.deepEqual(calcularCrediarioPendenteMes(vendas, new Date(2027, 0, 1)), {total:30, quantidade:1});
+});
+
+test('retirada de pró-labore aparece nas saídas e no total do caixa sem alterar despesas originais', () => {
+  const despesas = [{id:7,data:'2026-11-04',cat:'Aluguel',desc:'Loja',valor:800}];
+  const retiradas = [{id:'PL-1',data:'2026-11-05',valor:500,referencia:'Novembro/2026'}];
+
+  const saidas = listarSaidasFinanceiras(despesas, retiradas, '2026-11-01');
+
+  assert.equal(saidas.length, 2);
+  assert.equal(saidas[0]._origemSaida, 'prolabore');
+  assert.equal(saidas[0].cat, 'Pró-labore');
+  assert.equal(saidas[0].valor, 500);
+  assert.equal(totalizarSaidasFinanceiras(despesas, retiradas, '2026-11-01'), 1300);
+  assert.deepEqual(despesas, [{id:7,data:'2026-11-04',cat:'Aluguel',desc:'Loja',valor:800}]);
+});
+
+test('saídas financeiras respeitam a data inicial e aceitam listas ausentes', () => {
+  const saidas = listarSaidasFinanceiras(
+    [{data:'2026-10-31',valor:100},{data:'2026-11-01',valor:20}],
+    [{id:'PL-2',data:'2026-10-30',valor:50},{id:'PL-3',data:'2026-11-02',valor:30}],
+    '2026-11-01'
+  );
+
+  assert.deepEqual(saidas.map(s=>s.valor), [30,20]);
+  assert.equal(totalizarSaidasFinanceiras(null, null), 0);
 });

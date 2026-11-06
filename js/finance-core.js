@@ -55,8 +55,41 @@
     return resultado;
   }
 
+  function listarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial) {
+    var inicio = String(dataInicial || '');
+    var saidas = (Array.isArray(despesas) ? despesas : []).map(function(despesa) {
+      return Object.assign({}, despesa, {_origemSaida:'despesa'});
+    });
+    (Array.isArray(retiradasProLabore) ? retiradasProLabore : []).forEach(function(retirada) {
+      if (!retirada) return;
+      saidas.push({
+        id:retirada.id,
+        data:retirada.data || '',
+        cat:'Pró-labore',
+        desc:'Retirada de pró-labore' + (retirada.referencia ? ' — ' + retirada.referencia : ''),
+        valor:Number(retirada.valor) || 0,
+        recorrente:'nao',
+        referencia:retirada.referencia || '',
+        obs:retirada.obs || '',
+        _origemSaida:'prolabore'
+      });
+    });
+    return saidas.filter(function(saida) {
+      return !inicio || String(saida.data || '') >= inicio;
+    }).sort(function(a,b) {
+      return String(b.data || '').localeCompare(String(a.data || ''));
+    });
+  }
+
+  function totalizarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial) {
+    return listarSaidasFinanceiras(despesas, retiradasProLabore, dataInicial)
+      .reduce(function(total, saida) { return total + (Number(saida.valor) || 0); }, 0);
+  }
+
   return {
     gerarParcelasCrediario: gerarParcelasCrediario,
-    calcularCrediarioPendenteMes: calcularCrediarioPendenteMes
+    calcularCrediarioPendenteMes: calcularCrediarioPendenteMes,
+    listarSaidasFinanceiras: listarSaidasFinanceiras,
+    totalizarSaidasFinanceiras: totalizarSaidasFinanceiras
   };
 });
