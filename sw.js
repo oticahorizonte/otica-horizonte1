@@ -1,6 +1,6 @@
 // Cache de recursos estáticos do sistema. Dados do Firebase nunca entram no cache.
 const CACHE_PREFIX = 'otica-horizonte-shell-';
-const CACHE_NAME = CACHE_PREFIX + 'v495';
+const CACHE_NAME = CACHE_PREFIX + 'v496';
 const APP_SHELL = [
   './',
   './index.html',

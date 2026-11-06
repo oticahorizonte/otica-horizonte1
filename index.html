@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v494</title>
-<script src="./js/finance-core.js"></script>
+<title>Ótica Horizonte — Sistema de Gestão v495</title>
+<script src="./js/finance-core.js?v=495"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
 <style>
@@ -2183,6 +2183,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
       console.log('✅ Service Worker registrado:', reg.scope);
+      if (navigator.onLine && typeof reg.update === 'function') reg.update().catch(function(){});
     }).catch(function(e) { console.warn('SW error:', e); });
   });
 }
@@ -11297,8 +11298,9 @@ function renderSaldoDia() {
   var totalEntradas = receitaOperacional + receitaEntradas;
   
   // Saidas do dia
-  var despesasHoje = load('despesas').filter(function(d){ return (d.data||'').startsWith(hoje); });
-  var totalSaidas = despesasHoje.reduce(function(s,d){ return s+(d.valor||0); },0);
+  var saidasHoje = window.OticaFinanceCore.listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], hoje)
+    .filter(function(s){ return (s.data||'').startsWith(hoje); });
+  var totalSaidas = saidasHoje.reduce(function(s,d){ return s+(Number(d.valor)||0); },0);
   
   var saldo = totalEntradas - totalSaidas;
   var cor = saldo >= 0 ? '#16a34a' : '#dc2626';
@@ -11373,12 +11375,12 @@ function renderFluxoCaixa() {
     diasMap[d].entradas += (e.valor||0);
   });
   
-  // Despesas
-  load('despesas').forEach(function(d) {
+  // Despesas e retiradas de pró-labore no caixa. Pró-labore não compõe despesas operacionais.
+  window.OticaFinanceCore.listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], dataInicioStr).forEach(function(d) {
     var dt = (d.data||'').slice(0,10);
     if (!dt || dt < dataInicioStr) return;
     if (!diasMap[dt]) diasMap[dt] = {entradas:0, saidas:0};
-    diasMap[dt].saidas += (d.valor||0);
+    diasMap[dt].saidas += (Number(d.valor)||0);
   });
   
   var dias = Object.keys(diasMap).sort().reverse();
@@ -11484,13 +11486,17 @@ function verDetalhesDia(data) {
   var vendasDia = load('vendas').filter(function(v){ return (v.data||'').startsWith(data); });
   var osDia = load('os').filter(function(o){ return (o.abertura||'').startsWith(data) && o.tipoOS!=='montagem'; });
   var entradasDia = load('entradas').filter(function(e){ return (e.data||'').startsWith(data); });
-  var despesasDia = load('despesas').filter(function(d){ return (d.data||'').startsWith(data); });
+  var saidasDia = window.OticaFinanceCore.listarSaidasFinanceiras(load('despesas'), load('prolabore') || [], data)
+    .filter(function(s){ return (s.data||'').startsWith(data); });
+  var despesasDia = saidasDia.filter(function(s){ return s._origemSaida==='despesa'; });
+  var retiradasDia = saidasDia.filter(function(s){ return s._origemSaida==='prolabore'; });
   
   var totalVendas = vendasDia.reduce(function(s,v){ return s+calcTotal(v); },0);
   var totalOS = osDia.reduce(function(s,o){ return s+(o.valor||0); },0);
   var totalEntradas = entradasDia.reduce(function(s,e){ return s+(e.valor||0); },0);
   var totalDespesas = despesasDia.reduce(function(s,d){ return s+(d.valor||0); },0);
-  var saldo = totalVendas + totalOS + totalEntradas - totalDespesas;
+  var totalSaidas = saidasDia.reduce(function(s,p){ return s+(Number(p.valor)||0); },0);
+  var saldo = totalVendas + totalOS + totalEntradas - totalSaidas;
   var corSaldo = saldo >= 0 ? '#16a34a' : '#dc2626';
   
   var html = '<div style="padding:16px">'
@@ -11498,7 +11504,7 @@ function verDetalhesDia(data) {
     + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'
     + '<div class="stat-card green"><div class="label">Vendas</div><div class="value" style="font-size:16px">' + fmtMoney(totalVendas) + '</div></div>'
     + '<div class="stat-card"><div class="label">OS</div><div class="value" style="font-size:16px">' + fmtMoney(totalOS) + '</div></div>'
-    + '<div class="stat-card red"><div class="label">Despesas</div><div class="value" style="font-size:16px">' + fmtMoney(totalDespesas) + '</div></div>'
+    + '<div class="stat-card red"><div class="label">Saídas</div><div class="value" style="font-size:16px">' + fmtMoney(totalSaidas) + '</div></div>'
     + '<div class="stat-card" style="border-left:4px solid ' + corSaldo + '"><div class="label">Saldo</div><div class="value" style="font-size:16px;color:' + corSaldo + '">' + fmtMoney(saldo) + '</div></div>'
     + '</div>';
   
@@ -11520,6 +11526,14 @@ function verDetalhesDia(data) {
       + despesasDia.map(function(d) {
           return '<tr><td style="padding:6px;border-bottom:1px solid #f1f5f9">' + d.cat + '</td><td style="padding:6px;border-bottom:1px solid #f1f5f9">' + d.desc + '</td><td style="padding:6px;border-bottom:1px solid #f1f5f9;color:#dc2626;font-weight:700">' + fmtMoney(d.valor) + '</td></tr>';
         }).join('')
+      + '</tbody></table></div>';
+  }
+
+  if (retiradasDia.length > 0) {
+    html += '<div style="margin-bottom:12px"><strong style="color:#c9a84c">💼 Pró-labore (' + retiradasDia.length + ')</strong>'
+      + '<table style="width:100%;font-size:12px;margin-top:6px;border-collapse:collapse">'
+      + '<thead><tr><th style="padding:6px;background:#f8fafc;border-bottom:1px solid #e2e8f0">Referência</th><th style="padding:6px;background:#f8fafc;border-bottom:1px solid #e2e8f0">Descrição</th><th style="padding:6px;background:#f8fafc;border-bottom:1px solid #e2e8f0">Valor</th></tr></thead><tbody>'
+      + retiradasDia.map(function(p){ return '<tr><td style="padding:6px;border-bottom:1px solid #f1f5f9">'+(p.referencia||'—')+'</td><td style="padding:6px;border-bottom:1px solid #f1f5f9">'+(p.obs||'Retirada de pró-labore')+'</td><td style="padding:6px;border-bottom:1px solid #f1f5f9;color:#dc2626;font-weight:700">'+fmtMoney(p.valor)+'</td></tr>'; }).join('')
       + '</tbody></table></div>';
   }
   
@@ -11595,28 +11609,24 @@ function renderDespesas() {
   var dataInicioStr = dataInicio.toISOString().slice(0,10);
   var todas = load('despesas');
   var despesas = periodo==='tudo' ? todas : todas.filter(d=>(d.data||'')>=dataInicioStr);
-  var totalDespesas = despesas.reduce((s,d)=>s+(d.valor||0),0);
+  var retiradasTodas = load('prolabore') || [];
+  var linhasSaidas = window.OticaFinanceCore.listarSaidasFinanceiras(todas, retiradasTodas, periodo==='tudo' ? '' : dataInicioStr);
+  var qtdSaidas = linhasSaidas.length;
+  var saidasTotal = window.OticaFinanceCore.totalizarSaidasFinanceiras(todas, retiradasTodas, periodo==='tudo' ? '' : dataInicioStr);
   var cats = {};
-  despesas.forEach(d=>{ cats[d.cat]=(cats[d.cat]||0)+(d.valor||0); });
+  linhasSaidas.forEach(function(d){ cats[d.cat]=(cats[d.cat]||0)+(Number(d.valor)||0); });
   var topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('despesas-cards').innerHTML = `
-    <div class="stat-card red"><div class="label">Total Despesas</div><div class="value">${fmtMoney(totalDespesas)}</div><div class="sub">${despesas.length} lançamentos</div></div>
+    <div class="stat-card red"><div class="label">Total Saídas</div><div class="value">${fmtMoney(saidasTotal)}</div><div class="sub">${qtdSaidas} lançamentos</div></div>
     <div class="stat-card"><div class="label">Maior Categoria</div><div class="value" style="font-size:16px">${topCat?topCat[0]:'—'}</div><div class="sub">${topCat?fmtMoney(topCat[1]):''}</div></div>
-    <div class="stat-card orange"><div class="label">Média por Lançamento</div><div class="value">${fmtMoney(despesas.length?totalDespesas/despesas.length:0)}</div><div class="sub">por despesa</div></div>
+    <div class="stat-card orange"><div class="label">Média por Lançamento</div><div class="value">${fmtMoney(qtdSaidas?saidasTotal/qtdSaidas:0)}</div><div class="sub">por saída</div></div>
   `;
-  document.getElementById('tb-despesas').innerHTML = despesas.length ? [...despesas].reverse().map(d=>`
-    <tr>
-      <td>${fmtDate(d.data)}</td>
-      <td><span class="badge badge-info">${d.cat}</span></td>
-      <td>${d.desc}</td>
-      <td class="fw-bold" style="color:#dc2626">${fmtMoney(d.valor)}</td>
-      <td>${d.recorrente==='mensal'?'🔄 Mensal':d.recorrente==='anual'?'📅 Anual':'—'}</td>
-      <td>
-        <button class="btn btn-sm btn-outline" onclick="editDespesa(${d.id})" data-tip="Editar">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="delDespesa(${d.id})" data-tip="Excluir">🗑️</button>
-      </td>
-    </tr>
-  `).join('') : '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-muted)">Nenhuma despesa registrada</td></tr>';
+  document.getElementById('tb-despesas').innerHTML = linhasSaidas.length ? linhasSaidas.map(function(d){
+    var acoes = d._origemSaida==='prolabore'
+      ? '<button class="btn btn-sm btn-danger" onclick="excluirProLabore(\''+String(d.id).replace(/'/g,'\\\\\'')+'\')" data-tip="Excluir retirada">🗑️</button>'
+      : '<button class="btn btn-sm btn-outline" onclick="editDespesa('+d.id+')" data-tip="Editar">✏️</button> <button class="btn btn-sm btn-danger" onclick="delDespesa('+d.id+')" data-tip="Excluir">🗑️</button>';
+    return '<tr><td>'+fmtDate(d.data)+'</td><td><span class="badge badge-info">'+d.cat+'</span></td><td>'+d.desc+'</td><td class="fw-bold" style="color:#dc2626">'+fmtMoney(d.valor)+'</td><td>'+(d.recorrente==='mensal'?'🔄 Mensal':d.recorrente==='anual'?'📅 Anual':'—')+'</td><td>'+acoes+'</td></tr>';
+  }).join('') : '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-muted)">Nenhuma saída registrada</td></tr>';
 }
 
 function openNovaDespesa() {
@@ -17987,6 +17997,7 @@ function salvarProLabore() {
   showToast('✅ Retirada de pró-labore registrada!', 'success');
   renderHistoricoProLabore();
   renderPainelFinanceiroAdmin();
+  renderFinanceiro();
 }
 
 function getTaxasCartao() {
@@ -18035,6 +18046,8 @@ function excluirProLabore(id) {
   var historico = (load('prolabore') || []).filter(function(p){ return p.id !== id; });
   save('prolabore', historico);
   renderHistoricoProLabore();
+  renderPainelFinanceiroAdmin();
+  renderFinanceiro();
   showToast('Registro excluído!', 'success');
 }
 
@@ -18139,7 +18152,7 @@ var _keysOriginalPL = null;
 <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
 <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v494</div>
+<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v495</div>
 </div>
 </aside>
 </body>
