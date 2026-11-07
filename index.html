@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v497</title>
-<script src="./js/finance-core.js?v=497"></script>
+<title>Ótica Horizonte — Sistema de Gestão v498</title>
+<script src="./js/finance-core.js?v=498"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
 <style>
@@ -7413,14 +7413,15 @@ function renderPainelFinanceiroAdmin() {
       finEl2.insertAdjacentHTML('beforebegin', metaBlock);
 
     // Calcular Lucro Operacional (sem despesas)
-    var lucroOperacional = receitaLiquidaOp + receitaEntradas - custo - comissaoTotal;
-    var margemOp = receita > 0 ? lucroOperacional/receita*100 : 0;
+    // receitaLiquidaOp já inclui as entradas no caixa via receitaTotal; não somar receitaEntradas outra vez.
+    var lucroOperacional = lucroOpNovo;
+    var margemOp = receitaTotal > 0 ? lucroOperacional/receitaTotal*100 : 0;
     var lucroOpGrad = lucroOperacional >= 0 ? '#0f4c2a,#16a34a' : '#991b1b,#dc2626';
 
     // ── Alerta de Margem Baixa ──
     var margemAlerta = margemOp;
     var alertaMargem = '';
-    if (receita > 0) {
+    if (receitaTotal > 0) {
       if (margemAlerta < 20) {
         alertaMargem = '<div style="background:linear-gradient(135deg,#7f1d1d,#dc2626);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">' +
           '<span style="font-size:20px">🚨</span>' +
@@ -18186,7 +18187,7 @@ var _keysOriginalPL = null;
 <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
 <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v497</div>
+<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v498</div>
 </div>
 </aside>
 </body>
