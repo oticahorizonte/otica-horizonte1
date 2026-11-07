@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v496</title>
-<script src="./js/finance-core.js?v=496"></script>
+<title>Ótica Horizonte — Sistema de Gestão v497</title>
+<script src="./js/finance-core.js?v=497"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
 <style>
@@ -4504,7 +4504,7 @@ function instalarApp() {
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
 <div>
 <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Entrada (R$) *</label>
-<input id="orc-cred-entrada" min="0" oninput="atualizarPreviewCrediario()" placeholder="0,00" step="0.01" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:13px;font-weight:700;background:white" type="number"/>
+<input id="orc-cred-entrada" min="0" oninput="calcOrcCrediario()" placeholder="0,00" step="0.01" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:13px;font-weight:700;background:white" type="number"/>
 </div>
 <div>
 <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Forma entrada</label>
@@ -4514,7 +4514,7 @@ function instalarApp() {
 </div>
 <div>
 <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Nº Parcelas</label>
-<select id="orc-cred-parcelas" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
+<select id="orc-cred-parcelas" onchange="calcOrcCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
 <option value="1">À Vista</option>
 <option value="2">2x</option>
 <option value="3">3x</option>
@@ -4527,7 +4527,7 @@ function instalarApp() {
 </div>
 <div>
 <label style="font-size:10px;color:#92400e;display:block;margin-bottom:2px">Periodicidade</label>
-<select id="orc-cred-periodo" onchange="atualizarPreviewCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
+<select id="orc-cred-periodo" onchange="calcOrcCrediario()" style="width:100%;padding:6px 8px;border:1px solid #d97706;border-radius:6px;font-size:12px;background:white">
 <option value="mensal">Mensal (30 dias)</option>
 <option value="quinzenal">Quinzenal (15 dias)</option>
 <option value="semanal">Semanal (7 dias)</option>
@@ -12513,6 +12513,8 @@ function calcOrcTotais() {
   if (subtotalEl) subtotalEl.textContent = fmtMoney(subtotal);
   if (descInfoEl) descInfoEl.textContent = descReais > 0 ? 'Desconto: ' + fmtMoney(descReais) : '';
   renderOrcCarrinho();
+  var pagEl = document.getElementById('orc-pag');
+  if (pagEl && pagEl.value === 'Crediário Próprio') calcOrcCrediario();
 }
 
 function renderOrcCarrinho() {
@@ -12802,21 +12804,26 @@ function onOrcPagChange() {
 function calcOrcCrediario() {
   var subtotal = _orcItens.reduce(function(s,i){ return s+(i.preco||0)*(i.qtd||1); },0);
   var descReaisEl = document.getElementById('orc-unif-desc-reais');
-  var descReais = parseFloat((descReaisEl?descReaisEl.value:'0')) || 0;
+  var descReais = parseFloat(String(descReaisEl?descReaisEl.value:'0').replace(',','.')) || 0;
   var total = Math.max(0, subtotal - descReais);
   var entradaEl = document.getElementById('orc-cred-entrada');
   var parcelasEl = document.getElementById('orc-cred-parcelas');
   var periodoEl = document.getElementById('orc-cred-periodo');
   var previewEl = document.getElementById('orc-cred-preview');
   if (!entradaEl || !parcelasEl || !previewEl) return;
-  var entrada = parseFloat(entradaEl.value) || 0;
-  var nParcelas = parseInt(parcelasEl.value) || 1;
+  if (total <= 0) {
+    previewEl.innerHTML = '<span style="color:#92400e">Adicione um produto para calcular as parcelas.</span>';
+    return;
+  }
+  var entrada = parseFloat(String(entradaEl.value||'0').replace(',','.')) || 0;
+  var nParcelas = parseInt(parcelasEl.value,10) || 1;
   var restante = total - entrada;
   var valorParcela = nParcelas > 0 ? restante/nParcelas : restante;
   var html = '<div style="font-size:12px;color:#0d2b4e;margin-top:8px">';
   html += '<div>Entrada: <strong>' + fmtMoney(entrada) + '</strong></div>';
   html += '<div>' + nParcelas + 'x de <strong>' + fmtMoney(valorParcela) + '</strong></div>';
   html += '<div>Restante: <strong>' + fmtMoney(restante) + '</strong></div>';
+  html += '<div style="font-size:10px;margin-top:3px">Periodicidade: ' + (periodoEl && periodoEl.value==='quinzenal'?'quinzenal':periodoEl && periodoEl.value==='semanal'?'semanal':'mensal') + '</div>';
   html += '</div>';
   previewEl.innerHTML = html;
 }
@@ -18179,7 +18186,7 @@ var _keysOriginalPL = null;
 <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
 <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v496</div>
+<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v497</div>
 </div>
 </aside>
 </body>
