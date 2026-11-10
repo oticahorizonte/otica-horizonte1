@@ -4,7 +4,10 @@ const {
   gerarParcelasCrediario,
   calcularCrediarioPendenteMes,
   listarSaidasFinanceiras,
-  totalizarSaidasFinanceiras
+  totalizarSaidasFinanceiras,
+  isDespesaOperacional,
+  listarDespesasOperacionais,
+  totalizarDespesasOperacionais
 } = require('../js/finance-core.js');
 
 test('parcelas fecham o total em centavos e ajustam a última parcela', () => {
@@ -81,4 +84,19 @@ test('saídas financeiras respeitam a data inicial e aceitam listas ausentes', (
 
   assert.deepEqual(saidas.map(s=>s.valor), [30,20]);
   assert.equal(totalizarSaidasFinanceiras(null, null), 0);
+});
+
+test('compras de estoque e custos diretos continuam no caixa, mas não são contados como despesa operacional', () => {
+  const saidas = [
+    {cat:'Reposição de Estoque', valor:500},
+    {cat:'Custo Direto da Venda', valor:185},
+    {cat:'Aluguel', valor:290.87}
+  ];
+
+  assert.equal(isDespesaOperacional(saidas[0]), false);
+  assert.equal(isDespesaOperacional(saidas[1]), false);
+  assert.equal(isDespesaOperacional(saidas[2]), true);
+  assert.deepEqual(listarDespesasOperacionais(saidas), [saidas[2]]);
+  assert.equal(totalizarDespesasOperacionais(saidas), 290.87);
+  assert.equal(totalizarSaidasFinanceiras(saidas, []), 975.87);
 });

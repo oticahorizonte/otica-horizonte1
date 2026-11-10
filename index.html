@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v498</title>
-<script src="./js/finance-core.js?v=498"></script>
+<title>Ótica Horizonte — Sistema de Gestão v499</title>
+<script src="./js/finance-core.js?v=499"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
 <style>
@@ -3480,6 +3480,7 @@ function instalarApp() {
 <option>Internet</option>
 <option>Telefone</option>
 <option>Reposição de Estoque</option>
+<option>Custo Direto da Venda</option>
 <option>Salários</option>
 <option>Impostos</option>
 <option>Marketing</option>
@@ -3488,6 +3489,7 @@ function instalarApp() {
 <option>Transporte</option>
 <option>Outros</option>
 </select>
+<div style="font-size:10px;color:#64748b;margin-top:4px">Reposição de estoque e custo direto da venda continuam nas saídas do caixa, mas não reduzem o lucro novamente quando já estão no card Custo Produtos.</div>
 </div>
 <div class="form-group" style="grid-column:1/-1">
 <label>Descrição *</label>
@@ -7115,6 +7117,17 @@ function getFiltroVendasAdmin(filtro) {
   return vendas;
 }
 
+function listarDespesasOperacionais(despesas) {
+  var core = window.OticaFinanceCore;
+  if (core && typeof core.listarDespesasOperacionais === 'function') {
+    return core.listarDespesasOperacionais(despesas);
+  }
+  return (Array.isArray(despesas) ? despesas : []).filter(function(d){
+    var categoria = String(d && d.cat || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    return categoria !== 'reposicao de estoque' && categoria !== 'custo direto da venda';
+  });
+}
+
 function renderPainelFinanceiroAdmin() {
   var user = loadUser();
   var isAdmin = user && (user.nivel==='Admin'||user.nome==='Administrador');
@@ -7292,7 +7305,8 @@ function renderPainelFinanceiroAdmin() {
   } else {
     despesasPeriodo = todasDespesas.filter(function(d){ return (d.data||'')>=dataInicioDesp; });
   }
-  var totalDespesas = despesasPeriodo.reduce(function(s,d){ return s+(d.valor||0); },0);
+  var despesasOperacionaisPeriodo = listarDespesasOperacionais(despesasPeriodo);
+  var totalDespesas = despesasOperacionaisPeriodo.reduce(function(s,d){ return s+(Number(d.valor)||0); },0);
 
   var lucroOperacional = receita + receitaEntradas - custo - comissaoTotal;
   var lucroLiquido = lucroOperacional - totalDespesas;
@@ -7483,7 +7497,7 @@ function renderPainelFinanceiroAdmin() {
         '<div style=\"font-size:20px;font-weight:800;color:#fbbf24\">' + fmtMoney(credAReceber) + '</div>' +
         '<div style=\"font-size:10px;color:rgba(255,255,255,.5)\">' + credAReceberCount + ' parcela(s) pendente(s) com vencimento neste mês</div>' +
       '</div>' : '') +
-      mkCard('&#x1F4E6;', '(-) Custo Produtos', custo, '#fbbf24', 'mercadoria') +
+      mkCard('&#x1F4E6;', '(-) Custo dos Produtos Vendidos', custo, '#fbbf24', 'mercadoria') +
       mkCard('&#x1F488;', '(-) Comissões', comissaoTotal, '#fb923c', 'indicadores') +
       mkCard('&#x1F4B3;', '(-) Taxas Cartão', totalTaxas, '#eab308', 'operadoras') +
       '<div style=\"grid-column:span 3;background:linear-gradient(135deg,\' + lucroOpGrad + \');border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:16px\">' +
@@ -7497,7 +7511,7 @@ function renderPainelFinanceiroAdmin() {
           '<div style=\"font-size:12px;color:rgba(255,255,255,.7)\">Margem: ' + margemOp.toFixed(1) + '%</div>' +
         '</div>' +
       '</div>' +
-      mkCard('&#x1F4B8;', '(-) Despesas Operacionais', totalDespesas, '#f87171', despesasPeriodo.length + ' lançamentos') +
+      mkCard('&#x1F4B8;', '(-) Despesas Operacionais', totalDespesas, '#f87171', despesasOperacionaisPeriodo.length + ' lançamentos') +
       '<div style=\"grid-column:span 2;background:linear-gradient(135deg,\' + lucroGrad + \');border-radius:12px;padding:14px;text-align:center\">' +
         '<div style=\"font-size:10px;color:rgba(255,255,255,.8);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px\">&#x1F4CA; = Lucro Líquido Real</div>' +
         '<div style=\"font-size:26px;font-weight:800;color:white\">' + fmtMoney(lucroLiqNovo) + '</div>' +
@@ -7548,7 +7562,7 @@ function renderPainelFinanceiroAdmin() {
           (receitaCredParcelas > 0 ? dreRow('(+) Parcelas Recebidas', '+ ' + fmtMoney(receitaCredParcelas), '#a3e635', false, false) : '') +
           // Crediário a Receber não entra no DRE (é expectativa futura, não resultado realizado)
           dreRow('(-) Taxas Cartão', '- ' + fmtMoney(taxas2), '#eab308', false, false) +
-          dreRow('(-) Custo Produtos', '- ' + fmtMoney(custo), '#fbbf24', false, false) +
+          dreRow('(-) Custo dos Produtos Vendidos', '- ' + fmtMoney(custo), '#fbbf24', false, false) +
           dreRow('(-) Comissões', '- ' + fmtMoney(comissaoTotal), '#fb923c', false, false) +
           dreRow('= Lucro Operacional', fmtMoney(lucroOperacional), lucroOperacional >= 0 ? '#34d399' : '#f87171', true, true) +
           '<div style=\"font-size:10px;color:rgba(255,255,255,.4);font-style:italic;margin-top:-2px;margin-bottom:4px\">Resultado das vendas, independente das despesas fixas</div>' +
@@ -17969,7 +17983,7 @@ function abrirModalProLabore() {
     if (v.custo && v.custo > 0) return s + (v.custo||0)*(v.qtd||1);
     return s;
   }, 0);
-  var despesas = load('despesas').filter(function(d){ return (d.data||'') >= inicioMes; });
+  var despesas = listarDespesasOperacionais(load('despesas').filter(function(d){ return (d.data||'') >= inicioMes; }));
   var totalDesp = despesas.reduce(function(s,d){ return s+(d.valor||0); },0);
   var lucro = receita - custo - totalDesp;
   if (lucro < 0) lucro = 0;
@@ -18187,7 +18201,7 @@ var _keysOriginalPL = null;
 <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
 <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v498</div>
+<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v499</div>
 </div>
 </aside>
 </body>

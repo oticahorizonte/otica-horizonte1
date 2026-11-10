@@ -86,10 +86,27 @@
       .reduce(function(total, saida) { return total + (Number(saida.valor) || 0); }, 0);
   }
 
+  function isDespesaOperacional(despesa) {
+    var categoria = String(despesa && despesa.cat || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    return categoria !== 'reposicao de estoque' && categoria !== 'custo direto da venda';
+  }
+
+  function listarDespesasOperacionais(despesas) {
+    return (Array.isArray(despesas) ? despesas : []).filter(isDespesaOperacional);
+  }
+
+  function totalizarDespesasOperacionais(despesas) {
+    return listarDespesasOperacionais(despesas)
+      .reduce(function(total, despesa) { return total + (Number(despesa.valor) || 0); }, 0);
+  }
+
   return {
     gerarParcelasCrediario: gerarParcelasCrediario,
     calcularCrediarioPendenteMes: calcularCrediarioPendenteMes,
     listarSaidasFinanceiras: listarSaidasFinanceiras,
-    totalizarSaidasFinanceiras: totalizarSaidasFinanceiras
+    totalizarSaidasFinanceiras: totalizarSaidasFinanceiras,
+    isDespesaOperacional: isDespesaOperacional,
+    listarDespesasOperacionais: listarDespesasOperacionais,
+    totalizarDespesasOperacionais: totalizarDespesasOperacionais
   };
 });
