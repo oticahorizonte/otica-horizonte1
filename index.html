@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Ótica Horizonte — Sistema de Gestão v501</title>
+<title>Ótica Horizonte — Sistema de Gestão v502</title>
 <script src="./js/finance-core.js?v=500"></script>
 <link href="icon-192.png" rel="icon" type="image/png"/>
 <link href="icon-192.png" rel="shortcut icon" type="image/png"/>
@@ -12076,6 +12076,60 @@ function imprimirRecibo(id) {
   const bruto = itensGrupo.reduce((s,x)=>s+(x.preco||0)*(x.qtd||1),0);
   const vdesc = bruto - totalGrupo;
 
+  // Se uma composição foi gravada como duas linhas (armação e lente), reuni-las
+  // no recibo. A classificação pelo nome também corrige registros antigos em
+  // que a lente foi marcada indevidamente como armação.
+  var produtosRecibo = load('produtos');
+  function tipoComponenteRecibo(d) {
+    var nome = String(d && d.nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (/\blente\b/.test(nome)) return 'lente';
+    if (/armac/.test(nome)) return 'armacao';
+    var prod = produtosRecibo.find(function(p){ return p.cod === (d && d.cod); });
+    var cat = String(prod && prod.cat || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (cat === 'lente') return 'lente';
+    if (cat === 'armacao') return 'armacao';
+    if (d && d.isLente) return 'lente';
+    if (d && d.isArmacao) return 'armacao';
+    return '';
+  }
+  var papeisComposicao = itensGrupo.map(function(x){
+    if ((x.tipo !== 'oculos-completo' && x.produto !== 'OCULOS-COMPLETO') || !x.detalhes || x.detalhes.length !== 1) return '';
+    return tipoComponenteRecibo(x.detalhes[0]);
+  });
+  var paresComposicao = {};
+  var componentesPareados = {};
+  papeisComposicao.forEach(function(papel, i){
+    if (papel !== 'armacao' || componentesPareados[i]) return;
+    var indiceLente = papeisComposicao.findIndex(function(outroPapel, j){ return outroPapel === 'lente' && !componentesPareados[j]; });
+    if (indiceLente < 0) return;
+    paresComposicao[Math.min(i, indiceLente)] = {armacao:i, lente:indiceLente};
+    componentesPareados[i] = true;
+    componentesPareados[indiceLente] = true;
+  });
+  var itensRecibo = [];
+  var componentesUsados = {};
+  itensGrupo.forEach(function(x, i){
+    if (componentesUsados[i]) return;
+    var par = paresComposicao[i];
+    if (par) {
+        var itemArmacao = itensGrupo[par.armacao];
+        var itemLente = itensGrupo[par.lente];
+        var detalheArmacao = Object.assign({}, itemArmacao.detalhes[0], {isArmacao:true, isLente:false});
+        var detalheLente = Object.assign({}, itemLente.detalhes[0], {isArmacao:false, isLente:true});
+        var totalComposicao = calcTotal(itemArmacao) + calcTotal(itemLente);
+        itensRecibo.push(Object.assign({}, x, {
+          produto:'OCULOS-COMPLETO', tipo:'oculos-completo', descricaoCompleta:'Óculos Completo',
+          qtd:1, preco:totalComposicao, desc:0, descGlobal:0, totalReal:totalComposicao,
+          detalhes:[detalheArmacao, detalheLente]
+        }));
+        componentesUsados[par.armacao] = true;
+        componentesUsados[par.lente] = true;
+        return;
+    }
+    componentesUsados[i] = true;
+    itensRecibo.push(x);
+  });
+
   function setEl(elId, val) { const el=document.getElementById(elId); if(el) el.textContent=val; }
 
   // Preencher logo
@@ -12089,13 +12143,15 @@ function imprimirRecibo(id) {
   setEl('rec-data-venda', fmtDate(v.data));
   setEl('rec-vendedor', v.vendedor||'-');
   setEl('rec-pagamento', v.pag);
-  setEl('rec-parcelas', (v.parcelas||1) > 1 ? v.parcelas + 'x' : 'À vista');
+  setEl('rec-parcelas', v.crediario && v.crediario.parcelas
+    ? 'Crediário (' + v.crediario.parcelas.length + 'x)'
+    : ((v.parcelas||1) > 1 ? v.parcelas + 'x' : 'À vista'));
   setEl('rec-rodape-data', now);
 
   // Tabela de itens — nova sistemática: óculos completo em linha única
   var tbody = document.getElementById('rec-itens-tbody');
   if (tbody) {
-    tbody.innerHTML = itensGrupo.map(function(x) {
+    tbody.innerHTML = itensRecibo.map(function(x) {
       var isOculos = (x.tipo==='oculos-completo'||x.produto==='OCULOS-COMPLETO');
       var tot = calcTotal(x);
       var unit = (x.preco||0);
@@ -18216,7 +18272,7 @@ var _keysOriginalPL = null;
 <a href="#" id="dark-toggle" onclick="toggleDark()" style="padding:7px 4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🌙 Escuro</a>
 <a href="#" onclick="event.preventDefault();doLogout()" style="padding:7px 4px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:rgba(255,100,100,.9);text-decoration:none;font-size:11px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">🚪 Sair</a>
 </div>
-<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v501</div>
+<div style="text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.25)">© 2026 Ótica Horizonte · v502</div>
 </div>
 </aside>
 </body>
